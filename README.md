@@ -8,7 +8,7 @@ Build script to build a Debian 9 image for the NanoPi Neo2, as well as all depen
 
 ## Requirements
 
-- The following packages on your build host: `bc binfmt-support build-essential debootstrap device-tree-compiler dosfstools fakeroot git kpartx lvm2 qemu qemu-user-static wget`
+- The following packages on your build host: `bc binfmt-support build-essential debootstrap device-tree-compiler dosfstools fakeroot git kpartx lvm2 parted qemu qemu-user-static wget`
 
 ## Usage
 - Just run `./build.sh` as root.
