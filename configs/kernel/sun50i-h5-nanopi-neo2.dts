@@ -107,43 +107,6 @@
 
 &i2c0 {
 	status = "okay";
-
-	/* Used for the EEPROM found on the proto-hat */
-	/*
-	at24@50 {
-		compatible = "atmel,24c32";
-		pagesize = <32>;
-		reg = <0x50>;
-		/* read-only; */
-	};
-	*/
-
-	/* Used for our i2c LED driver */
-	/*
-	rgbleds: pca9633@62 {
-		compatible = "nxp,pca9633";
-		#address-cells = <1>;
-		#size-cells = <0>;
-		reg = <0x62>;
-
-  		w0@0 {
-			label = "pca:white:0";
-			reg = <0>;
-  		};
-		w1@1 {
-			label = "pca:white:1";
-			reg = <1>;
-  		};
-		w2@2 {
-			label = "pca:white:2";
-			reg = <2>;
-		};
-		w3@3 {
-			label = "pca:white:3";
-			reg = <3>;
-		};
-	};
-	*/
 };
 
 &ehci0 {
