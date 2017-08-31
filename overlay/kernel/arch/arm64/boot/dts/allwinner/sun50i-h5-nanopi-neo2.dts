@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2017 Icenowy Zheng <icenowy@aosc.io>
+ * Copyright (C) 2017 Chris Blake <chrisrblake93@gmail.com>
  *
  * This file is dual-licensed: you can use it either under the terms
  * of the GPL or the X11 license, at your option. Note that this dual
@@ -58,6 +59,88 @@
 		stdout-path = "serial0:115200n8";
 	};
 
+	cpus {
+		cpu0: cpu@0 {
+			clocks = <&ccu CLK_CPUX>;
+			clock-latency = <244144>; /* 8 32k periods */
+			clock-frequency = <1200000000>;
+			operating-points = <
+				1008000	1100000
+				816000	1100000
+				624000	1100000
+				480000	1100000
+				312000	1100000
+				240000	1100000
+				120000	1100000
+				>;
+			/* Disabled til thermal sensor driver is added */
+			/*
+			#cooling-cells = <2>;
+			cooling-min-level = <0>;
+			cooling-max-level = <6>;
+			*/
+			cpu0-supply = <&vdd_cpux>;
+		};
+		cpu1: cpu@1 {
+			clock-frequency = <1200000000>;
+		};
+		cpu2: cpu@2 {
+			clock-frequency = <1200000000>;
+		};
+		cpu3: cpu@3 {
+			clock-frequency = <1200000000>;
+		};
+	};
+
+	/* Waiting on thermal sensor driver upstream before we can use */
+	/*
+	thermal-zones {
+		cpu_thermal {
+			polling-delay-passive = <330>;
+			polling-delay = <1000>;
+			thermal-sensors = <&ths 0>;
+
+			trips {
+				cpu_warm: cpu_warm {
+					temperature = <65000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+				cpu_hot: cpu_hot {
+					temperature = <75000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+				cpu_very_hot: cpu_very_hot {
+					temperature = <90000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+				cpu_crit: cpu_crit {
+					temperature = <105000>;
+					hysteresis = <2000>;
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				cpu_warm_limit_cpu {
+					trip = <&cpu_warm>;
+					cooling-device = <&cpu0 THERMAL_NO_LIMIT 1>;
+				};
+				cpu_hot_limit_cpu {
+					trip = <&cpu_hot>;
+					cooling-device = <&cpu0 2 3>;
+				};
+				cpu_very_hot_limit_cpu {
+					trip = <&cpu_very_hot>;
+					cooling-device = <&cpu0 5 THERMAL_NO_LIMIT>;
+				};
+			};
+		};
+	};
+	*/
+
 	leds {
 		compatible = "gpio-leds";
 
@@ -98,6 +181,26 @@
 		enable-active-high;
 		gpio = <&r_pio 0 2 GPIO_ACTIVE_HIGH>; /* PL2 */
 		status = "okay";
+	};
+
+	vdd_cpux: gpio-regulator {
+		compatible = "regulator-gpio";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&vdd_cpux_r_npi>;
+
+		regulator-name = "vdd-cpux";
+		regulator-type = "voltage";
+		regulator-boot-on;
+		regulator-always-on;
+		regulator-min-microvolt = <1100000>;
+		regulator-max-microvolt = <1100000>;
+		regulator-ramp-delay = <50>; /* 4ms */
+
+		gpios = <&r_pio 0 6 GPIO_ACTIVE_HIGH>;
+		gpios-states = <0x1>;
+		states = <1100000 0x0
+			  1100000 0x1>;
 	};
 };
 
@@ -148,6 +251,13 @@
 
 &ohci3 {
 	status = "okay";
+};
+
+&r_pio {
+	vdd_cpux_r_npi: regulator_pins@0 {
+		pins = "PL6";
+		function = "gpio_out";
+	};
 };
 
 &uart0 {

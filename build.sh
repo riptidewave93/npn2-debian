@@ -16,6 +16,24 @@ buildenv="$ourpath/BuildEnv"
 rootfs="${buildenv}/rootfs"
 bootfs="${rootfs}/boot"
 
+# U-Boot settings
+uboot_repo="https://github.com/u-boot/u-boot.git"
+uboot_branch="master"
+uboot_config="nanopi_neo2_defconfig"
+uboot_overlay_dir="u-boot"
+
+# Kernel settings
+kernel_repo="https://github.com/torvalds/linux.git"
+kernel_branch="v4.13-rc7"
+kernel_config="nanopi_neo2_defconfig"
+kernel_overlay_dir="kernel"
+
+# Use this to use the FriendlyELEC kernel branch for the NPN2
+#kernel_repo="https://github.com/friendlyarm/linux.git"
+#kernel_branch="sunxi-4.11.y"
+#kernel_config="sunxi_arm64_defconfig"
+#kernel_overlay_dir="kernel-friendlyelec"
+
 ##############################
 # No need to edit under this #
 ##############################
@@ -69,7 +87,7 @@ export BL31=$buildenv/git/arm-trusted-firmware/build/sun50iw1p1/debug/bl31.bin
 cd $buildenv/git
 
 # Build U-Boot
-git clone https://github.com/u-boot/u-boot.git --depth 1 -b master
+git clone $uboot_repo --depth 1 -b $uboot_branch
 cd u-boot
 # If we have patches, apply them
 if [[ -d $ourpath/patches/u-boot/ ]]; then
@@ -78,9 +96,12 @@ if [[ -d $ourpath/patches/u-boot/ ]]; then
 		git apply $file
 	done
 fi
-cp $ourpath/configs/u-boot/sun50i-h5-nanopi-neo2.dts ./arch/arm/dts/sun50i-h5-nanopi-neo2.dts
-cp $ourpath/configs/u-boot/nanopi_neo2_defconfig ./configs/nanopi_neo2_defconfig
-make nanopi_neo2_defconfig
+# Apply overlay if it exists
+if [[ -d $ourpath/overlay/$uboot_overlay_dir/ ]]; then
+	echo "Applying $uboot_overlay_dir overlay"
+	cp -R $ourpath/overlay/$uboot_overlay_dir/* ./
+fi
+make $uboot_config
 make -j`getconf _NPROCESSORS_ONLN`
 cp spl/sunxi-spl.bin $ourpath/requires/
 cp u-boot.itb $ourpath/requires/
@@ -88,7 +109,7 @@ cd $buildenv/git
 
 # Build the Linux Kernel
 mkdir linux-build && cd ./linux-build
-git clone https://github.com/torvalds/linux.git --depth 1 -b v4.13-rc7
+git clone $kernel_repo --depth 1 -b $kernel_branch
 cd linux
 # If we have patches, apply them
 if [[ -d $ourpath/patches/kernel/ ]]; then
@@ -97,9 +118,12 @@ if [[ -d $ourpath/patches/kernel/ ]]; then
 		git apply $file
 	done
 fi
-cp $ourpath/configs/kernel/sun50i-h5-nanopi-neo2.dts ./arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts
-cp $ourpath/configs/kernel/nanopi_neo2_defconfig ./arch/arm64/configs/nanopi_neo2_defconfig
-make nanopi_neo2_defconfig
+# Apply overlay if it exists
+if [[ -d $ourpath/overlay/$kernel_overlay_dir/ ]]; then
+	echo "Applying $kernel_overlay_dir overlay"
+	cp -R $ourpath/overlay/$kernel_overlay_dir/* ./
+fi
+make $kernel_config
 make -j`getconf _NPROCESSORS_ONLN` deb-pkg dtbs
 cp arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dtb $ourpath/requires/
 cd ../
@@ -349,15 +373,16 @@ losetup -D
 
 # Move image out of builddir, as buildscript will delete it
 echo "DEB-BUILDER: Moving image out of builddir and compressing"
-mkdir -p $ourpath/output
-mv ${image} $ourpath/output/headless_${distrib_name}_${deb_release}_${deb_arch}_${mydate}.img
-gzip $ourpath/output/headless_${distrib_name}_${deb_release}_${deb_arch}_${mydate}.img
-mkdir -p $ourpath/output/kernel
-mv $ourpath/requires/linux-*.deb $ourpath/output/kernel
-mv $ourpath/requires/sun*.dtb $ourpath/output/kernel
-mkdir -p $ourpath/output/u-boot
-mv $ourpath/requires/sunxi-spl.bin $ourpath/output/u-boot
-mv $ourpath/requires/u-boot.itb $ourpath/output/u-boot
+savedir="$ourpath/output/$mydate"
+mkdir -p $savedir
+mv ${image} $savedir/headless_${distrib_name}_${deb_release}_${deb_arch}_${mydate}.img
+gzip $savedir/headless_${distrib_name}_${deb_release}_${deb_arch}_${mydate}.img
+mkdir -p $savedir/kernel
+mv $ourpath/requires/linux-*.deb $savedir/kernel
+mv $ourpath/requires/sun*.dtb $savedir/kernel
+mkdir -p $savedir/u-boot
+mv $ourpath/requires/sunxi-spl.bin $savedir/u-boot
+mv $ourpath/requires/u-boot.itb $savedir/u-boot
 cd $ourpath
 
 echo "DEB-BUILDER: Cleaning Up"
