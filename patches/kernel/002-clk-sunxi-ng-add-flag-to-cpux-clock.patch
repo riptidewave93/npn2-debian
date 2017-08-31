@@ -1,0 +1,22 @@
+From dd68191b5238b69261eabeca9c2b050ba71a537c Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Sun, 31 Jul 2016 12:30:13 +0200
+Subject: [PATCH] clk: sunxi-ng: Add CLK_SET_RATE_PARENT flag to cpux clock
+
+---
+ drivers/clk/sunxi-ng/ccu-sun8i-h3.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/clk/sunxi-ng/ccu-sun8i-h3.c b/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
+index 6f14b03384409..0c60cd3650c3a 100644
+--- a/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
++++ b/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
+@@ -141,7 +141,7 @@ static SUNXI_CCU_NM_WITH_FRAC_GATE_LOCK(pll_de_clk, "pll-de",
+ static const char * const cpux_parents[] = { "osc32k", "osc24M",
+ 					     "pll-cpux" , "pll-cpux" };
+ static SUNXI_CCU_MUX(cpux_clk, "cpux", cpux_parents,
+-		     0x050, 16, 2, CLK_IS_CRITICAL);
++		     0x050, 16, 2, CLK_IS_CRITICAL | CLK_SET_RATE_PARENT);
+
+ static SUNXI_CCU_M(axi_clk, "axi", "cpux", 0x050, 0, 2, 0);
+ 

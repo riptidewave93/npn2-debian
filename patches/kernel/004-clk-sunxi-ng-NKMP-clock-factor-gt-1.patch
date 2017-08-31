@@ -1,0 +1,24 @@
+From 63390df1913f46c8e98f842828bb93718dc90526 Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Thu, 12 Jan 2017 16:37:24 +0100
+Subject: [PATCH] clk: sunxi-ng: For NKMP clocks P factor can only be > 1 for
+ rate < 288MHz
+
+This is mandated by the H3 datasheet.
+---
+ drivers/clk/sunxi-ng/ccu_nkmp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/clk/sunxi-ng/ccu_nkmp.c b/drivers/clk/sunxi-ng/ccu_nkmp.c
+index e58c95787f94c..d2ede98cf575e 100644
+--- a/drivers/clk/sunxi-ng/ccu_nkmp.c
++++ b/drivers/clk/sunxi-ng/ccu_nkmp.c
+@@ -30,7 +30,7 @@ static void ccu_nkmp_find_best(unsigned long parent, unsigned long rate,
+ 	for (_k = nkmp->min_k; _k <= nkmp->max_k; _k++) {
+ 		for (_n = nkmp->min_n; _n <= nkmp->max_n; _n++) {
+ 			for (_m = nkmp->min_m; _m <= nkmp->max_m; _m++) {
+-				for (_p = nkmp->min_p; _p <= nkmp->max_p; _p <<= 1) {
++				for (_p = nkmp->min_p; _p <= (rate <= 288000000 ? nkmp->max_p : nkmp->min_p); _p <<= 1) {
+ 					unsigned long tmp_rate;
+
+ 					tmp_rate = parent * _n * _k / (_m * _p);
