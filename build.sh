@@ -18,7 +18,7 @@ bootfs="${rootfs}/boot"
 
 # U-Boot settings
 uboot_repo="https://github.com/u-boot/u-boot.git"
-uboot_branch="master"
+uboot_branch="v2017.09-rc3"
 uboot_config="nanopi_neo2_defconfig"
 uboot_overlay_dir="u-boot"
 
@@ -231,7 +231,7 @@ EOF
 # Mounts
 echo "proc            /proc           proc    defaults        0       0
 /dev/mmcblk0p1  /boot           vfat    defaults        0       0
-/dev/mmcblk0p2	/				ext4	defaults		0		1
+/dev/mmcblk0p2	/		ext4	defaults	0	1
 " > etc/fstab
 
 # Hostname
@@ -289,6 +289,7 @@ mkimage -C none -A arm -T script -d /boot/boot.cmd /boot/boot.scr
 mv /boot/vmlinuz-* /boot/Image.gz
 gunzip /boot/Image.gz
 rm -rf /root/requires
+update-initramfs -u
 mv /boot/initrd.img-* /boot/initramfs.cpio.gz
 rm -f forth-stage
 EOF

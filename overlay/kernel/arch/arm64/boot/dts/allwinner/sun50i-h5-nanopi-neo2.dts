@@ -253,6 +253,10 @@
 	status = "okay";
 };
 
+&rtc {
+	status = "disabled";
+};
+
 &r_pio {
 	vdd_cpux_r_npi: regulator_pins@0 {
 		pins = "PL6";
