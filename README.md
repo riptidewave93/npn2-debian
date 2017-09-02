@@ -19,3 +19,7 @@ Build script to build a Debian 9 image for the NanoPi Neo2, as well as all depen
 - This is only tested on a Debian 9 x86_64 build host. Note your package names may vary per linux distro.
 - This code is very dirty, and should only be used as an example. Production use is not advised. Please only proceed if you know what you are doing!
 - Public images built from this can be found at [https://images.chrisrblake.com/](https://images.chrisrblake.com/) and are updated monthly.
+
+## ToDo
+* Enable audio in the kernel DTS/Config
+* Backport thermal driver (or wait for 4.14?)
