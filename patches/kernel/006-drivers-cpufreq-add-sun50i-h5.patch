@@ -1,0 +1,13 @@
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 1c26292..3d755f8 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -25,6 +25,7 @@ static const struct of_device_id machines[] __initconst = {
+ 	{ .compatible = "allwinner,sun8i-a33", },
+ 	{ .compatible = "allwinner,sun8i-a83t", },
+ 	{ .compatible = "allwinner,sun8i-h3", },
++	{ .compatible = "allwinner,sun50i-h5", },
+
+ 	{ .compatible = "apm,xgene-shadowcat", },
+ 
+ 

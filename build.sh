@@ -221,8 +221,9 @@ fatload mmc 0 \${ramdisk_addr} \${ramdisk}
 fatload mmc 0 \${dtb_addr} sun50i-h5-nanopi-neo2.dtb
 fdt addr \${dtb_addr} 0x100000
 
-# setup MAC address
-fdt set ethernet0 local-mac-address \${mac_node}
+# setup DTS variables
+fdt set ethernet0 local-mac-address \${ethaddr}
+fdt set serial-number \${serial#}
 
 setenv bootargs console=ttyS0,115200 earlyprintk root=/dev/mmcblk0p2 rootfstype=ext4 rw rootwait fsck.repair=\${fsck.repair} panic=10 \${extra}
 booti \${kernel_addr} \${ramdisk_addr}:500000 \${dtb_addr}
@@ -231,8 +232,7 @@ EOF
 # Mounts
 echo "proc            /proc           proc    defaults        0       0
 /dev/mmcblk0p1  /boot           vfat    defaults        0       0
-/dev/mmcblk0p2	/		ext4	defaults	0	1
-" > etc/fstab
+/dev/mmcblk0p2	/		ext4	defaults	0	1" > etc/fstab
 
 # Hostname
 echo "${distrib_name}" > etc/hostname
@@ -271,7 +271,7 @@ echo "root:debian" | chpasswd
 sed -i -e 's/KERNEL\!=\"eth\*|/KERNEL\!=\"/' /lib/udev/rules.d/75-persistent-net-generator.rules
 rm -f /etc/udev/rules.d/70-persistent-net.rules
 sed -i 's|#PermitRootLogin prohibit-password|PermitRootLogin yes|g' /etc/ssh/sshd_config
-echo 'HWCLOCKACCESS=no' >> /etc/default/hwclock
+echo 'HWCLOCKACCESS=yes' >> /etc/default/hwclock
 echo 'RAMTMP=yes' >> /etc/default/tmpfs
 rm -f third-stage
 EOF
@@ -289,8 +289,7 @@ mkimage -C none -A arm -T script -d /boot/boot.cmd /boot/boot.scr
 mv /boot/vmlinuz-* /boot/Image.gz
 gunzip /boot/Image.gz
 rm -rf /root/requires
-update-initramfs -u
-mv /boot/initrd.img-* /boot/initramfs.cpio.gz
+cp /boot/initrd.img-* /boot/initramfs.cpio.gz
 rm -f forth-stage
 EOF
 chmod +x forth-stage
@@ -349,6 +348,12 @@ w
 LEL
 partprobe
 resize2fs /dev/mmcblk0p2
+sync
+
+# Fixup initramfs for fsck on boot to work
+update-initramfs -u
+rm /boot/initramfs.cpio.gz
+mv /boot/initrd.img-* /boot/initramfs.cpio.gz
 
 # Cleanup
 update-rc.d first_boot remove
