@@ -22,4 +22,3 @@ Build script to build a Debian 9 image for the NanoPi Neo2, as well as all depen
 
 ## ToDo
 * Backport thermal driver (or wait for 4.14?)
-* Verify all USB interfaces are enabled
