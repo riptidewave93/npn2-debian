@@ -260,8 +260,8 @@ debconf-set-selections /debconf.set
 rm -f /debconf.set
 apt-get update
 apt-get -y install git-core binutils ca-certificates e2fsprogs ntp parted curl \
-fake-hwclock locales console-common openssh-server less vim net-tools \
-initramfs-tools u-boot-tools
+locales console-common openssh-server less vim net-tools initramfs-tools \
+u-boot-tools
 export LANGUAGE=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
@@ -277,6 +277,12 @@ rm -f third-stage
 EOF
 chmod +x third-stage
 LANG=C chroot $rootfs /third-stage
+
+# Support for u-boot tools in userspace
+cat << EOF > etc/fw_env.config
+# MTD device name       Device offset   Env. size       Flash sector size
+/dev/mmcblk0               0x88000          0x20000         0x2000
+EOF
 
 # Setup our boot partition so we can actually boot
 # we also need to do some kernel moving n shit due to discrepencies in stuff

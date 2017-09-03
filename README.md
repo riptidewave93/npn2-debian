@@ -2,9 +2,9 @@
 
 Build script to build a Debian 9 image for the NanoPi Neo2, as well as all dependencies. This includes the following:
 
-- Mainline Linux Kernel - Currently set to 4.13-rc7
+- Mainline Linux Kernel - Set to 4.13-rc7
 - Arm Trusted Firmware - [allwinner/sunxi branch](https://github.com/apritzel/arm-trusted-firmware/tree/allwinner)
-- Mainline U-Boot (master dev branch for now)
+- Mainline U-Boot - Set to v2017.09-rc3
 
 ## Requirements
 
@@ -21,5 +21,5 @@ Build script to build a Debian 9 image for the NanoPi Neo2, as well as all depen
 - Public images built from this can be found at [https://images.chrisrblake.com/](https://images.chrisrblake.com/) and are updated monthly.
 
 ## ToDo
-* Enable audio in the kernel DTS/Config
 * Backport thermal driver (or wait for 4.14?)
+* Verify all USB interfaces are enabled
