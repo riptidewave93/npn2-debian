@@ -1,0 +1,44 @@
+In the official release of 3.14, this was removed due to some concerns with it's
+implementation. Bring it back so we have working ethernet in the meantime.
+
+---
+ arch/arm/boot/dts/sunxi-h3-h5.dtsi | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+
+diff --git a/arch/arm/boot/dts/sunxi-h3-h5.dtsi b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
+index 61f729168c89e..1fc663bdfdda7 100644
+--- a/arch/arm/boot/dts/sunxi-h3-h5.dtsi
++++ b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
+@@ -383,6 +391,32 @@
+ 			clocks = <&osc24M>;
+ 		};
+
++		emac: ethernet@1c30000 {
++			compatible = "allwinner,sun8i-h3-emac";
++			syscon = <&syscon>;
++			reg = <0x01c30000 0x104>;
++			interrupts = <GIC_SPI 82 IRQ_TYPE_LEVEL_HIGH>;
++			interrupt-names = "macirq";
++			resets = <&ccu RST_BUS_EMAC>;
++			reset-names = "stmmaceth";
++			clocks = <&ccu CLK_BUS_EMAC>;
++			clock-names = "stmmaceth";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++
++			mdio: mdio {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				int_mii_phy: ethernet-phy@1 {
++					compatible = "ethernet-phy-ieee802.3-c22";
++					reg = <1>;
++					clocks = <&ccu CLK_BUS_EPHY>;
++					resets = <&ccu RST_BUS_EPHY>;
++				};
++			};
++		};
++
+ 		spi0: spi@01c68000 {
+ 			compatible = "allwinner,sun8i-h3-spi";
+ 			reg = <0x01c68000 0x1000>;

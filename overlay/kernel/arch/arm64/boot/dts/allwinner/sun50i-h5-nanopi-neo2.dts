@@ -45,6 +45,7 @@
 #include "sun50i-h5.dtsi"
 
 #include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/thermal/thermal.h>
 
 / {
 	model = "FriendlyARM NanoPi NEO 2";
@@ -59,88 +60,6 @@
 	chosen {
 		stdout-path = "serial0:115200n8";
 	};
-
-	cpus {
-		cpu0: cpu@0 {
-			clocks = <&ccu CLK_CPUX>;
-			clock-latency = <244144>; /* 8 32k periods */
-			clock-frequency = <1200000000>;
-			operating-points = <
-				1008000	1100000
-				816000	1100000
-				624000	1100000
-				480000	1100000
-				312000	1100000
-				240000	1100000
-				120000	1100000
-				>;
-			/* Disabled til thermal sensor driver is added */
-			/*
-			#cooling-cells = <2>;
-			cooling-min-level = <0>;
-			cooling-max-level = <6>;
-			*/
-			cpu0-supply = <&vdd_cpux>;
-		};
-		cpu1: cpu@1 {
-			clock-frequency = <1200000000>;
-		};
-		cpu2: cpu@2 {
-			clock-frequency = <1200000000>;
-		};
-		cpu3: cpu@3 {
-			clock-frequency = <1200000000>;
-		};
-	};
-
-	/* Waiting on thermal sensor driver upstream before we can use */
-	/*
-	thermal-zones {
-		cpu_thermal {
-			polling-delay-passive = <330>;
-			polling-delay = <1000>;
-			thermal-sensors = <&ths 0>;
-
-			trips {
-				cpu_warm: cpu_warm {
-					temperature = <65000>;
-					hysteresis = <2000>;
-					type = "passive";
-				};
-				cpu_hot: cpu_hot {
-					temperature = <75000>;
-					hysteresis = <2000>;
-					type = "passive";
-				};
-				cpu_very_hot: cpu_very_hot {
-					temperature = <90000>;
-					hysteresis = <2000>;
-					type = "passive";
-				};
-				cpu_crit: cpu_crit {
-					temperature = <105000>;
-					hysteresis = <2000>;
-					type = "critical";
-				};
-			};
-
-			cooling-maps {
-				cpu_warm_limit_cpu {
-					trip = <&cpu_warm>;
-					cooling-device = <&cpu0 THERMAL_NO_LIMIT 1>;
-				};
-				cpu_hot_limit_cpu {
-					trip = <&cpu_hot>;
-					cooling-device = <&cpu0 2 3>;
-				};
-				cpu_very_hot_limit_cpu {
-					trip = <&cpu_very_hot>;
-					cooling-device = <&cpu0 5 THERMAL_NO_LIMIT>;
-				};
-			};
-		};
-	};
-	*/
 
 	leds {
 		compatible = "gpio-leds";
@@ -188,7 +107,7 @@
 		compatible = "regulator-gpio";
 
 		pinctrl-names = "default";
-		pinctrl-0 = <&vdd_cpux_r_npi>;
+		pinctrl-0 = <&vdd_cpux_r_opc>;
 
 		regulator-name = "vdd-cpux";
 		regulator-type = "voltage";
@@ -202,6 +121,62 @@
 		gpios-states = <0x1>;
 		states = <1100000 0x0
 			  1100000 0x1>;
+	};
+};
+
+&cpu0 {
+	operating-points = <
+		1008000	1100000
+		816000	1100000
+		624000	1100000
+		480000	1100000
+		312000	1100000
+		240000	1100000
+		120000	1100000
+		>;
+	#cooling-cells = <2>;
+	cooling-min-level = <0>;
+	cooling-max-level = <6>;
+	cpu0-supply = <&vdd_cpux>;
+};
+
+&cpu_thermal {
+	trips {
+		cpu_warm: cpu_warm {
+			temperature = <65000>;
+			hysteresis = <2000>;
+			type = "passive";
+		};
+		cpu_hot: cpu_hot {
+			temperature = <75000>;
+			hysteresis = <2000>;
+			type = "passive";
+		};
+		cpu_very_hot: cpu_very_hot {
+			temperature = <90000>;
+			hysteresis = <2000>;
+			type = "passive";
+		};
+		cpu_crit: cpu_crit {
+			temperature = <105000>;
+			hysteresis = <2000>;
+			type = "critical";
+		};
+	};
+
+	cooling-maps {
+		cpu_warm_limit_cpu {
+			trip = <&cpu_warm>;
+			cooling-device = <&cpu0 THERMAL_NO_LIMIT 1>;
+		};
+		cpu_hot_limit_cpu {
+			trip = <&cpu_hot>;
+			cooling-device = <&cpu0 2 3>;
+		};
+		cpu_very_hot_limit_cpu {
+			trip = <&cpu_very_hot>;
+			cooling-device = <&cpu0 5 THERMAL_NO_LIMIT>;
+		};
 	};
 };
 
@@ -279,7 +254,7 @@
 };
 
 &r_pio {
-	vdd_cpux_r_npi: regulator_pins@0 {
+	vdd_cpux_r_opc: regulator_pins@0 {
 		pins = "PL6";
 		function = "gpio_out";
 	};

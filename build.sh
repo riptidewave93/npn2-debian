@@ -18,13 +18,13 @@ bootfs="${rootfs}/boot"
 
 # U-Boot settings
 uboot_repo="https://github.com/u-boot/u-boot.git"
-uboot_branch="v2017.09-rc3"
+uboot_branch="v2017.09-rc4"
 uboot_config="nanopi_neo2_defconfig"
 uboot_overlay_dir="u-boot"
 
 # Kernel settings
 kernel_repo="https://github.com/torvalds/linux.git"
-kernel_branch="v4.13-rc7"
+kernel_branch="v4.13"
 kernel_config="nanopi_neo2_defconfig"
 kernel_overlay_dir="kernel"
 
