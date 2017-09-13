@@ -16,32 +16,31 @@ buildenv="$ourpath/BuildEnv"
 rootfs="${buildenv}/rootfs"
 bootfs="${rootfs}/boot"
 
+# Compiler settings
+linaro_release="7.1-2017.08"
+linaro_full_version="7.1.1-2017.08"
+
 # U-Boot settings
 uboot_repo="https://github.com/u-boot/u-boot.git"
-uboot_branch="v2017.09-rc4"
+uboot_branch="v2017.09"
 uboot_config="nanopi_neo2_defconfig"
 uboot_overlay_dir="u-boot"
 
 # Kernel settings
-kernel_repo="https://github.com/torvalds/linux.git"
-kernel_branch="v4.13"
+kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
+kernel_branch="linux-4.13.y"
 kernel_config="nanopi_neo2_defconfig"
 kernel_overlay_dir="kernel"
 
-# Use this to use the FriendlyELEC kernel branch for the NPN2
-#kernel_repo="https://github.com/friendlyarm/linux.git"
-#kernel_branch="sunxi-4.11.y"
-#kernel_config="sunxi_arm64_defconfig"
-#kernel_overlay_dir="kernel-friendlyelec"
-
-##############################
-# No need to edit under this #
-##############################
-
+# Distro settings
 distrib_name="debian"
 deb_mirror="https://mirrors.kernel.org/debian/"
 deb_release="stretch"
 deb_arch="arm64"
+
+##############################
+# No need to edit under this #
+##############################
 
 echo "DEB-BUILDER: Building $distrib_name Image"
 
@@ -65,10 +64,10 @@ cd $buildenv
 
 # Setup our build toolchain for this
 echo "DEB-BUILDER: Setting up Toolchain"
-wget https://releases.linaro.org/components/toolchain/binaries/7.1-2017.05/aarch64-linux-gnu/gcc-linaro-7.1.1-2017.05-x86_64_aarch64-linux-gnu.tar.xz
-tar xf gcc-linaro-7.1.1-2017.05-x86_64_aarch64-linux-gnu.tar.xz -C $buildenv/toolchain
-rm gcc-linaro-7.1.1-2017.05-x86_64_aarch64-linux-gnu.tar.xz
-export PATH=$buildenv/toolchain/gcc-linaro-7.1.1-2017.05-x86_64_aarch64-linux-gnu/bin:$PATH
+wget https://releases.linaro.org/components/toolchain/binaries/$linaro_release/aarch64-linux-gnu/gcc-linaro-$linaro_full_version-x86_64_aarch64-linux-gnu.tar.xz
+tar xf gcc-linaro-$linaro_full_version-x86_64_aarch64-linux-gnu.tar.xz -C $buildenv/toolchain
+rm gcc-linaro-$linaro_full_version-x86_64_aarch64-linux-gnu.tar.xz
+export PATH=$buildenv/toolchain/gcc-linaro-$linaro_full_version-x86_64_aarch64-linux-gnu/bin:$PATH
 export GCC_COLORS=auto
 export CROSS_COMPILE=aarch64-linux-gnu-
 export ARCH=arm64
@@ -87,7 +86,7 @@ export BL31=$buildenv/git/arm-trusted-firmware/build/sun50iw1p1/debug/bl31.bin
 cd $buildenv/git
 
 # Build U-Boot
-git clone $uboot_repo --depth 1 -b $uboot_branch
+git clone $uboot_repo --depth 1 -b $uboot_branch ./u-boot
 cd u-boot
 # If we have patches, apply them
 if [[ -d $ourpath/patches/u-boot/ ]]; then
@@ -109,7 +108,7 @@ cd $buildenv/git
 
 # Build the Linux Kernel
 mkdir linux-build && cd ./linux-build
-git clone $kernel_repo --depth 1 -b $kernel_branch
+git clone $kernel_repo --depth 1 -b $kernel_branch ./linux
 cd linux
 # If we have patches, apply them
 if [[ -d $ourpath/patches/kernel/ ]]; then
@@ -207,26 +206,29 @@ cat << EOF > boot/boot.cmd
 # Recompile with:
 # mkimage -C none -A arm -T script -d boot.cmd boot.scr
 
+# Set local vars
 setenv fsck.repair yes
 setenv ramdisk initramfs.cpio.gz
 setenv kernel Image
 
-setenv env_addr 0x45000000
-setenv kernel_addr 0x46000000
-setenv ramdisk_addr 0x47000000
-setenv dtb_addr 0x48000000
+# Load FDT
+fatload mmc 0 \${fdt_addr_r} \${fdtfile}
+fdt addr \${fdt_addr_r} \${filesize}
+fdt resize 0x1000
 
-fatload mmc 0 \${kernel_addr} \${kernel}
-fatload mmc 0 \${ramdisk_addr} \${ramdisk}
-fatload mmc 0 \${dtb_addr} sun50i-h5-nanopi-neo2.dtb
-fdt addr \${dtb_addr} 0x100000
-
-# setup DTS variables
+# Set FDT variables
 fdt set ethernet0 local-mac-address \${ethaddr}
-fdt set serial-number \${serial#}
+fdt set / serial-number \${serial#}
 
+# Set cmdline
 setenv bootargs console=ttyS0,115200 earlyprintk root=/dev/mmcblk0p2 rootfstype=ext4 rw rootwait fsck.repair=\${fsck.repair} panic=10 \${extra}
-booti \${kernel_addr} \${ramdisk_addr}:500000 \${dtb_addr}
+
+# Load kernel and ramdisk
+fatload mmc 0 \${kernel_addr_r} \${kernel}
+fatload mmc 0 \${ramdisk_addr_r} \${ramdisk}
+
+# Boot the system
+booti \${kernel_addr_r} \${ramdisk_addr_r}:\${filesize} \${fdt_addr_r}
 EOF
 
 # Mounts
@@ -290,7 +292,8 @@ cp -R $ourpath/requires root
 cat << EOF > forth-stage
 #!/bin/bash
 dpkg -i /root/requires/linux-*.deb
-mv /root/requires/sun50i-h5-nanopi-neo2.dtb /boot/sun50i-h5-nanopi-neo2.dtb
+mkdir -p /boot/allwinner
+mv /root/requires/sun50i-h5-nanopi-neo2.dtb /boot/allwinner/sun50i-h5-nanopi-neo2.dtb
 mkimage -C none -A arm -T script -d /boot/boot.cmd /boot/boot.scr
 mv /boot/vmlinuz-* /boot/Image.gz
 gunzip /boot/Image.gz
