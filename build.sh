@@ -37,17 +37,24 @@ distrib_name="debian"
 deb_mirror="https://mirrors.kernel.org/debian/"
 deb_release="stretch"
 deb_arch="arm64"
+fs_overlay_dir="filesystem"
 
 ##############################
 # No need to edit under this #
 ##############################
 
-echo "DEB-BUILDER: Building $distrib_name Image"
-
 # Check to make sure this is ran by root
 if [ $EUID -ne 0 ]; then
   echo "DEB-BUILDER: this tool must be run as root"
   exit 1
+fi
+
+# Are we asking for a clean? If so, reset the env
+if [[ "$1" == "clean" ]]; then
+  echo "DEB-BUILDER: Cleaning build environment..."
+  rm -rf "$ourpath/BuildEnv" "$ourpath/.build" "$ourpath/requires" "$ourpath/output"
+  echo "DEB-BUILDER: Cleaning complete!"
+  exit 0
 fi
 
 # make sure no builds are in process (which should never be an issue)
@@ -57,6 +64,8 @@ if [ -e ./.build ]; then
 else
 	touch ./.build
 fi
+
+echo "DEB-BUILDER: Building $distrib_name Image"
 
 # Start by making our build dir
 mkdir -p $buildenv/toolchain
@@ -194,6 +203,12 @@ LANG=C chroot $rootfs /debootstrap/debootstrap --second-stage
 # Mount the boot partition
 mount -t vfat $bootp $bootfs
 
+# Now that things are mounted, copy over an overlay if it exists
+if [[ -d $ourpath/overlay/$fs_overlay_dir/ ]]; then
+	echo "Applying $fs_overlay_dir overlay"
+	cp -R $ourpath/overlay/$fs_overlay_dir/* ./
+fi
+
 # Start adding content to the system files
 echo "DEB-BUILDER: Setting up device specific tweaks"
 
@@ -207,9 +222,16 @@ cat << EOF > boot/boot.cmd
 # mkimage -C none -A arm -T script -d boot.cmd boot.scr
 
 # Set local vars
-setenv fsck.repair yes
-setenv ramdisk initramfs.cpio.gz
-setenv kernel Image
+setenv load_addr "0x44000000"
+setenv fsck.repair "yes"
+setenv ramdisk "initramfs.cpio.gz"
+setenv kernel "Image"
+
+# Import and load any custom settings
+if test -e mmc 0 config.txt; then
+	fatload mmc 0 \${load_addr} config.txt
+	env import -t \${load_addr} \${filesize}
+fi
 
 # Load FDT
 fatload mmc 0 \${fdt_addr_r} \${fdtfile}

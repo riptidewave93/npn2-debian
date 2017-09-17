@@ -1,0 +1,1 @@
+# This file can be used to set custom uboot env vars
