@@ -134,6 +134,8 @@ fi
 make $kernel_config
 make -j`getconf _NPROCESSORS_ONLN` deb-pkg dtbs
 cp arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dtb $ourpath/requires/
+mkdir $ourpath/requires/overlay
+cp arch/arm64/boot/dts/allwinner/overlay/*.dtbo $ourpath/requires/overlay/
 cd ../
 cp linux-*.deb $ourpath/requires/
 cd $buildenv
@@ -216,43 +218,6 @@ echo "DEB-BUILDER: Setting up device specific tweaks"
 echo "deb $deb_mirror $deb_release main contrib non-free
 deb-src $deb_mirror $deb_release main contrib non-free" > etc/apt/sources.list
 
-# U-Boot commands
-cat << EOF > boot/boot.cmd
-# Recompile with:
-# mkimage -C none -A arm -T script -d boot.cmd boot.scr
-
-# Set local vars
-setenv load_addr "0x44000000"
-setenv fsck.repair "yes"
-setenv ramdisk "initramfs.cpio.gz"
-setenv kernel "Image"
-
-# Import and load any custom settings
-if test -e mmc 0 config.txt; then
-	fatload mmc 0 \${load_addr} config.txt
-	env import -t \${load_addr} \${filesize}
-fi
-
-# Load FDT
-fatload mmc 0 \${fdt_addr_r} \${fdtfile}
-fdt addr \${fdt_addr_r} \${filesize}
-fdt resize 0x1000
-
-# Set FDT variables
-fdt set ethernet0 local-mac-address \${ethaddr}
-fdt set / serial-number \${serial#}
-
-# Set cmdline
-setenv bootargs console=ttyS0,115200 earlyprintk root=/dev/mmcblk0p2 rootfstype=ext4 rw rootwait fsck.repair=\${fsck.repair} panic=10 \${extra}
-
-# Load kernel and ramdisk
-fatload mmc 0 \${kernel_addr_r} \${kernel}
-fatload mmc 0 \${ramdisk_addr_r} \${ramdisk}
-
-# Boot the system
-booti \${kernel_addr_r} \${ramdisk_addr_r}:\${filesize} \${fdt_addr_r}
-EOF
-
 # Mounts
 echo "proc            /proc           proc    defaults        0       0
 /dev/mmcblk0p1  /boot           vfat    defaults        0       0
@@ -314,11 +279,12 @@ cp -R $ourpath/requires root
 cat << EOF > forth-stage
 #!/bin/bash
 dpkg -i /root/requires/linux-*.deb
-mkdir -p /boot/allwinner
+mkdir -p /boot/allwinner/overlay
 mv /root/requires/sun50i-h5-nanopi-neo2.dtb /boot/allwinner/sun50i-h5-nanopi-neo2.dtb
 mkimage -C none -A arm -T script -d /boot/boot.cmd /boot/boot.scr
 mv /boot/vmlinuz-* /boot/Image.gz
 gunzip /boot/Image.gz
+cp -r /root/requires/overlay/* /boot/allwinner/overlay/
 rm -rf /root/requires
 cp /boot/initrd.img-* /boot/initramfs.cpio.gz
 rm -f forth-stage

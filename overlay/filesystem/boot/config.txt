@@ -1,1 +1,2 @@
-# This file can be used to set custom uboot env vars
+# Define your overlays you want to add to your DTB at boot
+overlays=i2c0 usbhost1 usbhost2 analog-codec
