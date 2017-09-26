@@ -1,6 +1,7 @@
 dtbo-$(CONFIG_ARCH_SUNXI) += \
 	sun50i-h5-analog-codec.dtbo \
 	sun50i-h5-cir.dtbo \
+	sun50i-h5-devboard.dtbo \
 	sun50i-h5-i2c0.dtbo \
 	sun50i-h5-i2c1.dtbo \
 	sun50i-h5-i2c2.dtbo \
