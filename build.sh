@@ -90,8 +90,8 @@ cd $buildenv/git
 # Build ARM Trusted Firmware
 git clone https://github.com/apritzel/arm-trusted-firmware.git --depth 1 -b allwinner
 cd arm-trusted-firmware
-make PLAT=sun50iw1p1 DEBUG=1 bl31
-export BL31=$buildenv/git/arm-trusted-firmware/build/sun50iw1p1/debug/bl31.bin
+make PLAT=sun50iw1p1 bl31
+export BL31=$buildenv/git/arm-trusted-firmware/build/sun50iw1p1/release/bl31.bin
 cd $buildenv/git
 
 # Build U-Boot
