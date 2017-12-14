@@ -17,12 +17,12 @@ rootfs="${buildenv}/rootfs"
 bootfs="${rootfs}/boot"
 
 # Compiler settings
-linaro_release="7.1-2017.08"
-linaro_full_version="7.1.1-2017.08"
+linaro_release="7.2-2017.11"
+linaro_full_version="7.2.1-2017.11"
 
 # U-Boot settings
 uboot_repo="https://github.com/u-boot/u-boot.git"
-uboot_branch="v2017.09"
+uboot_branch="v2017.11"
 uboot_config="nanopi_neo2_defconfig"
 uboot_overlay_dir="u-boot"
 

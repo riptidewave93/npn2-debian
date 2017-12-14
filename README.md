@@ -4,7 +4,7 @@ Build script to build a Debian 9 image for the NanoPi Neo2, as well as all depen
 
 - Mainline Linux Kernel - [4.13.x](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/log/?h=linux-4.13.y)
 - Arm Trusted Firmware - [allwinner/sunxi branch](https://github.com/apritzel/arm-trusted-firmware/tree/allwinner)
-- Mainline U-Boot [v2017.09](https://github.com/u-boot/u-boot/tree/v2017.09)
+- Mainline U-Boot [v2017.11](https://github.com/u-boot/u-boot/tree/v2017.11)
 
 ## Requirements
 
