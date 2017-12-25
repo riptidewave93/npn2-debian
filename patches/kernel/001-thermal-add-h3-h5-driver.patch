@@ -1,8 +1,8 @@
-From f6187e4711000edd75190eb2bf92197f3eb325f9 Mon Sep 17 00:00:00 2001
+From d3f293e6bff366c5b7eac93f1516d907db5e1f24 Mon Sep 17 00:00:00 2001
 From: Ondrej Jirman <megous@megous.com>
 Date: Sat, 25 Jun 2016 21:51:05 +0200
-Subject: [PATCH 05/26] thermal: sun8i_ths: Add support for the thermal sensor
- on Allwinner H3
+Subject: [PATCH] thermal: sun8i_ths: Add support for the thermal sensor on
+ Allwinner H3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -19,10 +19,10 @@ Signed-off-by: Ondřej Jirman <megous@megous.com>
  create mode 100644 drivers/thermal/sun8i_ths.c
 
 diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index b5b5facb87473..2eb3e67c6dea6 100644
+index 315ae2926e20f..472759fcb15f4 100644
 --- a/drivers/thermal/Kconfig
 +++ b/drivers/thermal/Kconfig
-@@ -412,6 +412,13 @@ depends on ARCH_BCM || COMPILE_TEST
+@@ -413,6 +413,13 @@ depends on ARCH_BCM || ARCH_BRCMSTB || ARCH_BCM2835 || COMPILE_TEST
  source "drivers/thermal/broadcom/Kconfig"
  endmenu
 
@@ -37,13 +37,13 @@ index b5b5facb87473..2eb3e67c6dea6 100644
  depends on ARCH_HAS_BANDGAP || COMPILE_TEST
  depends on HAS_IOMEM
 diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 094d7039981ca..04adca909d5d4 100644
+index 610344eb3e033..dc8a24fddba95 100644
 --- a/drivers/thermal/Makefile
 +++ b/drivers/thermal/Makefile
-@@ -59,3 +59,4 @@ obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
- obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
+@@ -61,3 +61,4 @@ obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
  obj-$(CONFIG_GENERIC_ADC_THERMAL)	+= thermal-generic-adc.o
  obj-$(CONFIG_ZX2967_THERMAL)	+= zx2967_thermal.o
+ obj-$(CONFIG_UNIPHIER_THERMAL)	+= uniphier_thermal.o
 +obj-$(CONFIG_SUN8I_THS)		+= sun8i_ths.o
 diff --git a/drivers/thermal/sun8i_ths.c b/drivers/thermal/sun8i_ths.c
 new file mode 100644
@@ -341,18 +341,18 @@ index 0000000000000..ba1288165e90c
 +	clock-names = "ahb", "ths";
 +};
 
-From 9e18e5b2a599d3d3cf104ab2756ef1df71cd0872 Mon Sep 17 00:00:00 2001
+From 4aa520e9e4b0ac29cb5e6e4df674cc95a86acc8b Mon Sep 17 00:00:00 2001
 From: Ondrej Jirman <megous@megous.com>
 Date: Thu, 30 Mar 2017 12:59:19 +0200
-Subject: [PATCH 11/26] thermal: sun8i-ths: Allow to enable thermal sensor
- driver on arm64
+Subject: [PATCH] thermal: sun8i-ths: Allow to enable thermal sensor driver on
+ arm64
 
 ---
  drivers/thermal/Kconfig | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 2eb3e67c6dea6..2ab705854fea5 100644
+index 77d3cd2a365e5..7127e5a8064de 100644
 --- a/drivers/thermal/Kconfig
 +++ b/drivers/thermal/Kconfig
 @@ -414,7 +414,7 @@ endmenu
@@ -365,123 +365,6 @@ index 2eb3e67c6dea6..2ab705854fea5 100644
  	help
  	  Enable this to support thermal reporting on some newer Allwinner SoCs.
 
-From 432c8fe2da978b85967625dd5ec3858804d91eb1 Mon Sep 17 00:00:00 2001
-From: Ondrej Jirman <megous@megous.com>
-Date: Sun, 26 Feb 2017 16:05:58 +0100
-Subject: [PATCH 12/26] ARM: dts: sun8i: Add thermal sensor node to H3 dts
-
-Signed-off-by: Ondrej Jirman <megous@megous.com>
----
- arch/arm/boot/dts/sunxi-h3-h5.dtsi | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
-
-diff --git a/arch/arm/boot/dts/sunxi-h3-h5.dtsi b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
-index d38282b9e5d44..83026ec87be45 100644
---- a/arch/arm/boot/dts/sunxi-h3-h5.dtsi
-+++ b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
-@@ -383,6 +383,18 @@
- 			};
- 		};
-
-+		ths: ths@01c25000 {
-+			#thermal-sensor-cells = <0>;
-+			compatible = "allwinner,sun8i-h3-ths";
-+			reg = <0x01c25000 0x400>,
-+			      <0x01c14234 0x4>;
-+			interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
-+			resets = <&ccu RST_BUS_THS>;
-+			reset-names = "ahb";
-+			clocks = <&ccu CLK_BUS_THS>, <&ccu CLK_THS>;
-+			clock-names = "ahb", "ths";
-+		};
-+
- 		timer@01c20c00 {
- 			compatible = "allwinner,sun4i-a10-timer";
- 			reg = <0x01c20c00 0xa0>;
-@@ -641,4 +653,12 @@
- 			};
- 		};
- 	};
-+
-+	thermal-zones {
-+		cpu_thermal: cpu_thermal {
-+			polling-delay-passive = <330>;
-+			polling-delay = <1000>;
-+			thermal-sensors = <&ths 0>;
-+		};
-+	};
- };
-
-From 6d98b72e372686763daf5c9cc2af99c952746cae Mon Sep 17 00:00:00 2001
-From: Ondrej Jirman <megous@megous.com>
-Date: Sun, 26 Feb 2017 16:08:34 +0100
-Subject: [PATCH 13/26] ARM: dts: sun8i: Add r_i2c pinctrl configuration
-
-H3 SoC contains I2C controller optionally available
-on the PL0 and PL1 pins. This patch adds pinctrl
-configuration for this controller.
-
-Signed-off-by: Ondrej Jirman <megous@megous.com>
----
- arch/arm/boot/dts/sunxi-h3-h5.dtsi | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/arch/arm/boot/dts/sunxi-h3-h5.dtsi b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
-index 83026ec87be45..1e2bc34b8d589 100644
---- a/arch/arm/boot/dts/sunxi-h3-h5.dtsi
-+++ b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
-@@ -651,6 +651,11 @@
- 				pins = "PL11";
- 				function = "s_cir_rx";
- 			};
-+
-+			r_i2c_pins_a: r_i2c@0 {
-+				pins = "PL0", "PL1";
-+				function = "s_twi";
-+			};
- 		};
- 	};
-
-
-From 2aebc34a942ef83f5e5c22d523a100e2e840100c Mon Sep 17 00:00:00 2001
-From: Ondrej Jirman <megous@megous.com>
-Date: Sun, 26 Feb 2017 16:09:28 +0100
-Subject: [PATCH 14/26] ARM: dts: sun8i: Add r_i2c I2C controller
-
-H3 SoC contains I2C controller optionally available
-on the PL0 and PL1 pins. This patch makes this controller
-available.
-
-Signed-off-by: Ondrej Jirman <megous@megous.com>
----
- arch/arm/boot/dts/sunxi-h3-h5.dtsi | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
-
-diff --git a/arch/arm/boot/dts/sunxi-h3-h5.dtsi b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
-index 1e2bc34b8d589..f4ba9919d26df 100644
---- a/arch/arm/boot/dts/sunxi-h3-h5.dtsi
-+++ b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
-@@ -636,6 +636,20 @@
- 			status = "disabled";
- 		};
-
-+		r_i2c: i2c@01f02400 {
-+			compatible = "allwinner,sun6i-a31-i2c";
-+			reg = <0x01f02400 0x400>;
-+			interrupts = <GIC_SPI 44 IRQ_TYPE_LEVEL_HIGH>;
-+			pinctrl-names = "default";
-+			pinctrl-0 = <&r_i2c_pins_a>;
-+			clocks = <&r_ccu CLK_APB0_I2C>;
-+			clock-frequency = <100000>;
-+			resets = <&r_ccu RST_APB0_I2C>;
-+			status = "disabled";
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+		};
-+
- 		r_pio: pinctrl@01f02c00 {
- 			compatible = "allwinner,sun8i-h3-r-pinctrl";
- 			reg = <0x01f02c00 0x400>;
 
 From 703c392ba3b3679141eae1b4ac079568489ddc9b Mon Sep 17 00:00:00 2001
 From: Ondrej Jirman <megous@megous.com>
@@ -630,4 +513,4 @@ index 6c6732287f290..2c94d707b3006 100644
 +			clock-frequency = <1200000000>;
  		};
  	};
- 
+

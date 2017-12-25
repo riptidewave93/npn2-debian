@@ -19,7 +19,7 @@ diff --git a/drivers/clk/sunxi-ng/ccu-sun8i-h3.c b/drivers/clk/sunxi-ng/ccu-sun8
 index 4cbc1b701b7cf..6f14b03384409 100644
 --- a/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
 +++ b/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
-@@ -29,15 +29,21 @@
+@@ -33,15 +33,22 @@
 
  #include "ccu-sun8i-h3.h"
 
@@ -31,7 +31,7 @@ index 4cbc1b701b7cf..6f14b03384409 100644
 -				     16, 2,	/* P */
 -				     BIT(31),	/* gate */
 -				     BIT(28),	/* lock */
--				     0);
+-				     CLK_SET_RATE_UNGATE);
 +static struct ccu_nkmp pll_cpux_clk = {
 +	.enable		= BIT(31),
 +	.lock		= BIT(28),
@@ -39,6 +39,7 @@ index 4cbc1b701b7cf..6f14b03384409 100644
 +	.k		= _SUNXI_CCU_MULT(4, 2),
 +	.m		= _SUNXI_CCU_DIV_MAX(0, 2, 1),
 +	.p		= _SUNXI_CCU_DIV(16, 2),
++	.max_rate_for_p	= 288000000,
 +	.common		= {
 +		.reg		= 0x000,
 +		.hw.init	= CLK_HW_INIT("pll-cpux",

@@ -27,8 +27,10 @@ uboot_config="nanopi_neo2_defconfig"
 uboot_overlay_dir="u-boot"
 
 # Kernel settings
-kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
-kernel_branch="linux-4.13.y"
+#kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
+#kernel_branch="linux-4.13.y"
+kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
+kernel_branch="v4.15-rc5"
 kernel_config="nanopi_neo2_defconfig"
 kernel_overlay_dir="kernel"
 
@@ -134,8 +136,8 @@ fi
 make $kernel_config
 make -j`getconf _NPROCESSORS_ONLN` deb-pkg dtbs
 cp arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dtb $ourpath/requires/
-mkdir $ourpath/requires/overlay
-cp arch/arm64/boot/dts/allwinner/overlay/*.dtbo $ourpath/requires/overlay/
+#mkdir $ourpath/requires/overlay
+#cp arch/arm64/boot/dts/allwinner/overlay/*.dtbo $ourpath/requires/overlay/
 cd ../
 cp linux-*.deb $ourpath/requires/
 cd $buildenv
@@ -284,7 +286,7 @@ mv /root/requires/sun50i-h5-nanopi-neo2.dtb /boot/allwinner/sun50i-h5-nanopi-neo
 mkimage -C none -A arm -T script -d /boot/boot.cmd /boot/boot.scr
 mv /boot/vmlinuz-* /boot/Image.gz
 gunzip /boot/Image.gz
-cp -r /root/requires/overlay/* /boot/allwinner/overlay/
+#cp -r /root/requires/overlay/* /boot/allwinner/overlay/
 rm -rf /root/requires
 cp /boot/initrd.img-* /boot/initramfs.cpio.gz
 rm -f forth-stage
