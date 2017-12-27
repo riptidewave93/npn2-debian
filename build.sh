@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Supported boards
+supported_devices=(sun50i-h5-nanopi-neo2 sun50i-h5-nanopi-neo-plus2)
+
 # Date format, used in the image file name
 mydate=`date +%Y%m%d-%H%M`
 
@@ -23,15 +26,12 @@ linaro_full_version="7.2.1-2017.11"
 # U-Boot settings
 uboot_repo="https://github.com/u-boot/u-boot.git"
 uboot_branch="v2017.11"
-uboot_config="nanopi_neo2_defconfig"
 uboot_overlay_dir="u-boot"
 
 # Kernel settings
-#kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
-#kernel_branch="linux-4.13.y"
 kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
 kernel_branch="v4.15-rc5"
-kernel_config="nanopi_neo2_defconfig"
+kernel_config="nanopi_h5_defconfig" # Global config for all boards
 kernel_overlay_dir="kernel"
 
 # Distro settings
@@ -111,10 +111,17 @@ if [[ -d $ourpath/overlay/$uboot_overlay_dir/ ]]; then
 	echo "Applying $uboot_overlay_dir overlay"
 	cp -R $ourpath/overlay/$uboot_overlay_dir/* ./
 fi
-make $uboot_config
-make -j`getconf _NPROCESSORS_ONLN`
-cp spl/sunxi-spl.bin $ourpath/requires/
-cp u-boot.itb $ourpath/requires/
+# Each board gets it's own u-boot, so build each at a time
+for board in "${supported_devices[@]}"; do
+	cfg=$board
+	cfg+="_defconfig"
+	make clean
+	make $cfg
+	make -j`getconf _NPROCESSORS_ONLN`
+	touch $ourpath/requires/$board.uboot
+	dd if=spl/sunxi-spl.bin of=$ourpath/requires/$board.uboot bs=8k
+	dd if=u-boot.itb of=$ourpath/requires/$board.uboot bs=8k seek=4
+done
 cd $buildenv/git
 
 # Build the Linux Kernel
@@ -135,17 +142,22 @@ if [[ -d $ourpath/overlay/$kernel_overlay_dir/ ]]; then
 fi
 make $kernel_config
 make -j`getconf _NPROCESSORS_ONLN` deb-pkg dtbs
-cp arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dtb $ourpath/requires/
-#mkdir $ourpath/requires/overlay
-#cp arch/arm64/boot/dts/allwinner/overlay/*.dtbo $ourpath/requires/overlay/
+for i in "${supported_devices[@]}"; do
+	cp arch/arm64/boot/dts/allwinner/$i.dtb $ourpath/requires/
+done
 cd ../
 cp linux-*.deb $ourpath/requires/
 cd $buildenv
 
 # Before we start up, make sure our required files exist
-for file in u-boot.itb sunxi-spl.bin sun50i-h5-nanopi-neo2.dtb; do
-	if [[ ! -e "$ourpath/requires/$file" ]]; then
-		echo "DEB-BUILDER: Error, required file './requires/$file' is missing!"
+for file in "${supported_devices[@]}"; do
+	if [[ ! -e "$ourpath/requires/$file.dtb" ]]; then
+		echo "DEB-BUILDER: Error, required file './requires/$file.dtb' is missing!"
+		rm $ourpath/.build
+		exit 1
+	fi
+	if [[ ! -e "$ourpath/requires/$file.uboot" ]]; then
+		echo "DEB-BUILDER: Error, required file './requires/$file.uboot' is missing!"
 		rm $ourpath/.build
 		exit 1
 	fi
@@ -179,11 +191,6 @@ EOF
 
 # Some systems need partprobe to run before we can fdisk the device
 partprobe
-
-# Install U-Boot before we mount
-echo "DEB-BUILDER: Installing U-Boot"
-dd if=$ourpath/requires/sunxi-spl.bin of=$device bs=8k seek=1
-dd if=$ourpath/requires/u-boot.itb of=$device bs=8k seek=5
 
 # Mount the loopback device so we can modify the image, format the partitions, and mount/cd into rootfs
 device=`kpartx -va $image | sed -E 's/.*(loop[0-9])p.*/\1/g' | head -1`
@@ -281,12 +288,11 @@ cp -R $ourpath/requires root
 cat << EOF > forth-stage
 #!/bin/bash
 dpkg -i /root/requires/linux-*.deb
-mkdir -p /boot/allwinner/overlay
-mv /root/requires/sun50i-h5-nanopi-neo2.dtb /boot/allwinner/sun50i-h5-nanopi-neo2.dtb
+mkdir -p /boot/allwinner
+mv /root/requires/*.dtb /boot/allwinner/
 mkimage -C none -A arm -T script -d /boot/boot.cmd /boot/boot.scr
 mv /boot/vmlinuz-* /boot/Image.gz
 gunzip /boot/Image.gz
-#cp -r /root/requires/overlay/* /boot/allwinner/overlay/
 rm -rf /root/requires
 cp /boot/initrd.img-* /boot/initramfs.cpio.gz
 rm -f forth-stage
@@ -376,21 +382,31 @@ echo "DEB-BUILDER: Finished making the image $image"
 dmsetup remove_all
 losetup -D
 
-# Move image out of builddir, as buildscript will delete it
-echo "DEB-BUILDER: Moving image out of builddir and compressing"
+# For each board, generate our images
+echo "DEB-BUILDER: Copying image per board and installing u-boot"
 savedir="$ourpath/output/$mydate"
 mkdir -p $savedir
 mv ${image} $savedir/headless_${distrib_name}_${deb_release}_${deb_arch}_${mydate}.img
-gzip $savedir/headless_${distrib_name}_${deb_release}_${deb_arch}_${mydate}.img
+for board in "${supported_devices[@]}"; do
+	ShortName="$(echo $board | cut -f4-5 -d "-")"
+	cp $savedir/headless_${distrib_name}_${deb_release}_${deb_arch}_${mydate}.img $savedir/${ShortName}_headless_${distrib_name}_${deb_release}_${deb_arch}_${mydate}.img
+	# Install OUR u-boot
+	dd if=$ourpath/requires/$board.uboot of=$savedir/${ShortName}_headless_${distrib_name}_${deb_release}_${deb_arch}_${mydate}.img bs=8k seek=1 conv=notrunc
+	# Compress the specific image
+	gzip $savedir/${ShortName}_headless_${distrib_name}_${deb_release}_${deb_arch}_${mydate}.img
+done
+
+# Move image out of builddir, as buildscript will delete it
+echo "DEB-BUILDER: Moving things around"
 mkdir -p $savedir/kernel
 mv $ourpath/requires/linux-*.deb $savedir/kernel
-mv $ourpath/requires/sun*.dtb $savedir/kernel
+mv $ourpath/requires/*.dtb $savedir/kernel
 mkdir -p $savedir/u-boot
-mv $ourpath/requires/sunxi-spl.bin $savedir/u-boot
-mv $ourpath/requires/u-boot.itb $savedir/u-boot
+mv $ourpath/requires/*.uboot $savedir/u-boot
 cd $ourpath
 
 echo "DEB-BUILDER: Cleaning Up"
+rm $savedir/headless_${distrib_name}_${deb_release}_${deb_arch}_${mydate}.img
 rm $ourpath/.build
 rm -r $ourpath/requires
 rm -r $buildenv

@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2017 Icenowy Zheng <icenowy@aosc.io>
- * Copyright (C) 2017 Jagan Teki <jteki@openedev.com>
+ * Copyright (C) 2017 Antony Antony <antony@phenome.org>
+ * Copyright (c) 2016 ARM Ltd.
  *
  * This file is dual-licensed: you can use it either under the terms
  * of the GPL or the X11 license, at your option. Note that this dual
@@ -48,8 +48,8 @@
 #include <dt-bindings/gpio/gpio.h>
 
 / {
-	model = "FriendlyARM NanoPi NEO 2";
-	compatible = "friendlyarm,nanopi-neo2", "allwinner,sun50i-h5";
+	model = "FriendlyARM NanoPi NEO Plus 2";
+	compatible = "friendlyarm,nanopi-neo-plus2", "allwinner,sun50i-h5";
 	serial-number = "0000000000000000";
 
 	aliases {
@@ -86,14 +86,22 @@
 };
 
 &mmc0 {
-	compatible = "allwinner,sun50i-h5-mmc",
-		     "allwinner,sun50i-a64-mmc",
-		     "allwinner,sun5i-a13-mmc";
 	pinctrl-names = "default";
 	pinctrl-0 = <&mmc0_pins_a>, <&mmc0_cd_pin>;
 	vmmc-supply = <&reg_vcc3v3>;
 	bus-width = <4>;
-	cd-gpios = <&pio 5 6 GPIO_ACTIVE_LOW>; /* PF6 */
+	cd-gpios = <&pio 5 6 GPIO_ACTIVE_HIGH>;
+	cd-inverted;
+	status = "okay";
+};
+
+&mmc2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc2_8bit_pins>;
+	vmmc-supply = <&reg_vcc3v3>;
+	bus-width = <8>;
+	non-removable;
+	cap-mmc-hw-reset;
 	status = "okay";
 };
 

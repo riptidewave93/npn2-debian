@@ -1,2 +1,0 @@
-# Define your overlays you want to add to your DTB at boot
-overlays=i2c0 usbhost1 usbhost2 analog-codec

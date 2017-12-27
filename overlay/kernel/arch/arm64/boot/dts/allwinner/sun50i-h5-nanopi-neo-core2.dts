@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2017 Chris Blake <chrisrblake93@gmail.com>
- * Copyright (C) 2017 Icenowy Zheng <icenowy@aosc.io>
+ * Copyright (C) 2016 ARM Ltd.
  *
  * This file is dual-licensed: you can use it either under the terms
  * of the GPL or the X11 license, at your option. Note that this dual
@@ -45,11 +45,13 @@
 #include "sun50i-h5.dtsi"
 
 #include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/pinctrl/sun4i-a10.h>
 #include <dt-bindings/thermal/thermal.h>
 
 / {
-	model = "FriendlyARM NanoPi NEO 2";
-	compatible = "friendlyarm,nanopi-neo2", "allwinner,sun50i-h5";
+	model = "FriendlyARM NanoPi NEO Core2";
+	compatible = "friendlyarm,nanopi-neo-core2", "allwinner,sun50i-h5";
 	serial-number = "0000000000000000";
 
 	aliases {
@@ -71,13 +73,14 @@
 		};
 
 		status {
-			label = "nanopi:blue:status";
-			gpios = <&pio 0 10 GPIO_ACTIVE_HIGH>;
+			label = "nanopi:red:status";
+			gpios = <&pio 0 20 GPIO_ACTIVE_HIGH>;
 		};
 	};
 
 	reg_gmac_3v3: gmac-3v3 {
 		compatible = "regulator-fixed";
+		pinctrl-names = "default";
 		regulator-name = "gmac-3v3";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
@@ -93,34 +96,27 @@
 		regulator-max-microvolt = <3300000>;
 	};
 
-	reg_usb0_vbus: usb0-vbus {
-		compatible = "regulator-fixed";
-		regulator-name = "usb0-vbus";
-		regulator-min-microvolt = <5000000>;
-		regulator-max-microvolt = <5000000>;
-		enable-active-high;
-		gpio = <&r_pio 0 2 GPIO_ACTIVE_HIGH>; /* PL2 */
-		status = "okay";
-	};
-
 	vdd_cpux: gpio-regulator {
 		compatible = "regulator-gpio";
-
 		pinctrl-names = "default";
-		pinctrl-0 = <&vdd_cpux_r_opc>;
-
 		regulator-name = "vdd-cpux";
 		regulator-type = "voltage";
 		regulator-boot-on;
 		regulator-always-on;
 		regulator-min-microvolt = <1100000>;
-		regulator-max-microvolt = <1100000>;
+		regulator-max-microvolt = <1300000>;
 		regulator-ramp-delay = <50>; /* 4ms */
-
 		gpios = <&r_pio 0 6 GPIO_ACTIVE_HIGH>;
 		gpios-states = <0x1>;
 		states = <1100000 0x0
-			  1100000 0x1>;
+			  1300000 0x1>;
+	};
+
+	wifi_pwrseq: wifi_pwrseq {
+		compatible = "mmc-pwrseq-simple";
+		pinctrl-names = "default";
+		reset-gpios = <&r_pio 0 7 GPIO_ACTIVE_LOW>; /* PL7 */
+		post-power-on-delay-ms = <200>;
 	};
 };
 
@@ -134,18 +130,36 @@
 
 &cpu0 {
 	operating-points = <
-		1008000	1100000
-		816000	1100000
-		624000	1100000
-		480000	1100000
-		312000	1100000
-		240000	1100000
-		120000	1100000
+		1368000 1400000
+		1344000 1400000
+		1296000 1340000
+		1248000 1280000
+		1224000 1260000
+		1200000 1240000
+		1152000 1200000
+		1104000 1170000
+		1080000 1160000
+		1056000 1150000
+		1008000 1100000
+		960000  1080000
+		936000  1060000
+		912000  1050000
+		864000  1040000
+		816000  1000000
+		792000  1000000
+		768000  980000
+		720000  970000
+		672000  970000
+		648000  970000
+		528000  940000
+		480000  940000
+		240000  940000
+		120000  940000
 		>;
 	#cooling-cells = <2>;
 	cooling-min-level = <0>;
-	cooling-max-level = <6>;
-	cpu0-supply = <&vdd_cpux>;
+	cooling-max-level = <24>;
+	cpu0-supply = <&vdd_cpu>;
 };
 
 &cpu_thermal {
@@ -183,7 +197,7 @@
 		};
 		cpu_very_hot_limit_cpu {
 			trip = <&cpu_very_hot>;
-			cooling-device = <&cpu0 5 THERMAL_NO_LIMIT>;
+			cooling-device = <&cpu0 18 THERMAL_NO_LIMIT>;
 		};
 	};
 };
@@ -221,6 +235,20 @@
 	status = "okay";
 };
 
+&mmc2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc2_8bit_pins>;
+	vmmc-supply = <&reg_vcc3v3>;
+	bus-width = <8>;
+	non-removable;
+	cap-mmc-hw-reset;
+	status = "okay";
+};
+
+&mmc2_8bit_pins {
+	drive-strength = <40>;
+};
+
 &ohci0 {
 	status = "okay";
 };
@@ -229,10 +257,17 @@
 	status = "okay";
 };
 
-&r_pio {
-	vdd_cpux_r_opc: regulator_pins@0 {
-		pins = "PL6";
-		function = "gpio_out";
+&r_i2c {
+	status = "okay";
+
+	vdd_cpu: regulator@65 {
+		compatible = "silergy,sy8106a";
+		reg = <0x65>;
+		regulator-min-microvolt = <940000>;
+		regulator-max-microvolt = <1400000>;
+		regulator-ramp-delay = <200>;
+		regulator-boot-on;
+		regulator-always-on;
 	};
 };
 
@@ -243,13 +278,11 @@
 };
 
 &usb_otg {
-	dr_mode = "otg";
+	dr_mode = "host";
 	status = "okay";
 };
 
 &usbphy {
-	/* USB Type-A port's VBUS is always on */
-	usb0_id_det-gpios = <&pio 6 12 GPIO_ACTIVE_HIGH>; /* PG12 */
-	usb0_vbus-supply = <&reg_usb0_vbus>;
+	/* USB Type-A ports' VBUS is always on */
 	status = "okay";
 };

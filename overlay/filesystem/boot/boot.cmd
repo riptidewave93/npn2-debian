@@ -19,22 +19,6 @@ fatload mmc 0 ${fdt_addr_r} ${fdtfile}
 fdt addr ${fdt_addr_r} ${filesize}
 fdt resize 0x10000
 
-# Apply FDT Overlays
-#for overlay_file in ${overlays}; do
-#	if fatload mmc 0 ${load_addr} allwinner/overlay/${overlay_prefix}-${overlay_file}.dtbo; then
-#		echo "Applying DT overlay allwinner/overlay/${overlay_prefix}-${overlay_file}.dtbo"
-#		fdt apply ${load_addr} || setenv overlay_error "true"
-#	fi
-#done
-
-# Check for errors with Overlays
-#if test "${overlay_error}" = "true"; then
-#	echo "Error applying DT overlays, restoring original DT"
-#	fatload mmc 0 ${fdt_addr_r} ${fdtfile}
-#  fdt addr ${fdt_addr_r} ${filesize}
-#  fdt resize 0x60000
-#fi
-
 # Set FDT variables
 fdt set ethernet0 local-mac-address ${ethaddr}
 fdt set / serial-number ${serial#}
