@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Supported boards
-supported_devices=(sun50i-h5-nanopi-neo2 sun50i-h5-nanopi-neo-plus2)
+supported_devices=(sun50i-h5-nanopi-neo2 sun50i-h5-nanopi-neo-core2 sun50i-h5-nanopi-neo-plus2)
 
 # Date format, used in the image file name
 mydate=`date +%Y%m%d-%H%M`
@@ -30,7 +30,7 @@ uboot_overlay_dir="u-boot"
 
 # Kernel settings
 kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
-kernel_branch="v4.15-rc5"
+kernel_branch="v4.15-rc6"
 kernel_config="nanopi_h5_defconfig" # Global config for all boards
 kernel_overlay_dir="kernel"
 
@@ -115,7 +115,7 @@ fi
 for board in "${supported_devices[@]}"; do
 	cfg=$board
 	cfg+="_defconfig"
-	make clean
+	make distclean
 	make $cfg
 	make -j`getconf _NPROCESSORS_ONLN`
 	touch $ourpath/requires/$board.uboot

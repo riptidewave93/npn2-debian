@@ -2,14 +2,15 @@
 
 Build script to build a Debian 9 image for NanoPi H5 based boards, as well as all dependencies. This includes the following:
 
-- Mainline Linux Kernel - [4.15-rc5](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tag/?h=v4.15-rc5)
+- Mainline Linux Kernel - [4.15-rc6](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tag/?h=v4.15-rc6)
 - Arm Trusted Firmware - [allwinner/sunxi branch](https://github.com/apritzel/arm-trusted-firmware/tree/allwinner)
 - Mainline U-Boot [v2017.11](https://github.com/u-boot/u-boot/tree/v2017.11)
 
 ## Supported Boards
 Currently images for the following devices are generated:
 * FriendlyARM NanoPi Neo2
-* FriendlyARM NanoPi Neo Plus2
+* FriendlyARM NanoPi Neo Core2 (untested)
+* FriendlyARM NanoPi Neo Plus2 (untested)
 
 ## Requirements
 
@@ -21,7 +22,6 @@ Currently images for the following devices are generated:
 - To cleanup and clear all builds, run `sudo ./build.sh clean`
 
 ## To Do
-* Finish up support for the Core2 (Waiting on sample device)
 * Bring back overlay support
 
 ## Notes

@@ -111,13 +111,6 @@
 		states = <1100000 0x0
 			  1300000 0x1>;
 	};
-
-	wifi_pwrseq: wifi_pwrseq {
-		compatible = "mmc-pwrseq-simple";
-		pinctrl-names = "default";
-		reset-gpios = <&r_pio 0 7 GPIO_ACTIVE_LOW>; /* PL7 */
-		post-power-on-delay-ms = <200>;
-	};
 };
 
 &codec {
