@@ -45,6 +45,14 @@ fs_overlay_dir="filesystem"
 # No need to edit under this #
 ##############################
 
+# Basic function we use to make sure we did not fail
+runtest() {
+  if [ $1 -ne 0 ]; then
+    echo "Build Failed!"
+    exit 1
+  fi
+}
+
 # Check to make sure this is ran by root
 if [ $EUID -ne 0 ]; then
   echo "DEB-BUILDER: this tool must be run as root"
@@ -93,6 +101,7 @@ cd $buildenv/git
 git clone https://github.com/apritzel/arm-trusted-firmware.git --depth 1 -b allwinner
 cd arm-trusted-firmware
 make PLAT=sun50iw1p1 bl31
+runtest $?
 export BL31=$buildenv/git/arm-trusted-firmware/build/sun50iw1p1/release/bl31.bin
 cd $buildenv/git
 
@@ -104,6 +113,7 @@ if [[ -d $ourpath/patches/u-boot/ ]]; then
 	for file in $ourpath/patches/u-boot/*.patch; do
 		echo "Applying u-boot patch $file"
 		git apply $file
+    runtest $?
 	done
 fi
 # Apply overlay if it exists
@@ -118,6 +128,7 @@ for board in "${supported_devices[@]}"; do
 	make distclean
 	make $cfg
 	make -j`getconf _NPROCESSORS_ONLN`
+  runtest $?
 	touch $ourpath/requires/$board.uboot
 	dd if=spl/sunxi-spl.bin of=$ourpath/requires/$board.uboot bs=8k
 	dd if=u-boot.itb of=$ourpath/requires/$board.uboot bs=8k seek=4
@@ -133,6 +144,7 @@ if [[ -d $ourpath/patches/kernel/ ]]; then
 	for file in $ourpath/patches/kernel/*.patch; do
 		echo "Applying kernel patch $file"
 		git apply $file
+    runtest $?
 	done
 fi
 # Apply overlay if it exists
@@ -142,6 +154,7 @@ if [[ -d $ourpath/overlay/$kernel_overlay_dir/ ]]; then
 fi
 make $kernel_config
 make -j`getconf _NPROCESSORS_ONLN` deb-pkg dtbs
+runtest $?
 for i in "${supported_devices[@]}"; do
 	cp arch/arm64/boot/dts/allwinner/$i.dtb $ourpath/requires/
 done

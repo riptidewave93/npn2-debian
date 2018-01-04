@@ -209,13 +209,14 @@
 	phy-supply = <&reg_gmac_3v3>;
 	phy-handle = <&ext_rgmii_phy>;
 	phy-mode = "rgmii";
+  allwinner,leds-active-low;
 	status = "okay";
 };
 
 &external_mdio {
-	ext_rgmii_phy: ethernet-phy@7 {
+	ext_rgmii_phy: ethernet-phy@1 {
 		compatible = "ethernet-phy-ieee802.3-c22";
-		reg = <7>;
+		reg = <0>;
 	};
 };
 
@@ -240,6 +241,7 @@
 
 &mmc2_8bit_pins {
 	drive-strength = <40>;
+  bias-pull-up;
 };
 
 &ohci0 {

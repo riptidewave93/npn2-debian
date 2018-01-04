@@ -54,6 +54,7 @@
 	aliases {
 		serial0 = &uart0;
 		ethernet0 = &emac;
+    i2c5 = &r_i2c;
 	};
 
 	chosen {
@@ -65,6 +66,14 @@
 		regulator-name = "vcc3v3";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
+	};
+
+  r_i2c: i2c@01f02400 {
+		compatible = "allwinner,sun6i-a31-i2c";
+		reg = <0x01f02400 0x400>;
+		status = "okay";
+		#address-cells = <1>;
+		#size-cells = <0>;
 	};
 };
 
@@ -79,8 +88,8 @@
 	phy = <&phy1>;
 	status = "okay";
 
-	phy1: ethernet-phy@7 {
-		reg = <7>;
+	phy1: ethernet-phy@1 {
+		reg = <0>;
 	};
 };
 
