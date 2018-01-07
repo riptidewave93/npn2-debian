@@ -9,7 +9,7 @@ Build script to build a Debian 9 image for NanoPi H5 based boards, as well as al
 ## Supported Boards
 Currently images for the following devices are generated:
 * FriendlyARM NanoPi Neo2
-* FriendlyARM NanoPi Neo Core2 (broken)
+* FriendlyARM NanoPi Neo Core2
 * FriendlyARM NanoPi Neo Plus2 (untested)
 
 ## Requirements
@@ -22,9 +22,8 @@ Currently images for the following devices are generated:
 - To cleanup and clear all builds, run `sudo ./build.sh clean`
 
 ## To Do
-* Fixup Core2 Support
+* Finish up Core2 Support
   - Get U-Boot ethernet working
-  - Fix kernel panic on boot
 * Bring back overlay support
 
 ## Notes

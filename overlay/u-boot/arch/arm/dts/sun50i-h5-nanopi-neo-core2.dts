@@ -47,14 +47,13 @@
 #include <dt-bindings/gpio/gpio.h>
 
 / {
-	model = "FriendlyARM NanoPi NEO Core 2";
+	model = "FriendlyARM NanoPi NEO Core2";
 	compatible = "friendlyarm,nanopi-neo-core2", "allwinner,sun50i-h5";
 	serial-number = "0000000000000000";
 
 	aliases {
 		serial0 = &uart0;
 		ethernet0 = &emac;
-    i2c5 = &r_i2c;
 	};
 
 	chosen {
@@ -69,12 +68,10 @@
 	};
 
   r_i2c: i2c@01f02400 {
-		compatible = "allwinner,sun6i-a31-i2c";
-		reg = <0x01f02400 0x400>;
-		status = "okay";
-		#address-cells = <1>;
-		#size-cells = <0>;
-	};
+    compatible = "allwinner,sun6i-a31-i2c";
+    reg = <0x01f02400 0x400>;
+    status = "okay";
+  };
 };
 
 &ehci1 {
@@ -88,18 +85,20 @@
 	phy = <&phy1>;
 	status = "okay";
 
-	phy1: ethernet-phy@1 {
-		reg = <0>;
+	phy1: ethernet-phy@7 {
+		reg = <7>;
 	};
 };
 
 &mmc0 {
+	compatible = "allwinner,sun50i-h5-mmc",
+		     "allwinner,sun50i-a64-mmc",
+		     "allwinner,sun5i-a13-mmc";
 	pinctrl-names = "default";
 	pinctrl-0 = <&mmc0_pins_a>, <&mmc0_cd_pin>;
 	vmmc-supply = <&reg_vcc3v3>;
 	bus-width = <4>;
-	cd-gpios = <&pio 5 6 GPIO_ACTIVE_HIGH>;
-	cd-inverted;
+	cd-gpios = <&pio 5 6 GPIO_ACTIVE_LOW>; /* PF6 */
 	status = "okay";
 };
 

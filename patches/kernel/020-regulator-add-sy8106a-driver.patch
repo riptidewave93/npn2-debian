@@ -59,24 +59,29 @@ index 95b1e86ae692..f5120252f86a 100644
  ccflags-$(CONFIG_REGULATOR_DEBUG) += -DDEBUG
 diff --git a/drivers/regulator/sy8106a-regulator.c b/drivers/regulator/sy8106a-regulator.c
 new file mode 100644
-index 000000000000..4babc95894e7
+index 0000000000000..72749656a22e8
 --- /dev/null
 +++ b/drivers/regulator/sy8106a-regulator.c
-@@ -0,0 +1,164 @@
+@@ -0,0 +1,167 @@
 +/*
 + * sy8106a-regulator.c - Regulator device driver for SY8106A
 + *
-+ * Copyright (C) 2016 Ondřej Jirman <megous@megous.com>
++ * Copyright (C) 2016  Ondřej Jirman <megous@megous.com>
 + *
-+ * This program is free software; you can redistribute it and/or
++ * This library is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU Library General Public
 + * License as published by the Free Software Foundation; either
 + * version 2 of the License, or (at your option) any later version.
 + *
-+ * This program is distributed in the hope that it will be useful,
++ * This library is distributed in the hope that it will be useful,
 + * but WITHOUT ANY WARRANTY; without even the implied warranty of
 + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 + * Library General Public License for more details.
++ *
++ * You should have received a copy of the GNU Library General Public
++ * License along with this library; if not, write to the
++ * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
++ * Boston, MA  02110-1301, USA.
 + */
 +
 +#include <linux/err.h>
@@ -102,23 +107,23 @@ index 000000000000..4babc95894e7
 +	.val_bits = 8,
 +};
 +
-+static int sy8106a_set_voltage_sel(struct regulator_dev *rdev, unsigned int sel)
++static int sy8106a_set_voltage_sel(struct regulator_dev *rdev, unsigned sel)
 +{
-+	/* We use our set_voltage_sel in order to avoid unnecessary I2C
-+	 * chatter, because the regulator_get_voltage_sel_regmap using
-+	 * apply_bit would perform 4 unnecessary transfers instead of one,
-+	 * increasing the chance of error.
++	/* We use our set_voltage_sel in order to avoid unnecessary I2C chatter,
++	 * because the regulator_get_voltage_sel_regmap using apply_bit
++	 * would perform 4 unnecessary transfers instead of one, increasing the
++	 * chance of error.
 +	 */
 +	return regmap_write(rdev->regmap, rdev->desc->vsel_reg,
 +			    sel | SY8106A_GO_BIT);
 +}
 +
 +static const struct regulator_ops sy8106a_ops = {
++	.is_enabled = regulator_is_enabled_regmap,
 +	.set_voltage_sel = sy8106a_set_voltage_sel,
 +	.set_voltage_time_sel = regulator_set_voltage_time_sel,
 +	.get_voltage_sel = regulator_get_voltage_sel_regmap,
 +	.list_voltage = regulator_list_voltage_linear,
-+	/* Enabling/disabling the regulator is not yet implemented */
 +};
 +
 +/* Default limits measured in millivolts and milliamps */
@@ -136,11 +141,10 @@ index 000000000000..4babc95894e7
 +	.uV_step = (SY8106A_STEP_MV * 1000),
 +	.vsel_reg = SY8106A_REG_VOUT1_SEL,
 +	.vsel_mask = SY8106A_REG_VOUT1_SEL_MASK,
-+	/*
-+	 * This ramp_delay is a conservative default value which works on
-+	 * H3/H5 boards VDD-CPUX situations.
-+	 */
-+	.ramp_delay = 200,
++	.enable_reg = SY8106A_REG_VOUT_COM,
++	.enable_mask = SY8106A_DISABLE_REG,
++	.disable_val = SY8106A_DISABLE_REG,
++	.enable_is_inverted = 1,
 +	.owner = THIS_MODULE,
 +};
 +
@@ -174,11 +178,10 @@ index 000000000000..4babc95894e7
 +	config.driver_data = chip;
 +
 +	config.of_node = dev->of_node;
-+	config.init_data = of_get_regulator_init_data(dev, dev->of_node,
-+						      &sy8106a_reg);
-+
-+	if (!config.init_data)
++	config.init_data = of_get_regulator_init_data(dev, dev->of_node, &sy8106a_reg);
++	if (!config.init_data) {
 +		return -ENOMEM;
++	}
 +
 +	/* Probe regulator */
 +	error = regmap_read(chip->regmap, SY8106A_REG_VOUT1_SEL, &selector);
