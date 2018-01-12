@@ -24,7 +24,7 @@ Currently images for the following devices are generated:
 ## To Do
 * Finish up Core2 Support
   - Get U-Boot ethernet working
-* Bring back overlay support
+* Bring back kernel overlay support
 
 ## Notes
 
