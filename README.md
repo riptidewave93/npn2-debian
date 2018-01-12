@@ -4,7 +4,7 @@ Build script to build a Debian 9 image for NanoPi H5 based boards, as well as al
 
 - Mainline Linux Kernel - [4.15-rc6](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tag/?h=v4.15-rc6)
 - Arm Trusted Firmware - [allwinner/sunxi branch](https://github.com/apritzel/arm-trusted-firmware/tree/allwinner)
-- Mainline U-Boot [v2017.11](https://github.com/u-boot/u-boot/tree/v2017.11)
+- Mainline U-Boot [v2018.01](https://github.com/u-boot/u-boot/tree/v2018.01)
 
 ## Supported Boards
 Currently images for the following devices are generated:
@@ -14,7 +14,7 @@ Currently images for the following devices are generated:
 
 ## Requirements
 
-- The following packages on your build host: `bc binfmt-support build-essential debootstrap device-tree-compiler dosfstools fakeroot git kpartx lvm2 parted qemu qemu-user-static wget`
+- The following packages on your build host: `bc binfmt-support build-essential debootstrap device-tree-compiler dosfstools fakeroot git kpartx lvm2 parted qemu qemu-user-static swig wget`
 
 ## Usage
 - Just run `sudo ./build.sh`.

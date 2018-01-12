@@ -234,55 +234,6 @@ int board_init(void)
 	i2c_init_board();
 #endif
 
-#ifndef CONFIG_SPL_BUILD
-#if defined(CONFIG_SUNXI_SY8106A)
-#include <i2c.h>
-
-#define SY8106A_VOUT1_SEL_ENABLE (1 << 7)
-#define SY8106A_VOUT1_1200MV	    ((1200-680)/10 | SY8106A_VOUT1_SEL_ENABLE)
-	int i = 0;
-	for(i=0; i<3; i++) {
-		if (clock_get_pll1() < CONFIG_SYS_CLK_FREQ) {
-			int ret = -1;
-			int power_failed = 0;
-			u8 data = SY8106A_VOUT1_1200MV; 	/* 1.20 V */
-			struct udevice *i2c_dev;
-			int busnum = 5;
-			ret = i2c_get_chip_for_busnum(busnum, 0x65, 1, &i2c_dev);
-			if (ret) {
-				printf("%s: no bus %d\n", __func__, busnum);
-			}
-			ret = dm_i2c_write(i2c_dev, 1, &data, 1);
-			if (ret) {
-				printf("%s: fail to i2c_write sy8106a", __func__);
-			}
-			udelay(100);
-			data = 0;
-			ret = dm_i2c_read(i2c_dev, 1, &data, 1);
-			if (ret) {
-				printf("%s: fail to i2c_read sy8106a", __func__);
-			}
-			printf("Sy8106a: %dmv\n", (data & ~(SY8106A_VOUT1_SEL_ENABLE)) * 10 + 680);
-			if (data != SY8106A_VOUT1_1200MV)
-				power_failed = 1;
-			else
-				power_failed = 0;
-
-			if (!power_failed) {
-				udelay(100);
-				clock_set_pll1(CONFIG_SYS_CLK_FREQ);
-				break;
-			}
-			else {
-				printf("%s: fail to init sy8106a\n", __func__);
-				if (i == 3)
-					hang();
-			}
-		}
-	}
-#endif
-#endif
-
 	/* Uses dm gpio code so do this here and not in i2c_init_board() */
 	return soft_i2c_board_init();
 }
@@ -621,13 +572,12 @@ void sunxi_board_init(void)
 	 * assured it's being powered with suitable core voltage
 	 */
 	if (!power_failed)
-#if defined(CONFIG_SUNXI_SY8106A)
-		printf("CPU Freq: %dMHz\n", clock_get_pll1()/1000000);
-#else
 		clock_set_pll1(CONFIG_SYS_CLK_FREQ);
-#endif
 	else
 		printf("Failed to set core voltage! Can't set CPU frequency\n");
+#if defined(CONFIG_MACH_SUN50I_H5)
+	printf("CPU Freq: %dMHz\n", clock_get_pll1()/1000000);
+#endif
 }
 #endif
 
