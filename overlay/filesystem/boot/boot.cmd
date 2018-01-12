@@ -9,13 +9,13 @@ setenv kernel "Image"
 setenv overlay_prefix "sun50i-h5"
 
 # Import and load any custom settings
-if test -e mmc 0 config.txt; then
-	fatload mmc 0 ${load_addr} config.txt
+if test -e mmc ${mmc_bootdev} config.txt; then
+	fatload mmc ${mmc_bootdev} ${load_addr} config.txt
 	env import -t ${load_addr} ${filesize}
 fi
 
 # Load FDT
-fatload mmc 0 ${fdt_addr_r} ${fdtfile}
+fatload mmc ${mmc_bootdev} ${fdt_addr_r} ${fdtfile}
 fdt addr ${fdt_addr_r} ${filesize}
 fdt resize 0x10000
 
@@ -26,9 +26,9 @@ fdt set / serial-number ${serial#}
 # Set cmdline
 setenv bootargs console=ttyS0,115200 earlyprintk root=/dev/mmcblk0p2 rootfstype=ext4 rw rootwait fsck.repair=${fsck.repair} panic=10 ${extra}
 
-# Load kernel and ramdisk
-fatload mmc 0 ${kernel_addr_r} ${kernel}
-fatload mmc 0 ${ramdisk_addr_r} ${ramdisk}
+# Boot our image
+fatload mmc ${mmc_bootdev} ${kernel_addr_r} ${kernel}
+fatload mmc ${mmc_bootdev} ${ramdisk_addr_r} ${ramdisk}
 
 # Boot the system
 booti ${kernel_addr_r} ${ramdisk_addr_r}:${filesize} ${fdt_addr_r}
