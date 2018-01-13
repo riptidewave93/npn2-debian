@@ -30,7 +30,7 @@ uboot_overlay_dir="u-boot"
 
 # Kernel settings
 kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
-kernel_branch="v4.15-rc6"
+kernel_branch="v4.15-rc7"
 kernel_config="nanopi_h5_defconfig" # Global config for all boards
 kernel_overlay_dir="kernel"
 
@@ -245,8 +245,7 @@ deb-src $deb_mirror $deb_release main contrib non-free" > etc/apt/sources.list
 
 # Mounts
 echo "proc            /proc           proc    defaults        0       0
-/dev/mmcblk0p1  /boot           vfat    defaults        0       0
-/dev/mmcblk0p2	/		ext4	defaults	0	1" > etc/fstab
+/dev/mmcblk0p1  /boot           vfat    defaults        0       1" > etc/fstab
 
 # Hostname
 echo "${distrib_name}" > etc/hostname

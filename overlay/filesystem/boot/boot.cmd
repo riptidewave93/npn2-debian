@@ -24,7 +24,7 @@ fdt set ethernet0 local-mac-address ${ethaddr}
 fdt set / serial-number ${serial#}
 
 # Set cmdline
-setenv bootargs console=ttyS0,115200 earlyprintk root=/dev/mmcblk0p2 rootfstype=ext4 rw rootwait fsck.repair=${fsck.repair} panic=10 ${extra}
+setenv bootargs console=ttyS0,115200 earlyprintk root=/dev/mmcblk${mmc_bootdev}p2 rootfstype=ext4 rw rootwait fsck.repair=${fsck.repair} panic=10 ${extra}
 
 # Boot our image
 fatload mmc ${mmc_bootdev} ${kernel_addr_r} ${kernel}
