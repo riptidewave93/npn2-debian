@@ -22,8 +22,6 @@ Currently images for the following devices are generated:
 - To cleanup and clear all builds, run `sudo ./build.sh clean`
 
 ## To Do
-* Finish up Core2 Support
-  - Get U-Boot ethernet working
 * Bring back kernel overlay support
 
 ## Notes

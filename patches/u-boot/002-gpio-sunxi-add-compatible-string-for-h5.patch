@@ -1,0 +1,24 @@
+From a33b284a7657546699d917f07d2ac634a8e9ffe9 Mon Sep 17 00:00:00 2001
+From: Chris Blake <chris@servernetworktech.com>
+Date: Sun, 14 Jan 2018 11:31:16 -0600
+Subject: [PATCH] gpio: sunxi: Add compatible string for H5 PIO
+
+Due to the changes in https://github.com/linux-sunxi/u-boot-sunxi/commit/8faac0941cd409c6ff3738fbf658de2296f48e9a, allwinner,sun50i-h5-pinctrl needs to be defined otherwise PIO does not work on H5 based boards.
+
+Signed-off-by: Chris Blake <chrisrblake93@gmail.com>
+---
+ drivers/gpio/sunxi_gpio.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/gpio/sunxi_gpio.c b/drivers/gpio/sunxi_gpio.c
+index b47cc66c583..3cf01b6e369 100644
+--- a/drivers/gpio/sunxi_gpio.c
++++ b/drivers/gpio/sunxi_gpio.c
+@@ -345,6 +345,7 @@ static const struct udevice_id sunxi_gpio_ids[] = {
+ 	ID("allwinner,sun4i-a10-pinctrl",	a_all),
+ 	ID("allwinner,sun5i-a10s-pinctrl",	a_all),
+ 	ID("allwinner,sun5i-a13-pinctrl",	a_all),
++	ID("allwinner,sun50i-h5-pinctrl",	a_all),
+ 	ID("allwinner,sun6i-a31-pinctrl",	a_all),
+ 	ID("allwinner,sun6i-a31s-pinctrl",	a_all),
+ 	ID("allwinner,sun7i-a20-pinctrl",	a_all),
