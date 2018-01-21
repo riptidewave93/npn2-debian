@@ -2,7 +2,7 @@
 
 Build script to build a Debian 9 image for NanoPi H5 based boards, as well as all dependencies. This includes the following:
 
-- Mainline Linux Kernel - [4.15-rc7](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tag/?h=v4.15-rc7)
+- Mainline Linux Kernel - [4.15-rc8](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tag/?h=v4.15-rc8)
 - Arm Trusted Firmware - [allwinner/sunxi branch](https://github.com/apritzel/arm-trusted-firmware/tree/allwinner)
 - Mainline U-Boot [v2018.01](https://github.com/u-boot/u-boot/tree/v2018.01)
 
@@ -22,6 +22,7 @@ Currently images for the following devices are generated:
 - To cleanup and clear all builds, run `sudo ./build.sh clean`
 
 ## To Do
+* Fixup /boot mounting when flashed to emmc
 * Bring back kernel overlay support
 
 ## Notes
