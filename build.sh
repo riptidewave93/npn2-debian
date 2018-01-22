@@ -286,6 +286,10 @@ rm -f /etc/udev/rules.d/70-persistent-net.rules
 sed -i 's|#PermitRootLogin prohibit-password|PermitRootLogin yes|g' /etc/ssh/sshd_config
 echo 'HWCLOCKACCESS=yes' >> /etc/default/hwclock
 echo 'RAMTMP=yes' >> /etc/default/tmpfs
+apt-get install -y wireless-tools wpasupplicant firmware-brcm80211
+wget http://ftp.us.debian.org/debian/pool/non-free/f/firmware-nonfree/firmware-realtek_20161130-3_all.deb -O /root/firmware-realtek_20161130-3_all.deb
+dpkg -i /root/firmware-realtek_20161130-3_all.deb
+rm /root/firmware-realtek_20161130-3_all.deb
 rm -f third-stage
 EOF
 chmod +x third-stage
