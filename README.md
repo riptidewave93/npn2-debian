@@ -1,10 +1,12 @@
 # npn2-debian
 
-Build script to build a Debian 9 image for NanoPi H5 based boards, as well as all dependencies. This includes the following:
+Build script to build a Debian 9 image for FriendlyARM NanoPi H5 based boards, as well as all dependencies. This includes the following:
 
-- Mainline Linux Kernel - [4.15-rc8](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tag/?h=v4.15-rc8)
+- Mainline Linux Kernel - [4.15-rc9](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tag/?h=v4.15-rc9)
 - Arm Trusted Firmware - [allwinner/sunxi branch](https://github.com/apritzel/arm-trusted-firmware/tree/allwinner)
-- Mainline U-Boot [v2018.01](https://github.com/u-boot/u-boot/tree/v2018.01)
+- Mainline U-Boot - [v2018.01](https://github.com/u-boot/u-boot/tree/v2018.01)
+
+Note that there are patches/modifications applied to the kernel and u-boot. The changes made can be seen in the `./patches` and `./overlay` directories.
 
 ## Supported Boards
 Currently images for the following devices are generated:
@@ -21,9 +23,12 @@ Currently images for the following devices are generated:
 - Completed builds output to `./output`
 - To cleanup and clear all builds, run `sudo ./build.sh clean`
 
+## Flashing
+- Take your completed image from `./output` and extract it with gunzip
+- Flash directly to an SD card. Example: `dd if=./neo-core2*.img of=/dev/mmcblk0 bs=4M conv=fdatasync`
+
 ## To Do
-* Fixup /boot mounting when flashed to emmc
-* Bring back kernel overlay support
+* Bring back kernel overlay support (hoping this gets mainlined for arm64)
 
 ## Notes
 

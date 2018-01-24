@@ -68,13 +68,13 @@
 
 		pwr {
 			label = "nanopi:red:pwr";
-			gpios = <&r_pio 0 10 GPIO_ACTIVE_HIGH>;
+			gpios = <&r_pio 0 10 GPIO_ACTIVE_HIGH>; /* PL10 */
 			default-state = "on";
 		};
 
 		status {
 			label = "nanopi:green:status";
-			gpios = <&pio 0 10 GPIO_ACTIVE_HIGH>;
+			gpios = <&pio 0 10 GPIO_ACTIVE_HIGH>; /* PA10 */
 		};
 	};
 
@@ -86,7 +86,7 @@
 		regulator-max-microvolt = <3300000>;
 		startup-delay-us = <100000>;
 		enable-active-high;
-		gpio = <&pio 3 6 GPIO_ACTIVE_HIGH>;
+		gpio = <&pio 3 6 GPIO_ACTIVE_HIGH>; /* PD6 */
 	};
 
   reg_usb0_vbus: usb0-vbus {
@@ -198,6 +198,14 @@
 	status = "okay";
 };
 
+&ehci1 {
+	status = "okay";
+};
+
+&ehci2 {
+	status = "okay";
+};
+
 &ehci3 {
 	status = "okay";
 };
@@ -244,6 +252,14 @@
 };
 
 &ohci0 {
+	status = "okay";
+};
+
+&ohci1 {
+	status = "okay";
+};
+
+&ohci2 {
 	status = "okay";
 };
 
