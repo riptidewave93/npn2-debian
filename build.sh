@@ -194,6 +194,7 @@ p
 1
 
 
+a
 w
 EOF
 
@@ -244,7 +245,7 @@ echo "127.0.1.1	${distrib_name}" >> etc/host
 echo "auto lo
 iface lo inet loopback
 
-auto eth0
+allow-hotplug eth0
 iface eth0 inet dhcp
 iface eth0 inet6 dhcp
 " > etc/network/interfaces
@@ -348,19 +349,17 @@ update-rc.d ssh defaults
 # Resize root disk
 fdisk /dev/mmcblk0 << LEL
 d
-2
 
 n
 p
-2
+1
 
 
-n
-
+a
 w
 LEL
 partprobe
-resize2fs /dev/mmcblk0p2
+resize2fs /dev/mmcblk0p1
 sync
 
 # Fixup initramfs for fsck on boot to work
