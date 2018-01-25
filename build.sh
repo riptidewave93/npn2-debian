@@ -329,7 +329,7 @@ LANG=C chroot $rootfs /cleanup
 rm -f etc/ssh/ssh_host_*
 echo "DEB-BUILDER: Deleted SSH Host Keys. Will re-generate at first boot by user"
 cat << EOF > etc/init.d/first_boot
-#!/bin/sh
+#!/bin/bash
 ### BEGIN INIT INFO
 # Provides:          first_boot
 # Required-Start:    $remote_fs $syslog
@@ -346,8 +346,15 @@ ssh-keygen -f /etc/ssh/ssh_host_dsa_key -t dsa -N ""
 service ssh start
 update-rc.d ssh defaults
 
+# Figure out which mmc we are on
+if [[ "\$(cat /proc/cmdline)" = *"root=/dev/mmcblk0"* ]]; then
+  bootedmmc="/dev/mmcblk0"
+else
+  bootedmmc="/dev/mmcblk1"
+fi
+
 # Resize root disk
-fdisk /dev/mmcblk0 << LEL
+fdisk \${bootedmmc} << LEL
 d
 
 n
@@ -359,7 +366,7 @@ a
 w
 LEL
 partprobe
-resize2fs /dev/mmcblk0p1
+resize2fs \${bootedmmc}p1
 sync
 
 # Fixup initramfs for fsck on boot to work
