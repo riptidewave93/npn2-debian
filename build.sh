@@ -8,6 +8,7 @@ mydate=`date +%Y%m%d-%H%M`
 
 # Size of the image and boot partitions
 imgsize="2G"
+bootsize="100M"
 
 # Location of the build environment, where the image will be mounted during build
 ourpath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -193,8 +194,15 @@ n
 p
 1
 
-
++$bootsize
+t
+c
 a
+n
+p
+2
+
+
 w
 EOF
 
@@ -205,8 +213,10 @@ partprobe
 device=`kpartx -va $image | sed -E 's/.*(loop[0-9])p.*/\1/g' | head -1`
 sleep 1 # Without this, we sometimes miss the mapper device!
 device="/dev/mapper/${device}"
-rootp=${device}p1
+bootp=${device}p1
+rootp=${device}p2
 echo "DEB-BUILDER: Formatting Partitions"
+mkfs.vfat $bootp -n BOOT
 mkfs.ext4 $rootp -L root
 mkdir -p $rootfs
 mount $rootp $rootfs
@@ -218,8 +228,8 @@ debootstrap --no-check-gpg --foreign --arch $deb_arch $deb_release $rootfs $deb_
 cp /usr/bin/qemu-aarch64-static usr/bin/
 LANG=C chroot $rootfs /debootstrap/debootstrap --second-stage
 
-# Make our boot partition
-mkdir -p $rootfs/boot
+# Mount the boot partition
+mount -t vfat $bootp $bootfs
 
 # Now that things are mounted, copy over an overlay if it exists
 if [[ -d $ourpath/overlay/$fs_overlay_dir/ ]]; then
@@ -284,12 +294,6 @@ rm -f third-stage
 EOF
 chmod +x third-stage
 LANG=C chroot $rootfs /third-stage
-
-# Support for u-boot tools in userspace
-cat << EOF > etc/fw_env.config
-# MTD device name       Device offset   Env. size       Flash sector size
-/dev/mmcblk0               0x88000          0x20000         0x2000
-EOF
 
 # Setup our boot partition so we can actually boot
 # we also need to do some kernel moving n shit due to discrepencies in stuff
@@ -356,23 +360,35 @@ fi
 # Resize root disk
 fdisk \${bootedmmc} << LEL
 d
+2
 
 n
 p
-1
+2
 
 
-a
+n
+
 w
 LEL
 partprobe
-resize2fs \${bootedmmc}p1
+resize2fs \${bootedmmc}p2
 sync
 
 # Fixup initramfs for fsck on boot to work
 update-initramfs -u
 rm /boot/initramfs.cpio.gz
 mv /boot/initrd.img-* /boot/initramfs.cpio.gz
+
+# Add our mount for boot and mount it
+echo "\${bootedmmc}p1  /boot           vfat    defaults        0       1" >> /etc/fstab
+mount -a
+
+# Generate our u-boot env config file
+cat << UEV > etc/fw_env.config
+# MTD device name       Device offset   Env. size       Flash sector size
+\${bootedmmc}               0x88000          0x20000         0x2000
+UEV
 
 # Cleanup
 update-rc.d first_boot remove
@@ -387,6 +403,7 @@ cd $buildenv && cd ..
 
 # Unmount some partitions
 echo "DEB-BUILDER: Unmounting Partitions"
+umount $bootp
 umount $rootp
 kpartx -d $image
 
