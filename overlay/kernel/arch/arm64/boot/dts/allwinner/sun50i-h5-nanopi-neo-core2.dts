@@ -216,7 +216,6 @@
 	phy-supply = <&reg_gmac_3v3>;
 	phy-handle = <&ext_rgmii_phy>;
 	phy-mode = "rgmii";
-	allwinner,leds-active-low;
 	status = "okay";
 };
 
@@ -225,6 +224,10 @@
 		compatible = "ethernet-phy-ieee802.3-c22";
 		reg = <7>;
 	};
+};
+
+&i2c0 {
+	status = "okay";
 };
 
 &mmc0 {

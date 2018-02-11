@@ -54,6 +54,7 @@
 	aliases {
 		serial0 = &uart0;
 		ethernet0 = &emac;
+    i2c0 = &r_i2c;
 	};
 
 	chosen {
@@ -67,11 +68,11 @@
 		regulator-max-microvolt = <3300000>;
 	};
 
-  r_i2c: i2c@01f02400 {
-    compatible = "allwinner,sun6i-a31-i2c";
-    reg = <0x01f02400 0x400>;
-    status = "okay";
-  };
+	r_i2c: i2c@01f02400 {
+		compatible = "allwinner,sun6i-a31-i2c";
+		reg = <0x01f02400 0x400>;
+		status = "okay";
+	};
 };
 
 &ehci1 {
@@ -92,8 +93,8 @@
 
 &mmc0 {
 	compatible = "allwinner,sun50i-h5-mmc",
-		     "allwinner,sun50i-a64-mmc",
-		     "allwinner,sun5i-a13-mmc";
+							 "allwinner,sun50i-a64-mmc",
+							 "allwinner,sun5i-a13-mmc";
 	pinctrl-names = "default";
 	pinctrl-0 = <&mmc0_pins_a>, <&mmc0_cd_pin>;
 	vmmc-supply = <&reg_vcc3v3>;

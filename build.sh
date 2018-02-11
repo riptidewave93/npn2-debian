@@ -29,8 +29,8 @@ uboot_branch="v2018.01"
 uboot_overlay_dir="u-boot"
 
 # Kernel settings
-kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
-kernel_branch="v4.15-rc9"
+kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
+kernel_branch="v4.15.2"
 kernel_config="nanopi_h5_defconfig" # Global config for all boards
 kernel_overlay_dir="kernel"
 
@@ -102,10 +102,8 @@ cd $buildenv/git
 git clone https://github.com/apritzel/arm-trusted-firmware.git --depth 1 -b allwinner
 cd arm-trusted-firmware
 make PLAT=sun50iw1p1 bl31
-#make PLAT=sun50iw1p1 DEBUG=1 bl31
 runtest $?
 export BL31=$buildenv/git/arm-trusted-firmware/build/sun50iw1p1/release/bl31.bin
-#export BL31=$buildenv/git/arm-trusted-firmware/build/sun50iw1p1/debug/bl31.bin
 cd $buildenv/git
 
 # Build U-Boot
