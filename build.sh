@@ -30,7 +30,7 @@ uboot_overlay_dir="u-boot"
 
 # Kernel settings
 kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
-kernel_branch="v4.15.2"
+kernel_branch="v4.15.5"
 kernel_config="nanopi_h5_defconfig" # Global config for all boards
 kernel_overlay_dir="kernel"
 
