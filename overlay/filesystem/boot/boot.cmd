@@ -13,6 +13,11 @@ if test -e mmc ${mmc_bootdev} config.txt; then
 	env import -t ${load_addr} ${filesize}
 fi
 
+# If this is first boot, save our env
+if test ! -e mmc ${mmc_bootdev} uboot.env; then
+	saveenv
+fi
+
 # Load FDT
 fatload mmc ${mmc_bootdev} ${fdt_addr_r} ${fdtfile}
 fdt addr ${fdt_addr_r} ${filesize}

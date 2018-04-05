@@ -1,0 +1,109 @@
+From d1d8a81d6c07552cd9bf8292bb93484e324083d0 Mon Sep 17 00:00:00 2001
+From: Chris Blake <chrisrblake93@gmail.com>
+Date: Thu, 5 Apr 2018 12:01:16 -0500
+Subject: [PATCH] env: Add auto probe for sunxi boards This adds the ability
+ for sunxi boards to save/load their uboot env on the actual booted mmc,
+ compared to what is statically set. This comes in handy when building a
+ shared image that could run on either internal mmc or an sd card.
+
+---
+ env/Kconfig | 11 +++++++++++
+ env/fat.c   | 43 +++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 54 insertions(+)
+
+diff --git a/env/Kconfig b/env/Kconfig
+index 35548721bdd..8e3185fa9bd 100644
+--- a/env/Kconfig
++++ b/env/Kconfig
+@@ -391,6 +391,17 @@ config ENV_FAT_DEVICE_AND_PART
+ 	                   If none, first valid partition in device D. If no
+ 	                   partition table then means device D.
+ 
++config ENV_FAT_DEVICE_AUTO_PROBE_SUNXI
++	bool "Enable auto detection of Device on SUNXI"
++	depends on ENV_IS_IN_FAT && ARCH_SUNXI
++	default n
++	help
++	  For SUNXI boards, which normally allow for multiple MMC devices, allow
++	  for automatic detection of which device to use for the u-boot env. This
++	  setting will ensure that your u-boot env will be saved to the same mmc
++	  device your system is booting from, instead of what is set to default
++	  by ENV_FAT_DEVICE_AND_PART.
++
+ config ENV_FAT_FILE
+ 	string "Name of the FAT file to use for the environemnt"
+ 	depends on ENV_IS_IN_FAT
+diff --git a/env/fat.c b/env/fat.c
+index 19f260e881a..bf3e90dbab2 100644
+--- a/env/fat.c
++++ b/env/fat.c
+@@ -31,6 +31,11 @@
+ # endif
+ #endif
+ 
++#if defined(CONFIG_ENV_FAT_DEVICE_AUTO_PROBE_SUNXI)
++#include <asm/io.h>
++#include <asm/arch/spl.h>
++#endif
++
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+ #ifdef CMD_SAVEENV
+@@ -47,9 +52,28 @@ static int env_fat_save(void)
+ 	if (err)
+ 		return err;
+ 
++#if defined(CONFIG_ENV_FAT_DEVICE_AUTO_PROBE_SUNXI)
++	int bootdev = readb(SPL_ADDR + 0x28);
++	char *dev_and_part;
++
++	/* Figure out which MMC we are on */
++	if (bootdev == 0) {
++		dev_and_part = "0:auto";
++	} else if (bootdev == 2) {
++		dev_and_part = "1:auto";
++	} else {
++		/* Just go default */
++		dev_and_part = CONFIG_ENV_FAT_DEVICE_AND_PART;
++	}
++	part = blk_get_device_part_str(CONFIG_ENV_FAT_INTERFACE,
++					dev_and_part,
++					&dev_desc, &info, 1);
++#else
+ 	part = blk_get_device_part_str(CONFIG_ENV_FAT_INTERFACE,
+ 					CONFIG_ENV_FAT_DEVICE_AND_PART,
+ 					&dev_desc, &info, 1);
++#endif
++
+ 	if (part < 0)
+ 		return 1;
+ 
+@@ -92,9 +116,28 @@ static int env_fat_load(void)
+ 	if (!strcmp(CONFIG_ENV_FAT_INTERFACE, "mmc"))
+ 		mmc_initialize(NULL);
+ 
++#if defined(CONFIG_ENV_FAT_DEVICE_AUTO_PROBE_SUNXI)
++	int bootdev = readb(SPL_ADDR + 0x28);
++	char *dev_and_part;
++
++	/* Figure out which MMC we are on */
++	if (bootdev == 0) {
++		dev_and_part = "0:auto";
++	} else if (bootdev == 2) {
++		dev_and_part = "1:auto";
++	} else {
++		/* Just go default */
++		dev_and_part = CONFIG_ENV_FAT_DEVICE_AND_PART;
++	}
++	part = blk_get_device_part_str(CONFIG_ENV_FAT_INTERFACE,
++					dev_and_part,
++					&dev_desc, &info, 1);
++#else
+ 	part = blk_get_device_part_str(CONFIG_ENV_FAT_INTERFACE,
+ 					CONFIG_ENV_FAT_DEVICE_AND_PART,
+ 					&dev_desc, &info, 1);
++#endif
++
+ 	if (part < 0)
+ 		goto err_env_relocate;
+ 

@@ -1,0 +1,178 @@
+From fc96abbd524e420545dff2593ee5c07d69caba39 Mon Sep 17 00:00:00 2001
+From: Chris Blake <chrisrblake93@gmail.com>
+Date: Thu, 5 Apr 2018 11:58:29 -0500
+Subject: [PATCH] sunxi: Add SY8106A workaround Currently the u-boot SY8106A
+ voltage regulator driver only works in the SPL. Issue is, sunxi boards are
+ out of space in the SPL so this workaround adds an implementation that is ran
+ in u-boot.
+
+---
+ arch/arm/include/asm/arch-sunxi/clock_sun6i.h |  1 +
+ arch/arm/mach-sunxi/Kconfig                   | 22 +++++++++++
+ arch/arm/mach-sunxi/clock_sun6i.c             | 18 ++++++++-
+ board/sunxi/board.c                           | 57 +++++++++++++++++++++++++++
+ 4 files changed, 97 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/include/asm/arch-sunxi/clock_sun6i.h b/arch/arm/include/asm/arch-sunxi/clock_sun6i.h
+index d328df9597d..96d854916d3 100644
+--- a/arch/arm/include/asm/arch-sunxi/clock_sun6i.h
++++ b/arch/arm/include/asm/arch-sunxi/clock_sun6i.h
+@@ -503,6 +503,7 @@ void clock_set_pll5(unsigned int clk, bool sigma_delta_enable);
+ void clock_set_pll10(unsigned int hz);
+ void clock_set_pll11(unsigned int clk, bool sigma_delta_enable);
+ void clock_set_mipi_pll(unsigned int hz);
++unsigned int clock_get_pll1(void);
+ unsigned int clock_get_pll3(void);
+ unsigned int clock_get_pll6(void);
+ unsigned int clock_get_mipi_pll(void);
+diff --git a/arch/arm/mach-sunxi/Kconfig b/arch/arm/mach-sunxi/Kconfig
+index b868f0e3500..6844eae9432 100644
+--- a/arch/arm/mach-sunxi/Kconfig
++++ b/arch/arm/mach-sunxi/Kconfig
+@@ -272,6 +272,28 @@ config MACH_SUN50I_H5
+ 
+ endchoice
+ 
++# Hack for CONFIG_SUNXI_SY8106A_HACK
++if MACH_SUN50I_H5
++
++config SUNXI_SY8106A_HACK
++	bool "H5 SY8106A Hack"
++	select R_I2C_ENABLE
++	default n
++	---help---
++	This enables a jank SY8106A driver within core u-boot, compared to
++	the SPL. Note that if this is enabled, SUNXI_SY8106A_HACK_DEV needs
++	to match the I2C bus in your DTB that has your SY8106A.
++
++config SUNXI_SY8106A_HACK_DEV
++	int "H5 SY8106A Hack DTS I2C #"
++	depends on SUNXI_SY8106A_HACK
++	default 5
++	---help---
++	Set the I2C # for the SUNXI_SYS8106A Hack. This number should match  what
++	is configured in your DTS.
++
++endif
++
+ # The sun8i SoCs share a lot, this helps to avoid a lot of "if A23 || A33"
+ config MACH_SUN8I
+ 	bool
+diff --git a/arch/arm/mach-sunxi/clock_sun6i.c b/arch/arm/mach-sunxi/clock_sun6i.c
+index 870ff5b1e09..6edcfdbfc63 100644
+--- a/arch/arm/mach-sunxi/clock_sun6i.c
++++ b/arch/arm/mach-sunxi/clock_sun6i.c
+@@ -107,7 +107,7 @@ void clock_init_uart(void)
+ #endif
+ }
+ 
+-#ifdef CONFIG_SPL_BUILD
++#if defined(CONFIG_SPL_BUILD) || defined(CONFIG_SUNXI_SY8106A_HACK)
+ void clock_set_pll1(unsigned int clk)
+ {
+ 	struct sunxi_ccm_reg * const ccm =
+@@ -144,6 +144,22 @@ void clock_set_pll1(unsigned int clk)
+ 	       CPU_CLK_SRC_PLL1 << CPU_CLK_SRC_SHIFT,
+ 	       &ccm->cpu_axi_cfg);
+ }
++
++unsigned int clock_get_pll1(void)
++{
++	struct sunxi_ccm_reg * const ccm =
++		(struct sunxi_ccm_reg *)SUNXI_CCM_BASE;
++	unsigned int pll1_cfg;
++	int k, n;
++
++	pll1_cfg = readl(&ccm->pll1_cfg);
++
++	k = (pll1_cfg >>  4) & 0x3;
++	n = (pll1_cfg >>  8) & 0x1f;
++
++	return (24000000 * (n+1) * (k+1));
++}
++
+ #endif
+ 
+ void clock_set_pll3(unsigned int clk)
+diff --git a/board/sunxi/board.c b/board/sunxi/board.c
+index e08e22f30c0..acdbdc9d3b8 100644
+--- a/board/sunxi/board.c
++++ b/board/sunxi/board.c
+@@ -250,6 +250,59 @@ int board_init(void)
+ 	i2c_init_board();
+ #endif
+ 
++#if !defined(CONFIG_SPL_BUILD) && defined(CONFIG_SUNXI_SY8106A_HACK)
++#include <i2c.h>
++
++#define SY8106A_I2C_ADDR	0x65
++#define SY8106A_VOUT1_SEL	1
++#define SY8106A_VOUT1_SEL_ENABLE	(1 << 7)
++#define SY8106A_VOUT1_1200MV	((1200-680)/10 | SY8106A_VOUT1_SEL_ENABLE)
++	int busnum = CONFIG_SUNXI_SY8106A_HACK_DEV;
++	int i = 0;
++	struct udevice *i2c_dev;
++
++	/* Probe for bus */
++	ret = i2c_get_chip_for_busnum(busnum, SY8106A_I2C_ADDR, 1, &i2c_dev);
++	if (ret) {
++		printf("%s: no bus %d\n", __func__, busnum);
++		hang();
++	}
++
++	/* Start loop to set voltage */
++	for(i=0; i<3; i++) {
++		int ret = -1;
++		u8 read_volt;
++		u8 set_volt = SY8106A_VOUT1_1200MV;
++
++		/* See if we are already set to our wanted voltage, if not, set it */
++		ret = dm_i2c_read(i2c_dev, SY8106A_VOUT1_SEL, &read_volt, 1);
++		if (ret) {
++			printf("%s: failed to i2c_read SY8106A", __func__);
++			continue;
++		}
++		if (read_volt != set_volt) {
++			ret = dm_i2c_write(i2c_dev, SY8106A_VOUT1_SEL, &set_volt, 1);
++			if (ret) {
++				printf("%s: failed to i2c_write SY8106A", __func__);
++			}
++			/* Re-do our loop */
++			continue;
++		} else {
++			/* Voltage is set, so do our thing */
++			udelay(100);
++			clock_set_pll1(CONFIG_SYS_CLK_FREQ);
++			break;
++		}
++	}
++	/* Have we failed multiple times? */
++	if (i == 3) {
++		printf("%s: failed to init SY8106A\n", __func__);
++		hang();
++	}
++
++printf("CPU Freq: %dMHz\n", clock_get_pll1()/1000000);
++#endif
++
+ 	/* Uses dm gpio code so do this here and not in i2c_init_board() */
+ 	return soft_i2c_board_init();
+ }
+@@ -583,6 +636,9 @@ void sunxi_board_init(void)
+ 	if (!gd->ram_size)
+ 		hang();
+ 
++
++/* If we are using this hack, we move this out of SPL and into u-boot */
++#if !defined CONFIG_SUNXI_SY8106A_HACK
+ 	/*
+ 	 * Only clock up the CPU to full speed if we are reasonably
+ 	 * assured it's being powered with suitable core voltage
+@@ -591,6 +647,7 @@ void sunxi_board_init(void)
+ 		clock_set_pll1(CONFIG_SYS_CLK_FREQ);
+ 	else
+ 		printf("Failed to set core voltage! Can't set CPU frequency\n");
++#endif
+ }
+ #endif
+ 

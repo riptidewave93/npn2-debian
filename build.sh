@@ -25,12 +25,12 @@ linaro_full_version="7.2.1-2017.11"
 
 # U-Boot settings
 uboot_repo="https://github.com/u-boot/u-boot.git"
-uboot_branch="v2018.01"
+uboot_branch="v2018.05-rc1"
 uboot_overlay_dir="u-boot"
 
 # Kernel settings
 kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
-kernel_branch="v4.15.7"
+kernel_branch="v4.16"
 kernel_config="nanopi_h5_defconfig" # Global config for all boards
 kernel_overlay_dir="kernel"
 
@@ -258,6 +258,12 @@ iface eth0 inet dhcp
 iface eth0 inet6 dhcp
 " > etc/network/interfaces
 
+# uboot env tools
+echo "
+# MTD device name       Device offset   Env. size       Flash sector size
+/boot/uboot.env         0x0             0x20000         0x2000
+" > etc/fw_env.config
+
 # Console settings
 echo "console-common	console-data/keymap/policy	select	Select keymap from full list
 console-common	console-data/keymap/full	select	us
@@ -381,12 +387,6 @@ mv /boot/initrd.img-* /boot/initramfs.cpio.gz
 # Add our mount for boot and mount it
 echo "\${bootedmmc}p1  /boot           vfat    defaults        0       1" >> /etc/fstab
 mount -a
-
-# Generate our u-boot env config file
-cat << UEV > etc/fw_env.config
-# MTD device name       Device offset   Env. size       Flash sector size
-\${bootedmmc}               0x88000          0x20000         0x2000
-UEV
 
 # Cleanup
 update-rc.d first_boot remove

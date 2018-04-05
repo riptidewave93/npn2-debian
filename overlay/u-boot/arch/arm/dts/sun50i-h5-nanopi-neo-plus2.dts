@@ -50,7 +50,6 @@
 / {
 	model = "FriendlyARM NanoPi NEO Plus 2";
 	compatible = "friendlyarm,nanopi-neo-plus2", "allwinner,sun50i-h5";
-	serial-number = "0000000000000000";
 
 	aliases {
 		serial0 = &uart0;
