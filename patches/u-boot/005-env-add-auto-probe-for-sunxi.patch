@@ -1,6 +1,6 @@
-From d1d8a81d6c07552cd9bf8292bb93484e324083d0 Mon Sep 17 00:00:00 2001
+From 39bb2059413bc35e4e930bf25e246fbc9e1661ee Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Thu, 5 Apr 2018 12:01:16 -0500
+Date: Fri, 20 Apr 2018 18:31:23 -0500
 Subject: [PATCH] env: Add auto probe for sunxi boards This adds the ability
  for sunxi boards to save/load their uboot env on the actual booted mmc,
  compared to what is statically set. This comes in handy when building a
@@ -12,10 +12,10 @@ Subject: [PATCH] env: Add auto probe for sunxi boards This adds the ability
  2 files changed, 54 insertions(+)
 
 diff --git a/env/Kconfig b/env/Kconfig
-index 35548721bdd..8e3185fa9bd 100644
+index f403906b6f..d66fc70072 100644
 --- a/env/Kconfig
 +++ b/env/Kconfig
-@@ -391,6 +391,17 @@ config ENV_FAT_DEVICE_AND_PART
+@@ -390,6 +390,17 @@ config ENV_FAT_DEVICE_AND_PART
  	                   If none, first valid partition in device D. If no
  	                   partition table then means device D.
  
@@ -34,7 +34,7 @@ index 35548721bdd..8e3185fa9bd 100644
  	string "Name of the FAT file to use for the environemnt"
  	depends on ENV_IS_IN_FAT
 diff --git a/env/fat.c b/env/fat.c
-index 19f260e881a..bf3e90dbab2 100644
+index 884eeb8c5f..89345e9e92 100644
 --- a/env/fat.c
 +++ b/env/fat.c
 @@ -31,6 +31,11 @@
@@ -78,9 +78,9 @@ index 19f260e881a..bf3e90dbab2 100644
  	if (part < 0)
  		return 1;
  
-@@ -92,9 +116,28 @@ static int env_fat_load(void)
- 	if (!strcmp(CONFIG_ENV_FAT_INTERFACE, "mmc"))
+@@ -94,9 +118,28 @@ static int env_fat_load(void)
  		mmc_initialize(NULL);
+ #endif
  
 +#if defined(CONFIG_ENV_FAT_DEVICE_AUTO_PROBE_SUNXI)
 +	int bootdev = readb(SPL_ADDR + 0x28);

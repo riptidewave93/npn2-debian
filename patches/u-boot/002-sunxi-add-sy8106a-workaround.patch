@@ -1,6 +1,6 @@
-From fc96abbd524e420545dff2593ee5c07d69caba39 Mon Sep 17 00:00:00 2001
+From 10a5155a346bd9efdcfaf6a40b48405e806d3d21 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Thu, 5 Apr 2018 11:58:29 -0500
+Date: Fri, 20 Apr 2018 18:18:39 -0500
 Subject: [PATCH] sunxi: Add SY8106A workaround Currently the u-boot SY8106A
  voltage regulator driver only works in the SPL. Issue is, sunxi boards are
  out of space in the SPL so this workaround adds an implementation that is ran
@@ -14,10 +14,10 @@ Subject: [PATCH] sunxi: Add SY8106A workaround Currently the u-boot SY8106A
  4 files changed, 97 insertions(+), 1 deletion(-)
 
 diff --git a/arch/arm/include/asm/arch-sunxi/clock_sun6i.h b/arch/arm/include/asm/arch-sunxi/clock_sun6i.h
-index d328df9597d..96d854916d3 100644
+index d35aa479f7..ab4d2bdb3d 100644
 --- a/arch/arm/include/asm/arch-sunxi/clock_sun6i.h
 +++ b/arch/arm/include/asm/arch-sunxi/clock_sun6i.h
-@@ -503,6 +503,7 @@ void clock_set_pll5(unsigned int clk, bool sigma_delta_enable);
+@@ -509,6 +509,7 @@ void clock_set_pll5(unsigned int clk, bool sigma_delta_enable);
  void clock_set_pll10(unsigned int hz);
  void clock_set_pll11(unsigned int clk, bool sigma_delta_enable);
  void clock_set_mipi_pll(unsigned int hz);
@@ -26,7 +26,7 @@ index d328df9597d..96d854916d3 100644
  unsigned int clock_get_pll6(void);
  unsigned int clock_get_mipi_pll(void);
 diff --git a/arch/arm/mach-sunxi/Kconfig b/arch/arm/mach-sunxi/Kconfig
-index b868f0e3500..6844eae9432 100644
+index b868f0e350..6844eae943 100644
 --- a/arch/arm/mach-sunxi/Kconfig
 +++ b/arch/arm/mach-sunxi/Kconfig
 @@ -272,6 +272,28 @@ config MACH_SUN50I_H5
@@ -59,7 +59,7 @@ index b868f0e3500..6844eae9432 100644
  config MACH_SUN8I
  	bool
 diff --git a/arch/arm/mach-sunxi/clock_sun6i.c b/arch/arm/mach-sunxi/clock_sun6i.c
-index 870ff5b1e09..6edcfdbfc63 100644
+index 870ff5b1e0..6edcfdbfc6 100644
 --- a/arch/arm/mach-sunxi/clock_sun6i.c
 +++ b/arch/arm/mach-sunxi/clock_sun6i.c
 @@ -107,7 +107,7 @@ void clock_init_uart(void)
@@ -95,7 +95,7 @@ index 870ff5b1e09..6edcfdbfc63 100644
  
  void clock_set_pll3(unsigned int clk)
 diff --git a/board/sunxi/board.c b/board/sunxi/board.c
-index e08e22f30c0..acdbdc9d3b8 100644
+index 322dd9e23a..d93b48a62a 100644
 --- a/board/sunxi/board.c
 +++ b/board/sunxi/board.c
 @@ -250,6 +250,59 @@ int board_init(void)
@@ -158,7 +158,7 @@ index e08e22f30c0..acdbdc9d3b8 100644
  	/* Uses dm gpio code so do this here and not in i2c_init_board() */
  	return soft_i2c_board_init();
  }
-@@ -583,6 +636,9 @@ void sunxi_board_init(void)
+@@ -582,6 +635,9 @@ void sunxi_board_init(void)
  	if (!gd->ram_size)
  		hang();
  
@@ -168,7 +168,7 @@ index e08e22f30c0..acdbdc9d3b8 100644
  	/*
  	 * Only clock up the CPU to full speed if we are reasonably
  	 * assured it's being powered with suitable core voltage
-@@ -591,6 +647,7 @@ void sunxi_board_init(void)
+@@ -590,6 +646,7 @@ void sunxi_board_init(void)
  		clock_set_pll1(CONFIG_SYS_CLK_FREQ);
  	else
  		printf("Failed to set core voltage! Can't set CPU frequency\n");

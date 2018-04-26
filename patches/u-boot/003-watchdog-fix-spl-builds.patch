@@ -1,6 +1,6 @@
-From f75cb2bc34f5d0c6610855b87cb8876ffe125853 Mon Sep 17 00:00:00 2001
+From 5ea68061f177da477dd11c649720110e8d8d7351 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Thu, 5 Apr 2018 11:59:56 -0500
+Date: Fri, 20 Apr 2018 18:19:38 -0500
 Subject: [PATCH] watchdog: Fix SPL builds when watchdog is enabled Without
  this fix, u-boot fails to comple as it tries to load watchdog.h during an SPL
  build. This breaks support for things such as the sunxi arch.
@@ -10,7 +10,7 @@ Subject: [PATCH] watchdog: Fix SPL builds when watchdog is enabled Without
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/include/watchdog.h b/include/watchdog.h
-index 64b59f107ad..c103698241f 100644
+index 52f4c506b0..614bf0e96a 100644
 --- a/include/watchdog.h
 +++ b/include/watchdog.h
 @@ -21,7 +21,7 @@

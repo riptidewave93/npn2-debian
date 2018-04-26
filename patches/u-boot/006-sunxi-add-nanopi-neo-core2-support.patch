@@ -1,22 +1,22 @@
-From aa25405983bc9cb98e6b8a79c47e49d85ccef669 Mon Sep 17 00:00:00 2001
+From e499c9cfe73b6530cd876b61c4b11ea76382ee5e Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Thu, 5 Apr 2018 12:02:16 -0500
+Date: Fri, 20 Apr 2018 18:36:43 -0500
 Subject: [PATCH] sunxi: Add NanoPi Neo Core2 Support This adds support for the
  NanoPi Neo Core2, a board based on the H5 SoC.
 
 ---
  arch/arm/dts/Makefile                       |   1 +
  arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts | 127 ++++++++++++++++++++++++++++
- configs/nanopi_neo_core2_defconfig          |  21 +++++
- 3 files changed, 149 insertions(+)
+ configs/nanopi_neo_core2_defconfig          |  19 +++++
+ 3 files changed, 147 insertions(+)
  create mode 100644 arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
  create mode 100644 configs/nanopi_neo_core2_defconfig
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index e983622fea5..d301c671df8 100644
+index 62fbf32a62..85d1a6c2a3 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -360,6 +360,7 @@ dtb-$(CONFIG_MACH_SUN8I_V3S) += \
+@@ -370,6 +370,7 @@ dtb-$(CONFIG_MACH_SUN8I_V3S) += \
  	sun8i-v3s-licheepi-zero.dtb
  dtb-$(CONFIG_MACH_SUN50I_H5) += \
  	sun50i-h5-nanopi-neo2.dtb \
@@ -26,7 +26,7 @@ index e983622fea5..d301c671df8 100644
  	sun50i-h5-orangepi-prime.dtb \
 diff --git a/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts b/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
 new file mode 100644
-index 00000000000..9eb663369f1
+index 0000000000..9eb663369f
 --- /dev/null
 +++ b/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
 @@ -0,0 +1,127 @@

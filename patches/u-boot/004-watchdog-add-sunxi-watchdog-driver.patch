@@ -1,6 +1,6 @@
-From 4b86d59a5f9601911fd155a25e14e06f54ced54d Mon Sep 17 00:00:00 2001
+From 172ab4ef1f2935363f7514ca43488e6ee3d9818c Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Thu, 5 Apr 2018 12:00:39 -0500
+Date: Fri, 20 Apr 2018 18:22:33 -0500
 Subject: [PATCH] watchdog: Add sunxi watchdog driver Based on the linux
  mainline driver, this adds support for the hardware watchdog timer found on
  sunxi boards.
@@ -14,7 +14,7 @@ Subject: [PATCH] watchdog: Add sunxi watchdog driver Based on the linux
  create mode 100644 drivers/watchdog/sunxi_wdt.c
 
 diff --git a/common/board_f.c b/common/board_f.c
-index ae8bdb7c5c0..0a485b844ef 100644
+index ae8bdb7c5c..0a485b844e 100644
 --- a/common/board_f.c
 +++ b/common/board_f.c
 @@ -92,7 +92,8 @@ static int init_func_watchdog_init(void)
@@ -28,7 +28,7 @@ index ae8bdb7c5c0..0a485b844ef 100644
  	puts("       Watchdog enabled\n");
  # endif
 diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index 8a66e479ab8..ddaf7e7d78b 100644
+index dca2c901ac..276403ba71 100644
 --- a/drivers/watchdog/Kconfig
 +++ b/drivers/watchdog/Kconfig
 @@ -20,6 +20,24 @@ config BCM2835_WDT
@@ -57,17 +57,17 @@ index 8a66e479ab8..ddaf7e7d78b 100644
  	bool "TI OMAP watchdog driver"
  	depends on ARCH_OMAP2PLUS
 diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
-index 4b97df3ab67..7efb3443b1a 100644
+index 4fee6dbd1f..ea13ab3bde 100644
 --- a/drivers/watchdog/Makefile
 +++ b/drivers/watchdog/Makefile
-@@ -23,3 +23,4 @@ obj-$(CONFIG_WDT_BCM6345) += bcm6345_wdt.o
- obj-$(CONFIG_BCM2835_WDT)       += bcm2835_wdt.o
+@@ -24,3 +24,4 @@ obj-$(CONFIG_BCM2835_WDT)       += bcm2835_wdt.o
  obj-$(CONFIG_WDT_ORION) += orion_wdt.o
  obj-$(CONFIG_WDT_CDNS) += cdns_wdt.o
+ obj-$(CONFIG_MPC8xx_WATCHDOG) += mpc8xx_wdt.o
 +obj-$(CONFIG_SUNXI_WDT) += sunxi_wdt.o
 diff --git a/drivers/watchdog/sunxi_wdt.c b/drivers/watchdog/sunxi_wdt.c
 new file mode 100644
-index 00000000000..a334dc5da0c
+index 0000000000..a334dc5da0
 --- /dev/null
 +++ b/drivers/watchdog/sunxi_wdt.c
 @@ -0,0 +1,102 @@

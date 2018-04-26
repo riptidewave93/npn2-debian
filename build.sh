@@ -25,12 +25,12 @@ linaro_full_version="7.2.1-2017.11"
 
 # U-Boot settings
 uboot_repo="https://github.com/u-boot/u-boot.git"
-uboot_branch="v2018.05-rc1"
+uboot_branch="v2018.05-rc2"
 uboot_overlay_dir="u-boot"
 
 # Kernel settings
 kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
-kernel_branch="v4.16"
+kernel_branch="v4.16.5"
 kernel_config="nanopi_h5_defconfig" # Global config for all boards
 kernel_overlay_dir="kernel"
 
