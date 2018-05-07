@@ -1,0 +1,50 @@
+From 7013abe27fb36fa958ca257deb77da60d0ef9981 Mon Sep 17 00:00:00 2001
+From: Chris Blake <chrisrblake93@gmail.com>
+Date: Wed, 2 May 2018 10:02:28 -0500
+Subject: [PATCH 05/11] clk: sunxi-ng: Limit pll_cpux P factor for rates >
+ 288MHz on H3 Kangd from
+ https://github.com/megous/linux/commit/30deeee551ccf10b03c79f9e3a6a07504f2bfc0d
+
+---
+ drivers/clk/sunxi-ng/ccu-sun8i-h3.c | 25 +++++++++++++------------
+ 1 file changed, 13 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/clk/sunxi-ng/ccu-sun8i-h3.c b/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
+index 9408ffd..62d0fab 100644
+--- a/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
++++ b/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
+@@ -31,18 +31,19 @@
+ #include "ccu-sun8i-h3.h"
+ 
+ static struct ccu_nkmp pll_cpux_clk = {
+-	.enable		= BIT(31),
+-	.lock		= BIT(28),
+-	.n			= _SUNXI_CCU_MULT(8, 5),
+-	.k			= _SUNXI_CCU_MULT(4, 2),
+-	.m			= _SUNXI_CCU_DIV_MAX(0, 2, 1),
+-	.p			= _SUNXI_CCU_DIV(16, 2),
+-	.common		= {
+-		.reg		= 0x000,
+-		.hw.init	= CLK_HW_INIT("pll-cpux",
+-								"osc24M",
+-								&ccu_nkmp_ops,
+-					      		CLK_SET_RATE_UNGATE),
++	.enable			= BIT(31),
++	.lock			= BIT(28),
++	.n				= _SUNXI_CCU_MULT(8, 5),
++	.k				= _SUNXI_CCU_MULT(4, 2),
++	.m				= _SUNXI_CCU_DIV_MAX(0, 2, 1),
++	.p				= _SUNXI_CCU_DIV(16, 2),
++	.max_rate_for_p = 288000000,
++	.common			= {
++		.reg			= 0x000,
++		.hw.init		= CLK_HW_INIT("pll-cpux",
++									"osc24M",
++									&ccu_nkmp_ops,
++					      			CLK_SET_RATE_UNGATE),
+ 	},
+ };
+ 
+-- 
+2.7.4
+

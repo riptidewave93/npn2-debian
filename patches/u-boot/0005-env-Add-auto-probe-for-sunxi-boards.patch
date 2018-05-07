@@ -1,9 +1,9 @@
-From 39bb2059413bc35e4e930bf25e246fbc9e1661ee Mon Sep 17 00:00:00 2001
+From f7f2d531cc23af22b32266d65f694aac90aed9da Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Fri, 20 Apr 2018 18:31:23 -0500
-Subject: [PATCH] env: Add auto probe for sunxi boards This adds the ability
- for sunxi boards to save/load their uboot env on the actual booted mmc,
- compared to what is statically set. This comes in handy when building a
+Date: Wed, 2 May 2018 09:34:44 -0500
+Subject: [PATCH 4/6] env: Add auto probe for sunxi boards This adds the
+ ability for sunxi boards to save/load their uboot env on the actual booted
+ mmc, compared to what is statically set. This comes in handy when building a
  shared image that could run on either internal mmc or an sd card.
 
 ---
@@ -12,7 +12,7 @@ Subject: [PATCH] env: Add auto probe for sunxi boards This adds the ability
  2 files changed, 54 insertions(+)
 
 diff --git a/env/Kconfig b/env/Kconfig
-index f403906b6f..d66fc70072 100644
+index f403906..d66fc70 100644
 --- a/env/Kconfig
 +++ b/env/Kconfig
 @@ -390,6 +390,17 @@ config ENV_FAT_DEVICE_AND_PART
@@ -34,22 +34,22 @@ index f403906b6f..d66fc70072 100644
  	string "Name of the FAT file to use for the environemnt"
  	depends on ENV_IS_IN_FAT
 diff --git a/env/fat.c b/env/fat.c
-index 884eeb8c5f..89345e9e92 100644
+index 5e5b1ef..5ba0db5 100644
 --- a/env/fat.c
 +++ b/env/fat.c
-@@ -31,6 +31,11 @@
- # endif
- #endif
+@@ -18,6 +18,11 @@
+ #include <fat.h>
+ #include <mmc.h>
  
 +#if defined(CONFIG_ENV_FAT_DEVICE_AUTO_PROBE_SUNXI)
 +#include <asm/io.h>
 +#include <asm/arch/spl.h>
 +#endif
 +
- DECLARE_GLOBAL_DATA_PTR;
- 
- #ifdef CMD_SAVEENV
-@@ -47,9 +52,28 @@ static int env_fat_save(void)
+ #ifdef CONFIG_SPL_BUILD
+ /* TODO(sjg@chromium.org): Figure out why this is needed */
+ # if !defined(CONFIG_TARGET_AM335X_EVM) || defined(CONFIG_SPL_OS_BOOT)
+@@ -44,9 +49,28 @@ static int env_fat_save(void)
  	if (err)
  		return err;
  
@@ -78,7 +78,7 @@ index 884eeb8c5f..89345e9e92 100644
  	if (part < 0)
  		return 1;
  
-@@ -94,9 +118,28 @@ static int env_fat_load(void)
+@@ -91,9 +115,28 @@ static int env_fat_load(void)
  		mmc_initialize(NULL);
  #endif
  
@@ -107,3 +107,6 @@ index 884eeb8c5f..89345e9e92 100644
  	if (part < 0)
  		goto err_env_relocate;
  
+-- 
+2.7.4
+

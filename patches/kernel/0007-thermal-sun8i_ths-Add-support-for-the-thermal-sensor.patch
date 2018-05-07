@@ -1,34 +1,96 @@
-From d3f293e6bff366c5b7eac93f1516d907db5e1f24 Mon Sep 17 00:00:00 2001
-From: Ondrej Jirman <megous@megous.com>
-Date: Sat, 25 Jun 2016 21:51:05 +0200
-Subject: [PATCH] thermal: sun8i_ths: Add support for the thermal sensor on
- Allwinner H3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+From aceb604ca15d85ddfc249d55a262f5b1c95e009f Mon Sep 17 00:00:00 2001
+From: Chris Blake <chrisrblake93@gmail.com>
+Date: Wed, 2 May 2018 10:16:19 -0500
+Subject: [PATCH 07/11] thermal: sun8i_ths: Add support for the thermal sensor
+ on Allwinner H3/H5 Kangd from https://github.com/megous/linux/tree/ths-4.16
 
-This patch adds support for the sun8i thermal sensor on
-Allwinner H3 SoC.
-
-Signed-off-by: Ondřej Jirman <megous@megous.com>
 ---
- drivers/thermal/Kconfig     |   7 ++
- drivers/thermal/Makefile    |   1 +
- drivers/thermal/sun8i_ths.c | 239 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 247 insertions(+)
+ .../devicetree/bindings/thermal/sun8i-ths.txt      |  24 +++
+ arch/arm/boot/dts/sunxi-h3-h5.dtsi                 |  18 ++
+ drivers/thermal/Kconfig                            |   7 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/sun8i_ths.c                        | 239 +++++++++++++++++++++
+ 5 files changed, 289 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/sun8i-ths.txt
  create mode 100644 drivers/thermal/sun8i_ths.c
 
+diff --git a/Documentation/devicetree/bindings/thermal/sun8i-ths.txt b/Documentation/devicetree/bindings/thermal/sun8i-ths.txt
+new file mode 100644
+index 0000000..ba12881
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/sun8i-ths.txt
+@@ -0,0 +1,24 @@
++* Thermal sensor driver for Allwinner H3 SoC
++
++Required properties:
++- compatible : "allwinner,sun8i-h3-ths"
++- reg : Address range of the thermal sensor registers
++- resets : Must contain phandles to reset controls matching the entries
++  of the names
++- reset-names : Must include the name "ahb"
++- clocks : Must contain phandles to clock controls matching the entries
++  of the names
++- clock-names : Must contain "ahb" for the bus gate and "ths" for the THS
++  clock
++
++Example:
++ths: ths@01c25000 {
++	#thermal-sensor-cells = <0>;
++	compatible = "allwinner,sun8i-h3-ths";
++	reg = <0x01c25000 0x400>;
++	interrupts = <GIC_SPI 63 IRQ_TYPE_LEVEL_HIGH>;
++	resets = <&bus_rst 136>;
++	reset-names = "ahb";
++	clocks = <&bus_gates 72>, <&ths_clk>;
++	clock-names = "ahb", "ths";
++};
+diff --git a/arch/arm/boot/dts/sunxi-h3-h5.dtsi b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
+index 7a83b15..6a3a887 100644
+--- a/arch/arm/boot/dts/sunxi-h3-h5.dtsi
++++ b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
+@@ -426,6 +426,18 @@
+ 			};
+ 		};
+ 
++		ths: ths@1c25000 {
++			#thermal-sensor-cells = <0>;
++			compatible = "allwinner,sun8i-h3-ths";
++			reg = <0x01c25000 0x400>,
++			      <0x01c14234 0x4>;
++			interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
++			resets = <&ccu RST_BUS_THS>;
++			reset-names = "ahb";
++			clocks = <&ccu CLK_BUS_THS>, <&ccu CLK_THS>;
++			clock-names = "ahb", "ths";
++		};
++
+ 		timer@1c20c00 {
+ 			compatible = "allwinner,sun4i-a10-timer";
+ 			reg = <0x01c20c00 0xa0>;
+@@ -731,6 +743,12 @@
+ 				pins = "PL11";
+ 				function = "s_cir_rx";
+ 			};
++
++	thermal-zones {
++		cpu_thermal: cpu_thermal {
++			polling-delay-passive = <330>;
++			polling-delay = <1000>;
++			thermal-sensors = <&ths 0>;
+ 		};
+ 	};
+ };
 diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 315ae2926e20f..472759fcb15f4 100644
+index b6adc54..adc9071 100644
 --- a/drivers/thermal/Kconfig
 +++ b/drivers/thermal/Kconfig
 @@ -413,6 +413,13 @@ depends on ARCH_BCM || ARCH_BRCMSTB || ARCH_BCM2835 || COMPILE_TEST
  source "drivers/thermal/broadcom/Kconfig"
  endmenu
-
+ 
 +config SUN8I_THS
 +	tristate "Thermal sensor driver for Allwinner H3"
-+	depends on MACH_SUN8I
++	depends on MACH_SUN8I || (ARM64 && ARCH_SUNXI)
 +	depends on OF
 +	help
 +	  Enable this to support thermal reporting on some newer Allwinner SoCs.
@@ -37,7 +99,7 @@ index 315ae2926e20f..472759fcb15f4 100644
  depends on ARCH_HAS_BANDGAP || COMPILE_TEST
  depends on HAS_IOMEM
 diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 610344eb3e033..dc8a24fddba95 100644
+index 610344e..dc8a24f 100644
 --- a/drivers/thermal/Makefile
 +++ b/drivers/thermal/Makefile
 @@ -61,3 +61,4 @@ obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
@@ -47,7 +109,7 @@ index 610344eb3e033..dc8a24fddba95 100644
 +obj-$(CONFIG_SUN8I_THS)		+= sun8i_ths.o
 diff --git a/drivers/thermal/sun8i_ths.c b/drivers/thermal/sun8i_ths.c
 new file mode 100644
-index 0000000000000..cfe7d1073b8c0
+index 0000000..cfe7d10
 --- /dev/null
 +++ b/drivers/thermal/sun8i_ths.c
 @@ -0,0 +1,239 @@
@@ -290,227 +352,6 @@ index 0000000000000..cfe7d1073b8c0
 +MODULE_AUTHOR("Ondřej Jirman <megous@megous.com>");
 +MODULE_DESCRIPTION("Thermal sensor driver for Allwinner H3 SoC");
 +MODULE_LICENSE("GPL v2");
-
-From e35179cb57f07bd91697124d7d1f979d0be2cde2 Mon Sep 17 00:00:00 2001
-From: Ondrej Jirman <megous@megous.com>
-Date: Sat, 25 Jun 2016 00:02:04 +0200
-Subject: [PATCH 06/26] dt-bindings: document sun8i_ths - H3 thermal sensor
- driver
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-This patch adds the binding documentation for the
-sun8i_ths driver. This is a driver for thermal sensor
-found in Allwinner H3 SoC.
-
-Signed-off-by: Ondřej Jirman <megous@megous.com>
----
- .../devicetree/bindings/thermal/sun8i-ths.txt      | 24 ++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/sun8i-ths.txt
-
-diff --git a/Documentation/devicetree/bindings/thermal/sun8i-ths.txt b/Documentation/devicetree/bindings/thermal/sun8i-ths.txt
-new file mode 100644
-index 0000000000000..ba1288165e90c
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/sun8i-ths.txt
-@@ -0,0 +1,24 @@
-+* Thermal sensor driver for Allwinner H3 SoC
-+
-+Required properties:
-+- compatible : "allwinner,sun8i-h3-ths"
-+- reg : Address range of the thermal sensor registers
-+- resets : Must contain phandles to reset controls matching the entries
-+  of the names
-+- reset-names : Must include the name "ahb"
-+- clocks : Must contain phandles to clock controls matching the entries
-+  of the names
-+- clock-names : Must contain "ahb" for the bus gate and "ths" for the THS
-+  clock
-+
-+Example:
-+ths: ths@01c25000 {
-+	#thermal-sensor-cells = <0>;
-+	compatible = "allwinner,sun8i-h3-ths";
-+	reg = <0x01c25000 0x400>;
-+	interrupts = <GIC_SPI 63 IRQ_TYPE_LEVEL_HIGH>;
-+	resets = <&bus_rst 136>;
-+	reset-names = "ahb";
-+	clocks = <&bus_gates 72>, <&ths_clk>;
-+	clock-names = "ahb", "ths";
-+};
-
-From 4aa520e9e4b0ac29cb5e6e4df674cc95a86acc8b Mon Sep 17 00:00:00 2001
-From: Ondrej Jirman <megous@megous.com>
-Date: Thu, 30 Mar 2017 12:59:19 +0200
-Subject: [PATCH] thermal: sun8i-ths: Allow to enable thermal sensor driver on
- arm64
-
----
- drivers/thermal/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 77d3cd2a365e5..7127e5a8064de 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -414,7 +414,7 @@ endmenu
-
- config SUN8I_THS
- 	tristate "Thermal sensor driver for Allwinner H3"
--	depends on MACH_SUN8I
-+	depends on MACH_SUN8I || (ARM64 && ARCH_SUNXI)
- 	depends on OF
- 	help
- 	  Enable this to support thermal reporting on some newer Allwinner SoCs.
-
-
-From 703c392ba3b3679141eae1b4ac079568489ddc9b Mon Sep 17 00:00:00 2001
-From: Ondrej Jirman <megous@megous.com>
-Date: Mon, 13 Jun 2016 15:43:50 +0200
-Subject: [PATCH 17/26] ARM: dts: sun8i: Add cpu0 label to sun8i-h3.dtsi
-
-Add label to the first cpu so that it can be referenced
-from derived dts files.
-
-Signed-off-by: Ondrej Jirman <megous@megous.com>
----
- arch/arm/boot/dts/sun8i-h3.dtsi | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi b/arch/arm/boot/dts/sun8i-h3.dtsi
-index b36f9f423c39d..804939a56bc17 100644
---- a/arch/arm/boot/dts/sun8i-h3.dtsi
-+++ b/arch/arm/boot/dts/sun8i-h3.dtsi
-@@ -47,10 +47,12 @@
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-
--		cpu@0 {
-+		cpu0: cpu@0 {
- 			compatible = "arm,cortex-a7";
- 			device_type = "cpu";
- 			reg = <0>;
-+			clocks = <&ccu CLK_CPUX>;
-+			clock-latency = <244144>; /* 8 32k periods */
- 		};
-
- 		cpu@1 {
-
-From 2e69871b1d251a7eaed3e84ec9eb3eb01c760fdc Mon Sep 17 00:00:00 2001
-From: Ondrej Jirman <megous@megous.com>
-Date: Mon, 27 Jun 2016 16:08:26 +0200
-Subject: [PATCH 18/26] ARM: dts: sun8i-h3: Add clock-frequency
-
-To avoid error messages during boot.
-
-Signed-off-by: Ondrej Jirman <megous@megous.com>
----
- arch/arm/boot/dts/sun8i-h3.dtsi | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi b/arch/arm/boot/dts/sun8i-h3.dtsi
-index 804939a56bc17..ea74f580d42b6 100644
---- a/arch/arm/boot/dts/sun8i-h3.dtsi
-+++ b/arch/arm/boot/dts/sun8i-h3.dtsi
-@@ -53,24 +53,28 @@
- 			reg = <0>;
- 			clocks = <&ccu CLK_CPUX>;
- 			clock-latency = <244144>; /* 8 32k periods */
-+			clock-frequency = <1200000000>;
- 		};
-
- 		cpu@1 {
- 			compatible = "arm,cortex-a7";
- 			device_type = "cpu";
- 			reg = <1>;
-+			clock-frequency = <1200000000>;
- 		};
-
- 		cpu@2 {
- 			compatible = "arm,cortex-a7";
- 			device_type = "cpu";
- 			reg = <2>;
-+			clock-frequency = <1200000000>;
- 		};
-
- 		cpu@3 {
- 			compatible = "arm,cortex-a7";
- 			device_type = "cpu";
- 			reg = <3>;
-+			clock-frequency = <1200000000>;
- 		};
- 	};
-
-
-From fbf253c1f4c4c8c22f0fcc382f36d873fb0cd992 Mon Sep 17 00:00:00 2001
-From: Ondrej Jirman <megous@megous.com>
-Date: Thu, 30 Mar 2017 13:02:59 +0200
-Subject: [PATCH 24/26] arm64: dts: sun50i-h5: Add cpu0 label
-
----
- arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
-index d9a720bff05d3..6c6732287f290 100644
---- a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
-+++ b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
-@@ -47,7 +47,7 @@
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-
--		cpu@0 {
-+		cpu0: cpu@0 {
- 			compatible = "arm,cortex-a53", "arm,armv8";
- 			device_type = "cpu";
- 			reg = <0>;
-
-From 4e7329861d18de6b1b45b78f2e13a7522e7499eb Mon Sep 17 00:00:00 2001
-From: Ondrej Jirman <megous@megous.com>
-Date: Thu, 30 Mar 2017 13:04:25 +0200
-Subject: [PATCH 25/26] arm64: dts: sun50i-h5: Configure cpufreq
-
----
- arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
-index 6c6732287f290..2c94d707b3006 100644
---- a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
-+++ b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
-@@ -52,6 +52,9 @@
- 			device_type = "cpu";
- 			reg = <0>;
- 			enable-method = "psci";
-+			clocks = <&ccu CLK_CPUX>;
-+			clock-latency = <244144>; /* 8 32k periods */
-+			clock-frequency = <1200000000>;
- 		};
-
- 		cpu@1 {
-@@ -59,6 +62,7 @@
- 			device_type = "cpu";
- 			reg = <1>;
- 			enable-method = "psci";
-+			clock-frequency = <1200000000>;
- 		};
-
- 		cpu@2 {
-@@ -66,6 +70,7 @@
- 			device_type = "cpu";
- 			reg = <2>;
- 			enable-method = "psci";
-+			clock-frequency = <1200000000>;
- 		};
-
- 		cpu@3 {
-@@ -73,6 +78,7 @@
- 			device_type = "cpu";
- 			reg = <3>;
- 			enable-method = "psci";
-+			clock-frequency = <1200000000>;
- 		};
- 	};
+-- 
+2.7.4
 

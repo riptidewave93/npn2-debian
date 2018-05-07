@@ -1,53 +1,68 @@
-From e9807e63fec81bab15b2e8be714d802966ea6425 Mon Sep 17 00:00:00 2001
-From: Ondrej Jirman <megous@megous.com>
-Date: Sat, 25 Jun 2016 02:13:50 +0200
-Subject: [PATCH 39/87] regulator: add support for SY8106A regulator
+From 3c9edca98193c06c76124252afac6c631f2bcb06 Mon Sep 17 00:00:00 2001
+From: Chris Blake <chrisrblake93@gmail.com>
+Date: Wed, 2 May 2018 10:06:14 -0500
+Subject: [PATCH 06/11] regulator: SY8106A regulator driver SY8106A is I2C
+ attached single output voltage regulator made by Silergy.
 
-SY8106A is an I2C attached single output regulator made by Silergy Corp,
-which is used on several Allwinner H3/H5 SBCs to control the power
-supply of the ARM cores.
-
-Add a driver for it.
-
-Signed-off-by: Ondrej Jirman <megous@megous.com>
-[Icenowy: Change commit message, remove enable/disable code, add default
- ramp_delay]
-Signed-off-by: Icenowy Zheng <icenowy@aosc.io>
 ---
- drivers/regulator/Kconfig             |   8 +-
- drivers/regulator/Makefile            |   2 +-
- drivers/regulator/sy8106a-regulator.c | 164 ++++++++++++++++++++++++++++++++++
- 3 files changed, 172 insertions(+), 2 deletions(-)
+ .../bindings/regulator/sy8106a-regulator.txt       |  21 +++
+ drivers/regulator/Kconfig                          |   7 +
+ drivers/regulator/Makefile                         |   1 +
+ drivers/regulator/sy8106a-regulator.c              | 167 +++++++++++++++++++++
+ 4 files changed, 196 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/regulator/sy8106a-regulator.txt
  create mode 100644 drivers/regulator/sy8106a-regulator.c
 
+diff --git a/Documentation/devicetree/bindings/regulator/sy8106a-regulator.txt b/Documentation/devicetree/bindings/regulator/sy8106a-regulator.txt
+new file mode 100644
+index 0000000..1e623a3
+--- /dev/null
++++ b/Documentation/devicetree/bindings/regulator/sy8106a-regulator.txt
+@@ -0,0 +1,21 @@
++SY8106A Voltage regulator
++
++Required properties:
++- compatible: Must be "silergy,sy8106a"
++- reg: I2C slave address - must be <0x65>
++
++Any property defined as part of the core regulator binding, defined in
++regulator.txt, can also be used.
++
++Example:
++
++	sy8106a {
++		compatible = "silergy,sy8106a";
++		reg = <0x65>;
++		regulator-name = "sy8106a-vdd";
++		regulator-min-microvolt = <1000000>;
++		regulator-max-microvolt = <1400000>;
++		regulator-ramp-delay = <200>;
++		regulator-boot-on;
++		regulator-always-on;
++	};
 diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
-index 99b9362331b5..1efa73e18d07 100644
+index b27417c..3d03e64 100644
 --- a/drivers/regulator/Kconfig
 +++ b/drivers/regulator/Kconfig
-@@ -764,6 +764,13 @@ config REGULATOR_STW481X_VMMC
+@@ -792,6 +792,13 @@ config REGULATOR_STW481X_VMMC
  	  This driver supports the internal VMMC regulator in the STw481x
  	  PMIC chips.
-
+ 
 +config REGULATOR_SY8106A
-+	tristate "Silergy SY8106A regulator"
++	tristate "Silergy SY8106A"
 +	depends on I2C && (OF || COMPILE_TEST)
 +	select REGMAP_I2C
 +	help
-+	  This driver supports SY8106A single output regulator.
++	  This driver provides support for SY8106A voltage regulator.
 +
  config REGULATOR_TPS51632
  	tristate "TI TPS51632 Power Regulator"
  	depends on I2C
-@@ -938,4 +945,3 @@ config REGULATOR_WM8994
- 	  WM8994 CODEC.
-
- endif
--
 diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
-index 95b1e86ae692..f5120252f86a 100644
+index 19fea09..b05b6ba 100644
 --- a/drivers/regulator/Makefile
 +++ b/drivers/regulator/Makefile
-@@ -98,6 +98,7 @@ obj-$(CONFIG_REGULATOR_S5M8767) += s5m8767.o
+@@ -99,6 +99,7 @@ obj-$(CONFIG_REGULATOR_SC2731) += sc2731-regulator.o
  obj-$(CONFIG_REGULATOR_SKY81452) += sky81452-regulator.o
  obj-$(CONFIG_REGULATOR_STM32_VREFBUF) += stm32-vrefbuf.o
  obj-$(CONFIG_REGULATOR_STW481X_VMMC) += stw481x-vmmc.o
@@ -55,11 +70,9 @@ index 95b1e86ae692..f5120252f86a 100644
  obj-$(CONFIG_REGULATOR_TI_ABB) += ti-abb-regulator.o
  obj-$(CONFIG_REGULATOR_TPS6105X) += tps6105x-regulator.o
  obj-$(CONFIG_REGULATOR_TPS62360) += tps62360-regulator.o
--
- ccflags-$(CONFIG_REGULATOR_DEBUG) += -DDEBUG
 diff --git a/drivers/regulator/sy8106a-regulator.c b/drivers/regulator/sy8106a-regulator.c
 new file mode 100644
-index 0000000000000..72749656a22e8
+index 0000000..7274965
 --- /dev/null
 +++ b/drivers/regulator/sy8106a-regulator.c
 @@ -0,0 +1,167 @@
@@ -230,5 +243,6 @@ index 0000000000000..72749656a22e8
 +MODULE_AUTHOR("Ondřej Jirman <megous@megous.com>");
 +MODULE_DESCRIPTION("Regulator device driver for Silergy SY8106A");
 +MODULE_LICENSE("GPL v2");
---
-2.13.5
+-- 
+2.7.4
+

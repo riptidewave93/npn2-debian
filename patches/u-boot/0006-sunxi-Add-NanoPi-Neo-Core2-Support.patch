@@ -1,8 +1,8 @@
-From e499c9cfe73b6530cd876b61c4b11ea76382ee5e Mon Sep 17 00:00:00 2001
+From e80770f3cb8692c9293cdc9df6215d27b389a839 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Fri, 20 Apr 2018 18:36:43 -0500
-Subject: [PATCH] sunxi: Add NanoPi Neo Core2 Support This adds support for the
- NanoPi Neo Core2, a board based on the H5 SoC.
+Subject: [PATCH 5/6] sunxi: Add NanoPi Neo Core2 Support This adds support for
+ the NanoPi Neo Core2, a board based on the H5 SoC.
 
 ---
  arch/arm/dts/Makefile                       |   1 +
@@ -13,10 +13,10 @@ Subject: [PATCH] sunxi: Add NanoPi Neo Core2 Support This adds support for the
  create mode 100644 configs/nanopi_neo_core2_defconfig
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 62fbf32a62..85d1a6c2a3 100644
+index 6fe93a8..b48e66d 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -370,6 +370,7 @@ dtb-$(CONFIG_MACH_SUN8I_V3S) += \
+@@ -369,6 +369,7 @@ dtb-$(CONFIG_MACH_SUN8I_V3S) += \
  	sun8i-v3s-licheepi-zero.dtb
  dtb-$(CONFIG_MACH_SUN50I_H5) += \
  	sun50i-h5-nanopi-neo2.dtb \
@@ -26,7 +26,7 @@ index 62fbf32a62..85d1a6c2a3 100644
  	sun50i-h5-orangepi-prime.dtb \
 diff --git a/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts b/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
 new file mode 100644
-index 0000000000..9eb663369f
+index 0000000..9eb6633
 --- /dev/null
 +++ b/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
 @@ -0,0 +1,127 @@
@@ -157,3 +157,31 @@ index 0000000000..9eb663369f
 +&usbphy {
 +	status = "okay";
 +};
+diff --git a/configs/nanopi_neo_core2_defconfig b/configs/nanopi_neo_core2_defconfig
+new file mode 100644
+index 0000000..1e938fc
+--- /dev/null
++++ b/configs/nanopi_neo_core2_defconfig
+@@ -0,0 +1,19 @@
++CONFIG_ARM=y
++CONFIG_ARCH_SUNXI=y
++CONFIG_SPL=y
++CONFIG_MACH_SUN50I_H5=y
++CONFIG_DRAM_CLK=504
++CONFIG_DRAM_ZQ=3881977
++CONFIG_MACPWR="PD6"
++CONFIG_MMC_SUNXI_SLOT_EXTRA=2
++CONFIG_DEFAULT_DEVICE_TREE="sun50i-h5-nanopi-neo-core2"
++CONFIG_ENV_FAT_DEVICE_AUTO_PROBE_SUNXI=y
++# CONFIG_SYS_MALLOC_CLEAR_ON_INIT is not set
++# CONFIG_CMD_FLASH is not set
++# CONFIG_SPL_DOS_PARTITION is not set
++# CONFIG_SPL_EFI_PARTITION is not set
++CONFIG_SUN8I_EMAC=y
++CONFIG_SUNXI_SY8106A_HACK=y
++CONFIG_SUNXI_WDT=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
+-- 
+2.7.4
+
