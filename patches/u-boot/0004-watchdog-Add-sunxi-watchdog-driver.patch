@@ -1,4 +1,4 @@
-From 4423aef5de7c5f89965c4e794b4dbf7df8bc3a74 Mon Sep 17 00:00:00 2001
+From ecb1199cf9af456821694a7917d9b657b52f6da4 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Fri, 20 Apr 2018 18:22:33 -0500
 Subject: [PATCH 3/6] watchdog: Add sunxi watchdog driver Based on the linux
@@ -28,7 +28,7 @@ index fa667c7..8859179 100644
  	puts("       Watchdog enabled\n");
  # endif
 diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index dca2c90..276403b 100644
+index 148c6a0..963cc37 100644
 --- a/drivers/watchdog/Kconfig
 +++ b/drivers/watchdog/Kconfig
 @@ -20,6 +20,24 @@ config BCM2835_WDT
@@ -57,10 +57,10 @@ index dca2c90..276403b 100644
  	bool "TI OMAP watchdog driver"
  	depends on ARCH_OMAP2PLUS
 diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
-index c6f8aa3..d411d4b 100644
+index f405f51..ce27bb5 100644
 --- a/drivers/watchdog/Makefile
 +++ b/drivers/watchdog/Makefile
-@@ -22,3 +22,4 @@ obj-$(CONFIG_BCM2835_WDT)       += bcm2835_wdt.o
+@@ -23,3 +23,4 @@ obj-$(CONFIG_BCM2835_WDT)       += bcm2835_wdt.o
  obj-$(CONFIG_WDT_ORION) += orion_wdt.o
  obj-$(CONFIG_WDT_CDNS) += cdns_wdt.o
  obj-$(CONFIG_MPC8xx_WATCHDOG) += mpc8xx_wdt.o

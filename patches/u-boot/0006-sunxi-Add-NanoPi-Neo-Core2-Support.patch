@@ -1,4 +1,4 @@
-From e80770f3cb8692c9293cdc9df6215d27b389a839 Mon Sep 17 00:00:00 2001
+From 9470428dddd8a3351e0bf9b81c3e8f3de23119c5 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Fri, 20 Apr 2018 18:36:43 -0500
 Subject: [PATCH 5/6] sunxi: Add NanoPi Neo Core2 Support This adds support for
@@ -13,12 +13,12 @@ Subject: [PATCH 5/6] sunxi: Add NanoPi Neo Core2 Support This adds support for
  create mode 100644 configs/nanopi_neo_core2_defconfig
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 6fe93a8..b48e66d 100644
+index 790571b..d5c3c51 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -369,6 +369,7 @@ dtb-$(CONFIG_MACH_SUN8I_V3S) += \
- 	sun8i-v3s-licheepi-zero.dtb
+@@ -377,6 +377,7 @@ dtb-$(CONFIG_MACH_SUN8I_V3S) += \
  dtb-$(CONFIG_MACH_SUN50I_H5) += \
+ 	sun50i-h5-libretech-all-h3-cc.dtb \
  	sun50i-h5-nanopi-neo2.dtb \
 +	sun50i-h5-nanopi-neo-core2.dtb \
  	sun50i-h5-nanopi-neo-plus2.dtb \
@@ -182,6 +182,5 @@ index 0000000..1e938fc
 +CONFIG_SUNXI_WDT=y
 +CONFIG_USB_EHCI_HCD=y
 +CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
--- 
+--
 2.7.4
-

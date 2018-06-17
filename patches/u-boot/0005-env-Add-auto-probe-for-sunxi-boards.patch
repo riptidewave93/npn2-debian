@@ -1,4 +1,4 @@
-From f7f2d531cc23af22b32266d65f694aac90aed9da Mon Sep 17 00:00:00 2001
+From d42cd86d74f57b8fe0b09131cf67f7ecc5a0447e Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Wed, 2 May 2018 09:34:44 -0500
 Subject: [PATCH 4/6] env: Add auto probe for sunxi boards This adds the
