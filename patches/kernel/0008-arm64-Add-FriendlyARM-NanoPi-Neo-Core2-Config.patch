@@ -1,32 +1,34 @@
-From 8de7dc97668c0450d2bf9971be08c6fb99db1476 Mon Sep 17 00:00:00 2001
+From 1eadb98961714f0c51bb5c628b04c4708f0814c0 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Wed, 2 May 2018 10:32:07 -0500
-Subject: [PATCH 11/11] arm64: Add FriendlyARM NanoPi Neo Core2
+Date: Thu, 28 Jun 2018 10:04:11 -0500
+Subject: [PATCH 8/8] arm64: Add FriendlyARM NanoPi Neo Core2 & Config
 
 ---
  arch/arm64/boot/dts/allwinner/Makefile             |   1 +
- .../dts/allwinner/sun50i-h5-nanopi-neo-core2.dts   | 332 +++++++++++++++++++++
- arch/arm64/configs/nanopi_h5_defconfig             | 302 +++++++++++++++++++
- 3 files changed, 635 insertions(+)
+ .../dts/allwinner/sun50i-h5-nanopi-neo-core2.dts   | 222 +++++++++++++++
+ arch/arm64/configs/nanopi_h5_defconfig             | 301 +++++++++++++++++++++
+ 3 files changed, 524 insertions(+)
  create mode 100644 arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-core2.dts
  create mode 100644 arch/arm64/configs/nanopi_h5_defconfig
 
 diff --git a/arch/arm64/boot/dts/allwinner/Makefile b/arch/arm64/boot/dts/allwinner/Makefile
-index f505227..71e8f1a 100644
+index c31f90a..d17c130 100644
 --- a/arch/arm64/boot/dts/allwinner/Makefile
 +++ b/arch/arm64/boot/dts/allwinner/Makefile
-@@ -9,4 +9,5 @@ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-orangepi-pc2.dtb
- dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-orangepi-prime.dtb
- dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-orangepi-zero-plus2.dtb
+@@ -8,6 +8,7 @@ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-a64-sopine-baseboard.dtb
+ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-a64-teres-i.dtb
+ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-libretech-all-h3-cc.dtb
  dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo2.dtb
 +dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo-core2.dtb
  dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo-plus2.dtb
+ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-orangepi-pc2.dtb
+ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-orangepi-prime.dtb
 diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-core2.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-core2.dts
 new file mode 100644
-index 0000000..d58fca3
+index 0000000..bb58a0c
 --- /dev/null
 +++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-core2.dts
-@@ -0,0 +1,297 @@
+@@ -0,0 +1,222 @@
 +/*
 + * Copyright (C) 2017 Chris Blake <chrisrblake93@gmail.com>
 + * Copyright (C) 2016 ARM Ltd.
@@ -76,7 +78,6 @@ index 0000000..d58fca3
 +#include <dt-bindings/gpio/gpio.h>
 +#include <dt-bindings/input/input.h>
 +#include <dt-bindings/pinctrl/sun4i-a10.h>
-+#include <dt-bindings/thermal/thermal.h>
 +
 +/ {
 +	model = "FriendlyARM NanoPi NEO Core2";
@@ -143,82 +144,7 @@ index 0000000..d58fca3
 +};
 +
 +&cpu0 {
-+	operating-points = <
-+		/* kHz    uV */
-+		1368000 1400000
-+		1344000 1400000
-+		1296000 1340000
-+		1248000 1280000
-+		1224000 1260000
-+		1200000 1240000
-+		1152000 1200000
-+		1104000 1170000
-+		1080000 1160000
-+		1056000 1150000
-+		1008000 1100000
-+		960000  1080000
-+		936000  1060000
-+		912000  1050000
-+		864000  1040000
-+		816000  1000000
-+		792000  1000000
-+	 	768000  980000
-+		720000  970000
-+		672000  970000
-+		648000  970000
-+		528000  940000
-+		480000  940000
-+		240000  940000
-+		120000  940000
-+	>;
-+	#cooling-cells = <2>;
-+	cooling-min-level = <0>;
-+	cooling-max-level = <24>;
-+	cpu0-supply = <&vdd_cpu>;
-+};
-+
-+&cpu_thermal {
-+	trips {
-+		cpu_warm: cpu_warm {
-+			temperature = <70000>;
-+			hysteresis = <2000>;
-+			type = "passive";
-+		};
-+		cpu_hot: cpu_hot {
-+			temperature = <80000>;
-+			hysteresis = <2000>;
-+			type = "passive";
-+		};
-+		cpu_very_hot: cpu_very_hot {
-+			temperature = <90000>;
-+			hysteresis = <2000>;
-+			type = "passive";
-+		};
-+		cpu_crit: cpu_crit {
-+			temperature = <100000>;
-+			hysteresis = <2000>;
-+			type = "critical";
-+		};
-+	};
-+
-+	cooling-maps {
-+		cpu_warm_limit_cpu {
-+			trip = <&cpu_warm>;
-+			cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+		};
-+		cpu_hot_limit_cpu {
-+			trip = <&cpu_hot>;
-+			cooling-device = <&cpu0 4 THERMAL_NO_LIMIT>; /* 1.2GHz */
-+		};
-+		cpu_very_hot_limit_cpu {
-+			trip = <&cpu_very_hot>;
-+			cooling-device = <&cpu0 17 THERMAL_NO_LIMIT>; /* 720MHz */
-+		};
-+		cpu_crit_limit_cpu {
-+			trip = <&cpu_crit>;
-+			cooling-device = <&cpu0 22 THERMAL_NO_LIMIT>; /* 240MHz */
-+		};
-+	};
++	cpu0-supply = <&reg_vdd_cpux>;
 +};
 +
 +&ehci0 {
@@ -255,8 +181,6 @@ index 0000000..d58fca3
 +};
 +
 +&mmc0 {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&mmc0_pins_a>, <&mmc0_cd_pin>;
 +	vmmc-supply = <&reg_vcc3v3>;
 +	bus-width = <4>;
 +	cd-gpios = <&pio 5 6 GPIO_ACTIVE_LOW>; /* PF6 */
@@ -296,9 +220,12 @@ index 0000000..d58fca3
 +
 +&r_i2c {
 +	status = "okay";
-+	vdd_cpu: regulator@65 {
++
++	reg_vdd_cpux: regulator@65 {
 +		compatible = "silergy,sy8106a";
 +		reg = <0x65>;
++		regulator-name = "vdd-cpux";
++		silergy,fixed-microvolt = <1200000>;
 +		regulator-min-microvolt = <940000>;
 +		regulator-max-microvolt = <1400000>;
 +		regulator-ramp-delay = <200>;
@@ -326,10 +253,10 @@ index 0000000..d58fca3
 +};
 diff --git a/arch/arm64/configs/nanopi_h5_defconfig b/arch/arm64/configs/nanopi_h5_defconfig
 new file mode 100644
-index 0000000..5222e49
+index 0000000..4484ba9
 --- /dev/null
 +++ b/arch/arm64/configs/nanopi_h5_defconfig
-@@ -0,0 +1,302 @@
+@@ -0,0 +1,301 @@
 +CONFIG_64BIT=y
 +CONFIG_AEABI=y
 +CONFIG_AHCI_SUNXI=y
@@ -461,7 +388,6 @@ index 0000000..5222e49
 +CONFIG_LEDS_PWM=y
 +CONFIG_LEDS_SYSCON=y
 +CONFIG_LEDS_TRIGGER_DEFAULT_ON=y
-+CONFIG_LEDS_TRIGGER_FADER=y
 +CONFIG_LEDS_TRIGGER_HEARTBEAT=y
 +CONFIG_LEDS_TRIGGERS=y
 +CONFIG_LEGACY_PTY_COUNT=16
@@ -632,5 +558,6 @@ index 0000000..5222e49
 +CONFIG_VLAN_8021Q_MVRP=y
 +CONFIG_WATCHDOG=y
 +CONFIG_WLAN=y
---
+-- 
 2.7.4
+

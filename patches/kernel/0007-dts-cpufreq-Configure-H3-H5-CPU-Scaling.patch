@@ -1,0 +1,447 @@
+From 91e83204a38e16285bce36d936439d27ffacfe7c Mon Sep 17 00:00:00 2001
+From: Chris Blake <chrisrblake93@gmail.com>
+Date: Thu, 28 Jun 2018 10:02:39 -0500
+Subject: [PATCH 7/8] dts & cpufreq: Configure H3/H5 CPU Scaling
+
+---
+ arch/arm/boot/dts/sun8i-h3.dtsi                    |  29 +---
+ arch/arm/boot/dts/sunxi-h3-h5.dtsi                 | 193 +++++++++++++++++++++
+ .../boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts   |  69 ++++++++
+ arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi       |  13 ++
+ drivers/cpufreq/cpufreq-dt-platdev.c               |   1 +
+ 5 files changed, 282 insertions(+), 23 deletions(-)
+
+diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi b/arch/arm/boot/dts/sun8i-h3.dtsi
+index 41d57c7..76cf12c 100644
+--- a/arch/arm/boot/dts/sun8i-h3.dtsi
++++ b/arch/arm/boot/dts/sun8i-h3.dtsi
+@@ -43,29 +43,6 @@
+ #include "sunxi-h3-h5.dtsi"
+ 
+ / {
+-	cpu0_opp_table: opp_table0 {
+-		compatible = "operating-points-v2";
+-		opp-shared;
+-
+-		opp@648000000 {
+-			opp-hz = /bits/ 64 <648000000>;
+-			opp-microvolt = <1040000 1040000 1300000>;
+-			clock-latency-ns = <244144>; /* 8 32k periods */
+-		};
+-
+-		opp@816000000 {
+-			opp-hz = /bits/ 64 <816000000>;
+-			opp-microvolt = <1100000 1100000 1300000>;
+-			clock-latency-ns = <244144>; /* 8 32k periods */
+-		};
+-
+-		opp@1008000000 {
+-			opp-hz = /bits/ 64 <1008000000>;
+-			opp-microvolt = <1200000 1200000 1300000>;
+-			clock-latency-ns = <244144>; /* 8 32k periods */
+-		};
+-	};
+-
+ 	cpus {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+@@ -77,7 +54,10 @@
+ 			clocks = <&ccu CLK_CPUX>;
+ 			clock-names = "cpu";
+ 			operating-points-v2 = <&cpu0_opp_table>;
++      clock-frequency = <1200000000>;
+ 			#cooling-cells = <2>;
++			cooling-min-level = <0>;
++			cooling-max-level = <26>;
+ 		};
+ 
+ 		cpu@1 {
+@@ -85,6 +65,7 @@
+ 			device_type = "cpu";
+ 			reg = <1>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
++      clock-frequency = <1200000000>;
+ 		};
+ 
+ 		cpu@2 {
+@@ -92,6 +73,7 @@
+ 			device_type = "cpu";
+ 			reg = <2>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
++      clock-frequency = <1200000000>;
+ 		};
+ 
+ 		cpu@3 {
+@@ -99,6 +81,7 @@
+ 			device_type = "cpu";
+ 			reg = <3>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
++      clock-frequency = <1200000000>;
+ 		};
+ 	};
+ 
+diff --git a/arch/arm/boot/dts/sunxi-h3-h5.dtsi b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
+index e57a672..30afe17 100644
+--- a/arch/arm/boot/dts/sunxi-h3-h5.dtsi
++++ b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
+@@ -47,6 +47,7 @@
+ #include <dt-bindings/reset/sun8i-de2.h>
+ #include <dt-bindings/reset/sun8i-h3-ccu.h>
+ #include <dt-bindings/reset/sun8i-r-ccu.h>
++#include <dt-bindings/thermal/thermal.h>
+ 
+ / {
+ 	interrupt-parent = <&gic>;
+@@ -105,6 +106,173 @@
+ 		};
+ 	};
+ 
++	cpu0_opp_table: opp_table0 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp@120000000 {
++			opp-hz = /bits/ 64 <120000000>;
++			opp-microvolt = <940000 940000 940000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@240000000 {
++			opp-hz = /bits/ 64 <240000000>;
++			opp-microvolt = <940000 940000 940000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++    opp@312000000 {
++			opp-hz = /bits/ 64 <312000000>;
++			opp-microvolt = <940000 940000 940000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@480000000 {
++			opp-hz = /bits/ 64 <480000000>;
++			opp-microvolt = <940000 940000 940000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++    opp@528000000 {
++			opp-hz = /bits/ 64 <528000000>;
++			opp-microvolt = <940000 940000 940000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++    opp@624000000 {
++			opp-hz = /bits/ 64 <624000000>;
++			opp-microvolt = <960000 960000 960000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@648000000 {
++			opp-hz = /bits/ 64 <648000000>;
++			opp-microvolt = <970000 970000 970000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++    opp@672000000 {
++			opp-hz = /bits/ 64 <672000000>;
++			opp-microvolt = <970000 970000 970000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++    opp@720000000 {
++			opp-hz = /bits/ 64 <720000000>;
++			opp-microvolt = <970000 970000 970000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++    opp@768000000 {
++			opp-hz = /bits/ 64 <768000000>;
++			opp-microvolt = <980000 980000 980000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++    opp@792000000 {
++			opp-hz = /bits/ 64 <792000000>;
++			opp-microvolt = <1000000 1000000 1000000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@816000000 {
++			opp-hz = /bits/ 64 <816000000>;
++			opp-microvolt = <1000000 1000000 1000000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++    opp@864000000 {
++			opp-hz = /bits/ 64 <864000000>;
++			opp-microvolt = <1040000 1040000 1040000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++    opp@912000000 {
++			opp-hz = /bits/ 64 <912000000>;
++			opp-microvolt = <1050000 1050000 1050000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++    opp@936000000 {
++			opp-hz = /bits/ 64 <936000000>;
++			opp-microvolt = <1060000 1060000 1060000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@960000000 {
++			opp-hz = /bits/ 64 <960000000>;
++			opp-microvolt = <1080000 1080000 1080000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1008000000 {
++			opp-hz = /bits/ 64 <1008000000>;
++			opp-microvolt = <1100000 1100000 1100000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1056000000 {
++			opp-hz = /bits/ 64 <1056000000>;
++			opp-microvolt = <1150000 1150000 1150000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++    opp@1080000000 {
++			opp-hz = /bits/ 64 <1080000000>;
++			opp-microvolt = <1160000 1160000 1160000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1104000000 {
++			opp-hz = /bits/ 64 <1104000000>;
++			opp-microvolt = <1170000 1170000 1170000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1152000000 {
++			opp-hz = /bits/ 64 <1152000000>;
++			opp-microvolt = <1200000 1200000 1200000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1200000000 {
++			opp-hz = /bits/ 64 <1200000000>;
++			opp-microvolt = <1240000 1240000 1240000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1224000000 {
++			opp-hz = /bits/ 64 <1224000000>;
++			opp-microvolt = <1260000 1260000 1260000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1248000000 {
++			opp-hz = /bits/ 64 <1248000000>;
++			opp-microvolt = <1280000 1280000 1280000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1296000000 {
++			opp-hz = /bits/ 64 <1296000000>;
++			opp-microvolt = <1340000 1340000 1340000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1344000000 {
++			opp-hz = /bits/ 64 <1344000000>;
++			opp-microvolt = <1400000 1400000 1400000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1368000000 {
++			opp-hz = /bits/ 64 <1368000000>;
++			opp-microvolt = <1400000 1400000 1400000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++	};
++
+ 	de: display-engine {
+ 		compatible = "allwinner,sun8i-h3-display-engine";
+ 		allwinner,pipelines = <&mixer0>;
+@@ -239,6 +407,11 @@
+ 			#size-cells = <0>;
+ 		};
+ 
++    sid: eeprom@01c14000 {
++      compatible = "allwinner,sun8i-h3-sid";
++      reg = <0x01c14000 0x400>;
++    };
++
+ 		usb_otg: usb@1c19000 {
+ 			compatible = "allwinner,sun8i-h3-musb";
+ 			reg = <0x01c19000 0x400>;
+@@ -876,6 +1049,26 @@
+ 			polling-delay-passive = <330>;
+ 			polling-delay = <1000>;
+ 			thermal-sensors = <&ths 0>;
++
++			trips {
++				cpu_warm_trip: cpu-warm {
++					temperature = <65000>;
++					hysteresis = <2000>;
++					type = "passive";
++				};
++				cpu_very_hot_trip: cpu-very-hot {
++					temperature = <90000>;
++					hysteresis = <2000>;
++					type = "critical";
++				};
++			};
++
++			cooling-maps {
++				cpu-warm-limit {
++					trip = <&cpu_warm_trip>;
++					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++				};
++			};
+ 		};
+ 	};
+ };
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts
+index cc268a6..080db63 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts
++++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts
+@@ -101,6 +101,75 @@
+ 	};
+ };
+ 
++&cpu0{
++  cooling-max-level = <16>;
++};
++
++/* We need to re-define this, as we do not have a proper voltage regulator */
++&cpu0_opp_table{
++  opp@120000000 {
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@240000000{
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@312000000{
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@480000000{
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@528000000{
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@624000000{
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@648000000{
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@672000000{
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@720000000{
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@768000000{
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@792000000{
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@816000000{
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@864000000{
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@912000000{
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@936000000{
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@960000000{
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@1008000000{
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  /delete-node/ opp@1056000000;
++  /delete-node/ opp@1080000000;
++  /delete-node/ opp@1104000000;
++  /delete-node/ opp@1152000000;
++  /delete-node/ opp@1200000000;
++  /delete-node/ opp@1224000000;
++  /delete-node/ opp@1248000000;
++  /delete-node/ opp@1296000000;
++  /delete-node/ opp@1344000000;
++  /delete-node/ opp@1368000000;
++};
++
+ &ehci0 {
+ 	status = "okay";
+ };
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
+index 62d646b..88d3ba2 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
++++ b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
+@@ -52,6 +52,13 @@
+ 			device_type = "cpu";
+ 			reg = <0>;
+ 			enable-method = "psci";
++			clocks = <&ccu CLK_CPUX>;
++			clock-names = "cpu";
++			operating-points-v2 = <&cpu0_opp_table>;
++      clock-frequency = <1200000000>;
++      #cooling-cells = <2>;
++			cooling-min-level = <0>;
++			cooling-max-level = <26>;
+ 		};
+ 
+ 		cpu@1 {
+@@ -59,6 +66,8 @@
+ 			device_type = "cpu";
+ 			reg = <1>;
+ 			enable-method = "psci";
++      operating-points-v2 = <&cpu0_opp_table>;
++      clock-frequency = <1200000000>;
+ 		};
+ 
+ 		cpu@2 {
+@@ -66,6 +75,8 @@
+ 			device_type = "cpu";
+ 			reg = <2>;
+ 			enable-method = "psci";
++      operating-points-v2 = <&cpu0_opp_table>;
++      clock-frequency = <1200000000>;
+ 		};
+ 
+ 		cpu@3 {
+@@ -73,6 +84,8 @@
+ 			device_type = "cpu";
+ 			reg = <3>;
+ 			enable-method = "psci";
++      operating-points-v2 = <&cpu0_opp_table>;
++      clock-frequency = <1200000000>;
+ 		};
+ 	};
+ 
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index fe14c57..afb511a 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -29,6 +29,7 @@ static const struct of_device_id whitelist[] __initconst = {
+ 	{ .compatible = "allwinner,sun8i-a23", },
+ 	{ .compatible = "allwinner,sun8i-a83t", },
+ 	{ .compatible = "allwinner,sun8i-h3", },
++	{ .compatible = "allwinner,sun50i-h5", },
+ 
+ 	{ .compatible = "apm,xgene-shadowcat", },
+ 
+-- 
+2.7.4
+

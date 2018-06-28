@@ -1,16 +1,17 @@
-From e02bd5efcb752fb3c6a2afea28036b3f9751dd05 Mon Sep 17 00:00:00 2001
+From b1c7dd6f885bf034ef4a8621d36c5efed3fda9dc Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Wed, 2 May 2018 09:56:00 -0500
-Subject: [PATCH 02/11] arm64: config: Fix PINCTRL not being available in
- Kconfig on sun50i Kangd from
- https://github.com/megous/linux/commit/c949369b4d56c45ec95988d4743a2fc606b5c4fb
+Date: Mon, 25 Jun 2018 08:43:26 -0500
+Subject: [PATCH 2/8] arm64: config: Fix PINCTRL not being available in Kconfig
+ on sun50i
 
+Kangd from
+https://github.com/megous/linux/commit/c949369b4d56c45ec95988d4743a2fc606b5c4fb
 ---
  arch/arm64/Kconfig.platforms | 7 +++++--
  1 file changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm64/Kconfig.platforms b/arch/arm64/Kconfig.platforms
-index fbedbd8..81a44db 100644
+index d5aeac3..1e78bdc 100644
 --- a/arch/arm64/Kconfig.platforms
 +++ b/arch/arm64/Kconfig.platforms
 @@ -12,8 +12,11 @@ config ARCH_SUNXI

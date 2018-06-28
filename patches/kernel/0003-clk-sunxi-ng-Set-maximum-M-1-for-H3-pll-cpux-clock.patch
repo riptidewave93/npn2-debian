@@ -1,16 +1,16 @@
-From 9a6ffc22d83ab7eeed0f637b733bdd1e8c9b4acb Mon Sep 17 00:00:00 2001
+From 97fd372ae8dfa01be4e0b4daf67725375d99f1ca Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Wed, 2 May 2018 10:00:13 -0500
-Subject: [PATCH 03/11] clk: sunxi-ng: Set maximum M = 1 for H3 pll-cpux clock
- Kangd from
- https://github.com/megous/linux/commit/b5cae38f9fce44cf37d879f5efc0e06cbe4a5a36
+Date: Mon, 25 Jun 2018 08:44:24 -0500
+Subject: [PATCH 3/8] clk: sunxi-ng: Set maximum M = 1 for H3 pll-cpux clock
 
+Kangd from
+https://github.com/megous/linux/commit/b5cae38f9fce44cf37d879f5efc0e06cbe4a5a36
 ---
  drivers/clk/sunxi-ng/ccu-sun8i-h3.c | 24 +++++++++++++++---------
  1 file changed, 15 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/clk/sunxi-ng/ccu-sun8i-h3.c b/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
-index 29bc056..9408ffd 100644
+index 77ed0b0..a385f42 100644
 --- a/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
 +++ b/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
 @@ -30,15 +30,21 @@

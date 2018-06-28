@@ -47,7 +47,6 @@
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/pinctrl/sun4i-a10.h>
-#include <dt-bindings/thermal/thermal.h>
 
 / {
 	model = "FriendlyARM NanoPi NEO Core2";
@@ -65,13 +64,11 @@
 
 	leds {
 		compatible = "gpio-leds";
-
 		pwr {
 			label = "nanopi:red:pwr";
 			gpios = <&r_pio 0 10 GPIO_ACTIVE_HIGH>; /* PL10 */
 			default-state = "on";
 		};
-
 		status {
 			label = "nanopi:green:status";
 			gpios = <&pio 0 10 GPIO_ACTIVE_HIGH>; /* PA10 */
@@ -89,7 +86,7 @@
 		gpio = <&pio 3 6 GPIO_ACTIVE_HIGH>; /* PD6 */
 	};
 
-  reg_usb0_vbus: usb0-vbus {
+	reg_usb0_vbus: usb0-vbus {
 		compatible = "regulator-fixed";
 		regulator-name = "usb0-vbus";
 		regulator-min-microvolt = <5000000>;
@@ -116,82 +113,7 @@
 };
 
 &cpu0 {
-	operating-points = <
-		/* kHz	  uV */
-		1368000 1400000
-		1344000 1400000
-		1296000 1340000
-		1248000 1280000
-		1224000 1260000
-		1200000 1240000
-		1152000 1200000
-		1104000 1170000
-		1080000 1160000
-		1056000 1150000
-		1008000 1100000
-		960000  1080000
-		936000  1060000
-		912000  1050000
-		864000  1040000
-		816000  1000000
-		792000  1000000
-		768000  980000
-		720000  970000
-		672000  970000
-		648000  970000
-		528000  940000
-		480000  940000
-		240000  940000
-		120000  940000
-		>;
-	#cooling-cells = <2>;
-	cooling-min-level = <0>;
-	cooling-max-level = <24>;
-	cpu0-supply = <&vdd_cpu>;
-};
-
-&cpu_thermal {
-	trips {
-		cpu_warm: cpu_warm {
-			temperature = <70000>;
-			hysteresis = <2000>;
-			type = "passive";
-		};
-		cpu_hot: cpu_hot {
-			temperature = <80000>;
-			hysteresis = <2000>;
-			type = "passive";
-		};
-		cpu_very_hot: cpu_very_hot {
-			temperature = <90000>;
-			hysteresis = <2000>;
-			type = "passive";
-		};
-		cpu_crit: cpu_crit {
-			temperature = <100000>;
-			hysteresis = <2000>;
-			type = "critical";
-		};
-	};
-
-	cooling-maps {
-		cpu_warm_limit_cpu {
-			trip = <&cpu_warm>;
-			cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-		};
-		cpu_hot_limit_cpu {
-			trip = <&cpu_hot>;
-			cooling-device = <&cpu0 4 THERMAL_NO_LIMIT>; /* 1.2GHz */
-		};
-		cpu_very_hot_limit_cpu {
-			trip = <&cpu_very_hot>;
-			cooling-device = <&cpu0 17 THERMAL_NO_LIMIT>; /* 720MHz */
-		};
-		cpu_crit_limit_cpu {
-			trip = <&cpu_crit>;
-			cooling-device = <&cpu0 22 THERMAL_NO_LIMIT>; /* 240MHz */
-		};
-	};
+	cpu0-supply = <&reg_vdd_cpux>;
 };
 
 &ehci0 {
@@ -216,6 +138,7 @@
 	phy-supply = <&reg_gmac_3v3>;
 	phy-handle = <&ext_rgmii_phy>;
 	phy-mode = "rgmii";
+	allwinner,leds-active-low;
 	status = "okay";
 };
 
@@ -226,13 +149,7 @@
 	};
 };
 
-&i2c0 {
-	status = "okay";
-};
-
 &mmc0 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&mmc0_pins_a>, <&mmc0_cd_pin>;
 	vmmc-supply = <&reg_vcc3v3>;
 	bus-width = <4>;
 	cd-gpios = <&pio 5 6 GPIO_ACTIVE_LOW>; /* PF6 */
@@ -272,9 +189,12 @@
 
 &r_i2c {
 	status = "okay";
-	vdd_cpu: regulator@65 {
+
+	reg_vdd_cpux: regulator@65 {
 		compatible = "silergy,sy8106a";
 		reg = <0x65>;
+		regulator-name = "vdd-cpux";
+		silergy,fixed-microvolt = <1200000>;
 		regulator-min-microvolt = <940000>;
 		regulator-max-microvolt = <1400000>;
 		regulator-ramp-delay = <200>;

@@ -29,8 +29,8 @@ uboot_branch="v2018.07-rc1"
 uboot_overlay_dir="u-boot"
 
 # Kernel settings
-kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
-kernel_branch="v4.16.16"
+kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
+kernel_branch="v4.18-rc2"
 kernel_config="nanopi_h5_defconfig" # Global config for all boards
 kernel_overlay_dir="kernel"
 
