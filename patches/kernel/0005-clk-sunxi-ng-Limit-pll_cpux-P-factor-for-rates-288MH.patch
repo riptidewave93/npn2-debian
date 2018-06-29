@@ -1,8 +1,8 @@
-From 7d7edef9b4ab1116dacb8ce45c0284e402fbe9c5 Mon Sep 17 00:00:00 2001
+From 55e4cf98b9542fc139e8ed02e07beff3b5f9994a Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Mon, 25 Jun 2018 08:51:29 -0500
-Subject: [PATCH 5/8] clk: sunxi-ng: Limit pll_cpux P factor for rates > 288MHz
- on H3
+Date: Fri, 29 Jun 2018 09:36:41 -0500
+Subject: [PATCH 5/9] clk: sunxi-ng: Limit pll_cpux P factor for rates > 288MHz
+ on H3/H5
 
 Kangd from
 https://github.com/megous/linux/commit/30deeee551ccf10b03c79f9e3a6a07504f2bfc0d

@@ -1,7 +1,7 @@
-From 97fd372ae8dfa01be4e0b4daf67725375d99f1ca Mon Sep 17 00:00:00 2001
+From 20f3a91bc9a30f6fbc9909ea336172ff2017b8f0 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Mon, 25 Jun 2018 08:44:24 -0500
-Subject: [PATCH 3/8] clk: sunxi-ng: Set maximum M = 1 for H3 pll-cpux clock
+Date: Fri, 29 Jun 2018 09:35:40 -0500
+Subject: [PATCH 3/9] clk: sunxi-ng: Set maximum M = 1 for H3 pll-cpux clock
 
 Kangd from
 https://github.com/megous/linux/commit/b5cae38f9fce44cf37d879f5efc0e06cbe4a5a36

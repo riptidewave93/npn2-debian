@@ -1,10 +1,11 @@
-From 1adbe7dbb57a38985d140b743a56f9e7a9566f4f Mon Sep 17 00:00:00 2001
+From 8c018a457b4e50238e0346600818426f5b1ed948 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Mon, 25 Jun 2018 09:05:04 -0500
-Subject: [PATCH 6/8] thermal: sun8i_ths: Add support for the thermal sensor on
+Date: Fri, 29 Jun 2018 09:38:55 -0500
+Subject: [PATCH 6/9] thermal: sun8i_ths: Add support for the thermal sensor on
  Allwinner H3/H5
 
-Kangd from https://github.com/megous/linux/tree/ths-4.17
+This adds the thermal driver, which was kangd from
+https://github.com/megous/linux/tree/ths-4.17
 ---
  .../devicetree/bindings/thermal/sun8i-ths.txt      |  24 ++
  arch/arm/boot/dts/sunxi-h3-h5.dtsi                 |  21 ++

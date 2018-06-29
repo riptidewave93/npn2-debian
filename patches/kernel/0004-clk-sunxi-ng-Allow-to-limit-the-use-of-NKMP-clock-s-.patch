@@ -1,7 +1,7 @@
-From be08904afabb0f29768d04c1ff965ea0758b8870 Mon Sep 17 00:00:00 2001
+From eb6c8aecd92604161987ee50252676f0d721ab1b Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Mon, 25 Jun 2018 08:50:43 -0500
-Subject: [PATCH 4/8] clk: sunxi-ng: Allow to limit the use of NKMP clock's P
+Date: Fri, 29 Jun 2018 09:36:06 -0500
+Subject: [PATCH 4/9] clk: sunxi-ng: Allow to limit the use of NKMP clock's P
  factor
 
 Kangd from

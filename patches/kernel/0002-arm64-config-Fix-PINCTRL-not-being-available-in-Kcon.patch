@@ -1,7 +1,7 @@
-From b1c7dd6f885bf034ef4a8621d36c5efed3fda9dc Mon Sep 17 00:00:00 2001
+From 1efef5c9544407c2da75ffa277891822b7814189 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Mon, 25 Jun 2018 08:43:26 -0500
-Subject: [PATCH 2/8] arm64: config: Fix PINCTRL not being available in Kconfig
+Date: Fri, 29 Jun 2018 09:35:05 -0500
+Subject: [PATCH 2/9] arm64: config: Fix PINCTRL not being available in Kconfig
  on sun50i
 
 Kangd from

@@ -1,18 +1,20 @@
-From 91e83204a38e16285bce36d936439d27ffacfe7c Mon Sep 17 00:00:00 2001
+From 4008b8bb3412105686ff97de3f434f6d55cbb0d2 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Thu, 28 Jun 2018 10:02:39 -0500
-Subject: [PATCH 7/8] dts & cpufreq: Configure H3/H5 CPU Scaling
+Date: Fri, 29 Jun 2018 09:48:17 -0500
+Subject: [PATCH 7/9] dts & cpufreq: Configure H3/H5 CPU Scaling This sets up
+ CPU Frequencies on the neo series boards, and also sets up H3/H5 scaling
 
 ---
- arch/arm/boot/dts/sun8i-h3.dtsi                    |  29 +---
- arch/arm/boot/dts/sunxi-h3-h5.dtsi                 | 193 +++++++++++++++++++++
- .../boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts   |  69 ++++++++
- arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi       |  13 ++
+ arch/arm/boot/dts/sun8i-h3.dtsi                    |  65 ++----
+ arch/arm/boot/dts/sunxi-h3-h5.dtsi                 | 256 ++++++++++++++++++---
+ .../dts/allwinner/sun50i-h5-nanopi-neo-plus2.dts   |  70 ++++++
+ .../boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts   |  94 ++++++++
+ arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi       |  29 ++-
  drivers/cpufreq/cpufreq-dt-platdev.c               |   1 +
- 5 files changed, 282 insertions(+), 23 deletions(-)
+ 6 files changed, 432 insertions(+), 83 deletions(-)
 
 diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi b/arch/arm/boot/dts/sun8i-h3.dtsi
-index 41d57c7..76cf12c 100644
+index 41d57c7..db295f0 100644
 --- a/arch/arm/boot/dts/sun8i-h3.dtsi
 +++ b/arch/arm/boot/dts/sun8i-h3.dtsi
 @@ -43,29 +43,6 @@
@@ -49,7 +51,7 @@ index 41d57c7..76cf12c 100644
  			clocks = <&ccu CLK_CPUX>;
  			clock-names = "cpu";
  			operating-points-v2 = <&cpu0_opp_table>;
-+      clock-frequency = <1200000000>;
++			clock-frequency = <1200000000>;
  			#cooling-cells = <2>;
 +			cooling-min-level = <0>;
 +			cooling-max-level = <26>;
@@ -60,7 +62,7 @@ index 41d57c7..76cf12c 100644
  			device_type = "cpu";
  			reg = <1>;
  			operating-points-v2 = <&cpu0_opp_table>;
-+      clock-frequency = <1200000000>;
++			clock-frequency = <1200000000>;
  		};
  
  		cpu@2 {
@@ -68,20 +70,90 @@ index 41d57c7..76cf12c 100644
  			device_type = "cpu";
  			reg = <2>;
  			operating-points-v2 = <&cpu0_opp_table>;
-+      clock-frequency = <1200000000>;
++	  		clock-frequency = <1200000000>;
  		};
  
  		cpu@3 {
-@@ -99,6 +81,7 @@
+@@ -99,15 +81,16 @@
  			device_type = "cpu";
  			reg = <3>;
  			operating-points-v2 = <&cpu0_opp_table>;
-+      clock-frequency = <1200000000>;
++	  		clock-frequency = <1200000000>;
  		};
  	};
  
+ 	timer {
+ 		compatible = "arm,armv7-timer";
+ 		interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+-			     <GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+-			     <GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+-			     <GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
++				 <GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
++				 <GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
++				 <GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
+ 	};
+ 
+ 	soc {
+@@ -115,12 +98,12 @@
+ 			compatible = "allwinner,sun8i-h3-mali", "arm,mali-400";
+ 			reg = <0x01c40000 0x10000>;
+ 			interrupts = <GIC_SPI 97 IRQ_TYPE_LEVEL_HIGH>,
+-				     <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>,
+-				     <GIC_SPI 99 IRQ_TYPE_LEVEL_HIGH>,
+-				     <GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>,
+-				     <GIC_SPI 102 IRQ_TYPE_LEVEL_HIGH>,
+-				     <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>,
+-				     <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
++					 <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>,
++					 <GIC_SPI 99 IRQ_TYPE_LEVEL_HIGH>,
++					 <GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>,
++					 <GIC_SPI 102 IRQ_TYPE_LEVEL_HIGH>,
++					 <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>,
++					 <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
+ 			interrupt-names = "gp",
+ 					  "gpmmu",
+ 					  "pp0",
+@@ -153,9 +136,9 @@
+ 		 <&ccu CLK_MMC0_OUTPUT>,
+ 		 <&ccu CLK_MMC0_SAMPLE>;
+ 	clock-names = "ahb",
+-		      "mmc",
+-		      "output",
+-		      "sample";
++			  "mmc",
++			  "output",
++			  "sample";
+ };
+ 
+ &mmc1 {
+@@ -165,9 +148,9 @@
+ 		 <&ccu CLK_MMC1_OUTPUT>,
+ 		 <&ccu CLK_MMC1_SAMPLE>;
+ 	clock-names = "ahb",
+-		      "mmc",
+-		      "output",
+-		      "sample";
++			  "mmc",
++			  "output",
++			  "sample";
+ };
+ 
+ &mmc2 {
+@@ -177,9 +160,9 @@
+ 		 <&ccu CLK_MMC2_OUTPUT>,
+ 		 <&ccu CLK_MMC2_SAMPLE>;
+ 	clock-names = "ahb",
+-		      "mmc",
+-		      "output",
+-		      "sample";
++			  "mmc",
++			  "output",
++			  "sample";
+ };
+ 
+ &pio {
 diff --git a/arch/arm/boot/dts/sunxi-h3-h5.dtsi b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
-index e57a672..30afe17 100644
+index e57a672..9ff5aa5 100644
 --- a/arch/arm/boot/dts/sunxi-h3-h5.dtsi
 +++ b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
 @@ -47,6 +47,7 @@
@@ -92,6 +164,24 @@ index e57a672..30afe17 100644
  
  / {
  	interrupt-parent = <&gic>;
+@@ -60,7 +61,7 @@
+ 
+ 		framebuffer-hdmi {
+ 			compatible = "allwinner,simple-framebuffer",
+-				     "simple-framebuffer";
++					 "simple-framebuffer";
+ 			allwinner,pipeline = "mixer0-lcd0-hdmi";
+ 			clocks = <&display_clocks CLK_MIXER0>,
+ 				 <&ccu CLK_TCON0>, <&ccu CLK_HDMI>;
+@@ -69,7 +70,7 @@
+ 
+ 		framebuffer-tve {
+ 			compatible = "allwinner,simple-framebuffer",
+-				     "simple-framebuffer";
++					 "simple-framebuffer";
+ 			allwinner,pipeline = "mixer1-lcd1-tve";
+ 			clocks = <&display_clocks CLK_MIXER1>,
+ 				 <&ccu CLK_TVE>;
 @@ -105,6 +106,173 @@
  		};
  	};
@@ -112,7 +202,7 @@ index e57a672..30afe17 100644
 +			clock-latency-ns = <244144>; /* 8 32k periods */
 +		};
 +
-+    opp@312000000 {
++		opp@312000000 {
 +			opp-hz = /bits/ 64 <312000000>;
 +			opp-microvolt = <940000 940000 940000>;
 +			clock-latency-ns = <244144>; /* 8 32k periods */
@@ -124,13 +214,13 @@ index e57a672..30afe17 100644
 +			clock-latency-ns = <244144>; /* 8 32k periods */
 +		};
 +
-+    opp@528000000 {
++		opp@528000000 {
 +			opp-hz = /bits/ 64 <528000000>;
 +			opp-microvolt = <940000 940000 940000>;
 +			clock-latency-ns = <244144>; /* 8 32k periods */
 +		};
 +
-+    opp@624000000 {
++		opp@624000000 {
 +			opp-hz = /bits/ 64 <624000000>;
 +			opp-microvolt = <960000 960000 960000>;
 +			clock-latency-ns = <244144>; /* 8 32k periods */
@@ -142,25 +232,25 @@ index e57a672..30afe17 100644
 +			clock-latency-ns = <244144>; /* 8 32k periods */
 +		};
 +
-+    opp@672000000 {
++		opp@672000000 {
 +			opp-hz = /bits/ 64 <672000000>;
 +			opp-microvolt = <970000 970000 970000>;
 +			clock-latency-ns = <244144>; /* 8 32k periods */
 +		};
 +
-+    opp@720000000 {
++		opp@720000000 {
 +			opp-hz = /bits/ 64 <720000000>;
 +			opp-microvolt = <970000 970000 970000>;
 +			clock-latency-ns = <244144>; /* 8 32k periods */
 +		};
 +
-+    opp@768000000 {
++		opp@768000000 {
 +			opp-hz = /bits/ 64 <768000000>;
 +			opp-microvolt = <980000 980000 980000>;
 +			clock-latency-ns = <244144>; /* 8 32k periods */
 +		};
 +
-+    opp@792000000 {
++		opp@792000000 {
 +			opp-hz = /bits/ 64 <792000000>;
 +			opp-microvolt = <1000000 1000000 1000000>;
 +			clock-latency-ns = <244144>; /* 8 32k periods */
@@ -172,19 +262,19 @@ index e57a672..30afe17 100644
 +			clock-latency-ns = <244144>; /* 8 32k periods */
 +		};
 +
-+    opp@864000000 {
++		opp@864000000 {
 +			opp-hz = /bits/ 64 <864000000>;
 +			opp-microvolt = <1040000 1040000 1040000>;
 +			clock-latency-ns = <244144>; /* 8 32k periods */
 +		};
 +
-+    opp@912000000 {
++		opp@912000000 {
 +			opp-hz = /bits/ 64 <912000000>;
 +			opp-microvolt = <1050000 1050000 1050000>;
 +			clock-latency-ns = <244144>; /* 8 32k periods */
 +		};
 +
-+    opp@936000000 {
++		opp@936000000 {
 +			opp-hz = /bits/ 64 <936000000>;
 +			opp-microvolt = <1060000 1060000 1060000>;
 +			clock-latency-ns = <244144>; /* 8 32k periods */
@@ -208,7 +298,7 @@ index e57a672..30afe17 100644
 +			clock-latency-ns = <244144>; /* 8 32k periods */
 +		};
 +
-+    opp@1080000000 {
++		opp@1080000000 {
 +			opp-hz = /bits/ 64 <1080000000>;
 +			opp-microvolt = <1160000 1160000 1160000>;
 +			clock-latency-ns = <244144>; /* 8 32k periods */
@@ -266,19 +356,180 @@ index e57a672..30afe17 100644
  	de: display-engine {
  		compatible = "allwinner,sun8i-h3-display-engine";
  		allwinner,pipelines = <&mixer0>;
-@@ -239,6 +407,11 @@
- 			#size-cells = <0>;
+@@ -123,7 +291,7 @@
+ 			clocks = <&ccu CLK_DE>,
+ 				 <&ccu CLK_BUS_DE>;
+ 			clock-names = "mod",
+-				      "bus";
++					  "bus";
+ 			resets = <&ccu RST_BUS_DE>;
+ 			#clock-cells = <1>;
+ 			#reset-cells = <1>;
+@@ -135,7 +303,7 @@
+ 			clocks = <&display_clocks CLK_BUS_MIXER0>,
+ 				 <&display_clocks CLK_MIXER0>;
+ 			clock-names = "bus",
+-				      "mod";
++					  "mod";
+ 			resets = <&display_clocks RST_MIXER0>;
+ 
+ 			ports {
+@@ -169,7 +337,7 @@
+ 
+ 		tcon0: lcd-controller@1c0c000 {
+ 			compatible = "allwinner,sun8i-h3-tcon-tv",
+-				     "allwinner,sun8i-a83t-tcon-tv";
++					 "allwinner,sun8i-a83t-tcon-tv";
+ 			reg = <0x01c0c000 0x1000>;
+ 			interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&ccu CLK_BUS_TCON0>, <&ccu CLK_TCON0>;
+@@ -255,31 +423,31 @@
+ 		usbphy: phy@1c19400 {
+ 			compatible = "allwinner,sun8i-h3-usb-phy";
+ 			reg = <0x01c19400 0x2c>,
+-			      <0x01c1a800 0x4>,
+-			      <0x01c1b800 0x4>,
+-			      <0x01c1c800 0x4>,
+-			      <0x01c1d800 0x4>;
++				  <0x01c1a800 0x4>,
++				  <0x01c1b800 0x4>,
++				  <0x01c1c800 0x4>,
++				  <0x01c1d800 0x4>;
+ 			reg-names = "phy_ctrl",
+-				    "pmu0",
+-				    "pmu1",
+-				    "pmu2",
+-				    "pmu3";
++					"pmu0",
++					"pmu1",
++					"pmu2",
++					"pmu3";
+ 			clocks = <&ccu CLK_USB_PHY0>,
+ 				 <&ccu CLK_USB_PHY1>,
+ 				 <&ccu CLK_USB_PHY2>,
+ 				 <&ccu CLK_USB_PHY3>;
+ 			clock-names = "usb0_phy",
+-				      "usb1_phy",
+-				      "usb2_phy",
+-				      "usb3_phy";
++					  "usb1_phy",
++					  "usb2_phy",
++					  "usb3_phy";
+ 			resets = <&ccu RST_USB_PHY0>,
+ 				 <&ccu RST_USB_PHY1>,
+ 				 <&ccu RST_USB_PHY2>,
+ 				 <&ccu RST_USB_PHY3>;
+ 			reset-names = "usb0_reset",
+-				      "usb1_reset",
+-				      "usb2_reset",
+-				      "usb3_reset";
++					  "usb1_reset",
++					  "usb2_reset",
++					  "usb3_reset";
+ 			status = "disabled";
+ 			#phy-cells = <1>;
+ 		};
+@@ -385,7 +553,7 @@
+ 			/* compatible is in per SoC .dtsi file */
+ 			reg = <0x01c20800 0x400>;
+ 			interrupts = <GIC_SPI 11 IRQ_TYPE_LEVEL_HIGH>,
+-				     <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>;
++					 <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&ccu CLK_BUS_PIO>, <&osc24M>, <&osc32k>;
+ 			clock-names = "apb", "hosc", "losc";
+ 			gpio-controller;
+@@ -395,8 +563,8 @@
+ 
+ 			emac_rgmii_pins: emac0 {
+ 				pins = "PD0", "PD1", "PD2", "PD3", "PD4",
+-				       "PD5", "PD7", "PD8", "PD9", "PD10",
+-				       "PD12", "PD13", "PD15", "PD16", "PD17";
++					   "PD5", "PD7", "PD8", "PD9", "PD10",
++					   "PD12", "PD13", "PD15", "PD16", "PD17";
+ 				function = "emac";
+ 				drive-strength = <40>;
+ 			};
+@@ -418,7 +586,7 @@
+ 
+ 			mmc0_pins: mmc0 {
+ 				pins = "PF0", "PF1", "PF2", "PF3",
+-				       "PF4", "PF5";
++					   "PF4", "PF5";
+ 				function = "mmc0";
+ 				drive-strength = <30>;
+ 				bias-pull-up;
+@@ -426,7 +594,7 @@
+ 
+ 			mmc1_pins: mmc1 {
+ 				pins = "PG0", "PG1", "PG2", "PG3",
+-				       "PG4", "PG5";
++					   "PG4", "PG5";
+ 				function = "mmc1";
+ 				drive-strength = <30>;
+ 				bias-pull-up;
+@@ -434,9 +602,9 @@
+ 
+ 			mmc2_8bit_pins: mmc2_8bit {
+ 				pins = "PC5", "PC6", "PC8",
+-				       "PC9", "PC10", "PC11",
+-				       "PC12", "PC13", "PC14",
+-				       "PC15", "PC16";
++					   "PC9", "PC10", "PC11",
++					   "PC12", "PC13", "PC14",
++					   "PC15", "PC16";
+ 				function = "mmc2";
+ 				drive-strength = <30>;
+ 				bias-pull-up;
+@@ -492,7 +660,7 @@
+ 			#thermal-sensor-cells = <0>;
+ 			compatible = "allwinner,sun8i-h3-ths";
+ 			reg = <0x01c25000 0x400>,
+-			      <0x01c14234 0x4>;
++				  <0x01c14234 0x4>;
+ 			reg-names = "ths", "calibration";
+ 			interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
+ 			resets = <&ccu RST_BUS_THS>;
+@@ -505,7 +673,7 @@
+ 			compatible = "allwinner,sun4i-a10-timer";
+ 			reg = <0x01c20c00 0xa0>;
+ 			interrupts = <GIC_SPI 18 IRQ_TYPE_LEVEL_HIGH>,
+-				     <GIC_SPI 19 IRQ_TYPE_LEVEL_HIGH>;
++					 <GIC_SPI 19 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&osc24M>;
  		};
  
-+    sid: eeprom@01c14000 {
-+      compatible = "allwinner,sun8i-h3-sid";
-+      reg = <0x01c14000 0x400>;
-+    };
-+
- 		usb_otg: usb@1c19000 {
- 			compatible = "allwinner,sun8i-h3-musb";
- 			reg = <0x01c19000 0x400>;
-@@ -876,6 +1049,26 @@
+@@ -751,9 +919,9 @@
+ 		gic: interrupt-controller@1c81000 {
+ 			compatible = "arm,gic-400";
+ 			reg = <0x01c81000 0x1000>,
+-			      <0x01c82000 0x2000>,
+-			      <0x01c84000 0x2000>,
+-			      <0x01c86000 0x2000>;
++				  <0x01c82000 0x2000>,
++				  <0x01c84000 0x2000>,
++				  <0x01c86000 0x2000>;
+ 			interrupt-controller;
+ 			#interrupt-cells = <3>;
+ 			interrupts = <GIC_PPI 9 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
+@@ -761,7 +929,7 @@
+ 
+ 		hdmi: hdmi@1ee0000 {
+ 			compatible = "allwinner,sun8i-h3-dw-hdmi",
+-				     "allwinner,sun8i-a83t-dw-hdmi";
++					 "allwinner,sun8i-a83t-dw-hdmi";
+ 			reg = <0x01ee0000 0x10000>;
+ 			reg-io-width = <1>;
+ 			interrupts = <GIC_SPI 88 IRQ_TYPE_LEVEL_HIGH>;
+@@ -807,7 +975,7 @@
+ 			compatible = "allwinner,sun6i-a31-rtc";
+ 			reg = <0x01f00000 0x54>;
+ 			interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>,
+-				     <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
++					 <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
+ 		};
+ 
+ 		r_ccu: clock@1f01400 {
+@@ -876,6 +1044,26 @@
  			polling-delay-passive = <330>;
  			polling-delay = <1000>;
  			thermal-sensors = <&ths 0>;
@@ -305,69 +556,70 @@ index e57a672..30afe17 100644
  		};
  	};
  };
-diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts
-index cc268a6..080db63 100644
---- a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts
-+++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts
-@@ -101,6 +101,75 @@
- 	};
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-plus2.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-plus2.dts
+index 506e25b..a3e78b5 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-plus2.dts
++++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-plus2.dts
+@@ -126,6 +126,76 @@
+ 	status = "okay";
  };
  
-+&cpu0{
++&cpu0 {
++  cpu0-supply = <&vdd_cpux>;
 +  cooling-max-level = <16>;
 +};
 +
 +/* We need to re-define this, as we do not have a proper voltage regulator */
-+&cpu0_opp_table{
++&cpu0_opp_table {
 +  opp@120000000 {
 +    opp-microvolt = <1100000 1100000 1100000>;
 +  };
-+  opp@240000000{
++  opp@240000000 {
 +    opp-microvolt = <1100000 1100000 1100000>;
 +  };
-+  opp@312000000{
++  opp@312000000 {
 +    opp-microvolt = <1100000 1100000 1100000>;
 +  };
-+  opp@480000000{
++  opp@480000000 {
 +    opp-microvolt = <1100000 1100000 1100000>;
 +  };
-+  opp@528000000{
++  opp@528000000 {
 +    opp-microvolt = <1100000 1100000 1100000>;
 +  };
-+  opp@624000000{
++  opp@624000000 {
 +    opp-microvolt = <1100000 1100000 1100000>;
 +  };
-+  opp@648000000{
++  opp@648000000 {
 +    opp-microvolt = <1100000 1100000 1100000>;
 +  };
-+  opp@672000000{
++  opp@672000000 {
 +    opp-microvolt = <1100000 1100000 1100000>;
 +  };
-+  opp@720000000{
++  opp@720000000 {
 +    opp-microvolt = <1100000 1100000 1100000>;
 +  };
-+  opp@768000000{
++  opp@768000000 {
 +    opp-microvolt = <1100000 1100000 1100000>;
 +  };
-+  opp@792000000{
++  opp@792000000 {
 +    opp-microvolt = <1100000 1100000 1100000>;
 +  };
-+  opp@816000000{
++  opp@816000000 {
 +    opp-microvolt = <1100000 1100000 1100000>;
 +  };
-+  opp@864000000{
++  opp@864000000 {
 +    opp-microvolt = <1100000 1100000 1100000>;
 +  };
-+  opp@912000000{
++  opp@912000000 {
 +    opp-microvolt = <1100000 1100000 1100000>;
 +  };
-+  opp@936000000{
++  opp@936000000 {
 +    opp-microvolt = <1100000 1100000 1100000>;
 +  };
-+  opp@960000000{
++  opp@960000000 {
 +    opp-microvolt = <1100000 1100000 1100000>;
 +  };
-+  opp@1008000000{
++  opp@1008000000 {
 +    opp-microvolt = <1100000 1100000 1100000>;
 +  };
 +  /delete-node/ opp@1056000000;
@@ -385,8 +637,113 @@ index cc268a6..080db63 100644
  &ehci0 {
  	status = "okay";
  };
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts
+index cc268a6..e396abf 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts
++++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts
+@@ -99,6 +99,100 @@
+ 		gpio = <&r_pio 0 2 GPIO_ACTIVE_HIGH>; /* PL2 */
+ 		status = "okay";
+ 	};
++
++	reg_vdd_cpux: gpio-regulator {
++		compatible = "regulator-gpio";
++		pinctrl-names = "default";
++		regulator-name = "vdd-cpux";
++		regulator-type = "voltage";
++		regulator-boot-on;
++		regulator-always-on;
++		regulator-min-microvolt = <1100000>;
++		regulator-max-microvolt = <1100000>;
++		regulator-ramp-delay = <50>; /* 4ms */
++		gpios = <&r_pio 0 6 GPIO_ACTIVE_HIGH>;
++		gpios-states = <0x1>;
++		states = <1100000 0x0
++			  1300000 0x1>;
++	};
++};
++
++&codec {
++	allwinner,audio-routing =
++		"Line Out", "LINEOUT",
++		"MIC1", "Mic",
++		"Mic",  "MBIAS";
++	status = "okay";
++};
++
++&cpu0 {
++  cpu0-supply = <&reg_vdd_cpux>;
++  cooling-max-level = <16>;
++};
++
++/* We need to re-define this, as we do not have a proper voltage regulator */
++&cpu0_opp_table {
++  opp@120000000 {
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@240000000 {
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@312000000 {
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@480000000 {
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@528000000 {
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@624000000 {
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@648000000 {
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@672000000 {
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@720000000 {
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@768000000 {
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@792000000 {
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@816000000 {
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@864000000 {
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@912000000 {
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@936000000 {
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@960000000 {
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  opp@1008000000 {
++    opp-microvolt = <1100000 1100000 1100000>;
++  };
++  /delete-node/ opp@1056000000;
++  /delete-node/ opp@1080000000;
++  /delete-node/ opp@1104000000;
++  /delete-node/ opp@1152000000;
++  /delete-node/ opp@1200000000;
++  /delete-node/ opp@1224000000;
++  /delete-node/ opp@1248000000;
++  /delete-node/ opp@1296000000;
++  /delete-node/ opp@1344000000;
++  /delete-node/ opp@1368000000;
+ };
+ 
+ &ehci0 {
 diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
-index 62d646b..88d3ba2 100644
+index 62d646b..e140b72 100644
 --- a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
 +++ b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
 @@ -52,6 +52,13 @@
@@ -396,8 +753,8 @@ index 62d646b..88d3ba2 100644
 +			clocks = <&ccu CLK_CPUX>;
 +			clock-names = "cpu";
 +			operating-points-v2 = <&cpu0_opp_table>;
-+      clock-frequency = <1200000000>;
-+      #cooling-cells = <2>;
++	  		clock-frequency = <1200000000>;
++	  		#cooling-cells = <2>;
 +			cooling-min-level = <0>;
 +			cooling-max-level = <26>;
  		};
@@ -407,8 +764,8 @@ index 62d646b..88d3ba2 100644
  			device_type = "cpu";
  			reg = <1>;
  			enable-method = "psci";
-+      operating-points-v2 = <&cpu0_opp_table>;
-+      clock-frequency = <1200000000>;
++	  		operating-points-v2 = <&cpu0_opp_table>;
++	  		clock-frequency = <1200000000>;
  		};
  
  		cpu@2 {
@@ -416,8 +773,8 @@ index 62d646b..88d3ba2 100644
  			device_type = "cpu";
  			reg = <2>;
  			enable-method = "psci";
-+      operating-points-v2 = <&cpu0_opp_table>;
-+      clock-frequency = <1200000000>;
++	  		operating-points-v2 = <&cpu0_opp_table>;
++	  		clock-frequency = <1200000000>;
  		};
  
  		cpu@3 {
@@ -425,11 +782,60 @@ index 62d646b..88d3ba2 100644
  			device_type = "cpu";
  			reg = <3>;
  			enable-method = "psci";
-+      operating-points-v2 = <&cpu0_opp_table>;
-+      clock-frequency = <1200000000>;
++	  		operating-points-v2 = <&cpu0_opp_table>;
++	  		clock-frequency = <1200000000>;
  		};
  	};
  
+@@ -85,11 +98,11 @@
+ 		compatible = "arm,armv8-timer";
+ 		interrupts = <GIC_PPI 13
+ 				(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+-			     <GIC_PPI 14
++				 <GIC_PPI 14
+ 				(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+-			     <GIC_PPI 11
++				 <GIC_PPI 11
+ 				(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+-			     <GIC_PPI 10
++				 <GIC_PPI 10
+ 				(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
+ 	};
+ };
+@@ -104,28 +117,28 @@
+ 
+ &mmc0 {
+ 	compatible = "allwinner,sun50i-h5-mmc",
+-		     "allwinner,sun50i-a64-mmc";
++			 "allwinner,sun50i-a64-mmc";
+ 	clocks = <&ccu CLK_BUS_MMC0>, <&ccu CLK_MMC0>;
+ 	clock-names = "ahb", "mmc";
+ };
+ 
+ &mmc1 {
+ 	compatible = "allwinner,sun50i-h5-mmc",
+-		     "allwinner,sun50i-a64-mmc";
++			 "allwinner,sun50i-a64-mmc";
+ 	clocks = <&ccu CLK_BUS_MMC1>, <&ccu CLK_MMC1>;
+ 	clock-names = "ahb", "mmc";
+ };
+ 
+ &mmc2 {
+ 	compatible = "allwinner,sun50i-h5-emmc",
+-		     "allwinner,sun50i-a64-emmc";
++			 "allwinner,sun50i-a64-emmc";
+ 	clocks = <&ccu CLK_BUS_MMC2>, <&ccu CLK_MMC2>;
+ 	clock-names = "ahb", "mmc";
+ };
+ 
+ &pio {
+ 	interrupts = <GIC_SPI 11 IRQ_TYPE_LEVEL_HIGH>,
+-		     <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>,
+-		     <GIC_SPI 23 IRQ_TYPE_LEVEL_HIGH>;
++			 <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>,
++			 <GIC_SPI 23 IRQ_TYPE_LEVEL_HIGH>;
+ 	compatible = "allwinner,sun50i-h5-pinctrl";
+ };
 diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
 index fe14c57..afb511a 100644
 --- a/drivers/cpufreq/cpufreq-dt-platdev.c
