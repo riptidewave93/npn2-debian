@@ -1,4 +1,4 @@
-From d42cd86d74f57b8fe0b09131cf67f7ecc5a0447e Mon Sep 17 00:00:00 2001
+From 1f0d78e15075cec3b0058bc7650172022657b97c Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Wed, 2 May 2018 09:34:44 -0500
 Subject: [PATCH 4/6] env: Add auto probe for sunxi boards This adds the
@@ -12,10 +12,10 @@ Subject: [PATCH 4/6] env: Add auto probe for sunxi boards This adds the
  2 files changed, 54 insertions(+)
 
 diff --git a/env/Kconfig b/env/Kconfig
-index f403906..d66fc70 100644
+index 8618376..88ec675 100644
 --- a/env/Kconfig
 +++ b/env/Kconfig
-@@ -390,6 +390,17 @@ config ENV_FAT_DEVICE_AND_PART
+@@ -391,6 +391,17 @@ config ENV_FAT_DEVICE_AND_PART
  	                   If none, first valid partition in device D. If no
  	                   partition table then means device D.
  
@@ -31,7 +31,7 @@ index f403906..d66fc70 100644
 +	  by ENV_FAT_DEVICE_AND_PART.
 +
  config ENV_FAT_FILE
- 	string "Name of the FAT file to use for the environemnt"
+ 	string "Name of the FAT file to use for the environment"
  	depends on ENV_IS_IN_FAT
 diff --git a/env/fat.c b/env/fat.c
 index 5e5b1ef..5ba0db5 100644

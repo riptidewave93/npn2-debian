@@ -1,4 +1,4 @@
-From d4c35089547a5fa1bd4511f2ac08dac366468b4a Mon Sep 17 00:00:00 2001
+From c02ad671ca558d2fa4474ab0f25ba17101a0b0ad Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Fri, 20 Apr 2018 18:18:39 -0500
 Subject: [PATCH 1/6] sunxi: Add SY8106A workaround Currently the u-boot
@@ -14,10 +14,10 @@ Subject: [PATCH 1/6] sunxi: Add SY8106A workaround Currently the u-boot
  4 files changed, 97 insertions(+), 1 deletion(-)
 
 diff --git a/arch/arm/include/asm/arch-sunxi/clock_sun6i.h b/arch/arm/include/asm/arch-sunxi/clock_sun6i.h
-index 8acf79f..b01f49f 100644
+index 3a59016..c230206 100644
 --- a/arch/arm/include/asm/arch-sunxi/clock_sun6i.h
 +++ b/arch/arm/include/asm/arch-sunxi/clock_sun6i.h
-@@ -511,6 +511,7 @@ void clock_set_pll5(unsigned int clk, bool sigma_delta_enable);
+@@ -517,6 +517,7 @@ void clock_set_pll5(unsigned int clk, bool sigma_delta_enable);
  void clock_set_pll10(unsigned int hz);
  void clock_set_pll11(unsigned int clk, bool sigma_delta_enable);
  void clock_set_mipi_pll(unsigned int hz);
@@ -26,10 +26,10 @@ index 8acf79f..b01f49f 100644
  unsigned int clock_get_pll6(void);
  unsigned int clock_get_mipi_pll(void);
 diff --git a/arch/arm/mach-sunxi/Kconfig b/arch/arm/mach-sunxi/Kconfig
-index a3f7723..2d58411 100644
+index 3624a03..606d3c2 100644
 --- a/arch/arm/mach-sunxi/Kconfig
 +++ b/arch/arm/mach-sunxi/Kconfig
-@@ -281,6 +281,28 @@ config MACH_SUN50I_H5
+@@ -285,6 +285,28 @@ config MACH_SUN50I_H5
  
  endchoice
  

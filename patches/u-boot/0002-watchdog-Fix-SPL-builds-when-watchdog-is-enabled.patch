@@ -1,4 +1,4 @@
-From f2c6f102e63389e7d69972df6f9b5da1ee28363c Mon Sep 17 00:00:00 2001
+From 533ed20751f923f8ed249a12ecb2bc875b892179 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Fri, 20 Apr 2018 18:19:38 -0500
 Subject: [PATCH 2/6] watchdog: Fix SPL builds when watchdog is enabled Without

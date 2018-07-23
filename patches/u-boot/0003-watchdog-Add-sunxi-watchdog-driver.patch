@@ -1,4 +1,4 @@
-From ecb1199cf9af456821694a7917d9b657b52f6da4 Mon Sep 17 00:00:00 2001
+From 758c7e2692ff0c559a6c9032623a266645b59615 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Fri, 20 Apr 2018 18:22:33 -0500
 Subject: [PATCH 3/6] watchdog: Add sunxi watchdog driver Based on the linux
@@ -14,7 +14,7 @@ Subject: [PATCH 3/6] watchdog: Add sunxi watchdog driver Based on the linux
  create mode 100644 drivers/watchdog/sunxi_wdt.c
 
 diff --git a/common/board_f.c b/common/board_f.c
-index fa667c7..8859179 100644
+index e943347..9571de1 100644
 --- a/common/board_f.c
 +++ b/common/board_f.c
 @@ -91,7 +91,8 @@ static int init_func_watchdog_init(void)
