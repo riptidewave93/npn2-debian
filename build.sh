@@ -20,17 +20,17 @@ rootfs="${buildenv}/rootfs"
 bootfs="${rootfs}/boot"
 
 # Compiler settings
-linaro_release="7.2-2017.11"
-linaro_full_version="7.2.1-2017.11"
+linaro_release="7.3-2018.05"
+linaro_full_version="7.3.1-2018.05"
 
 # U-Boot settings
 uboot_repo="https://github.com/u-boot/u-boot.git"
-uboot_branch="v2018.07"
+uboot_branch="v2018.09"
 uboot_overlay_dir="u-boot"
 
 # Kernel settings
-kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
-kernel_branch="v4.18-rc5"
+kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git"
+kernel_branch="v4.18.12"
 kernel_config="nanopi_h5_defconfig" # Global config for all boards
 kernel_overlay_dir="kernel"
 
@@ -84,9 +84,11 @@ cd $buildenv
 
 # Setup our build toolchain for this
 echo "DEB-BUILDER: Setting up Toolchain"
-wget https://releases.linaro.org/components/toolchain/binaries/$linaro_release/aarch64-linux-gnu/gcc-linaro-$linaro_full_version-x86_64_aarch64-linux-gnu.tar.xz
-tar xf gcc-linaro-$linaro_full_version-x86_64_aarch64-linux-gnu.tar.xz -C $buildenv/toolchain
-rm gcc-linaro-$linaro_full_version-x86_64_aarch64-linux-gnu.tar.xz
+if [ ! -e $ourpath/downloads/gcc-linaro-$linaro_full_version-x86_64_aarch64-linux-gnu.tar.xz ]; then
+	mkdir $ourpath/downloads
+	wget https://releases.linaro.org/components/toolchain/binaries/$linaro_release/aarch64-linux-gnu/gcc-linaro-$linaro_full_version-x86_64_aarch64-linux-gnu.tar.xz -P $ourpath/downloads
+fi
+tar xf $ourpath/downloads/gcc-linaro-$linaro_full_version-x86_64_aarch64-linux-gnu.tar.xz -C $buildenv/toolchain
 export PATH=$buildenv/toolchain/gcc-linaro-$linaro_full_version-x86_64_aarch64-linux-gnu/bin:$PATH
 export GCC_COLORS=auto
 export CROSS_COMPILE=aarch64-linux-gnu-

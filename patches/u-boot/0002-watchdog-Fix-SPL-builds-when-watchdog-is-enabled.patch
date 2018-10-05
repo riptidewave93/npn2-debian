@@ -1,10 +1,24 @@
-From 533ed20751f923f8ed249a12ecb2bc875b892179 Mon Sep 17 00:00:00 2001
+From 7c89e2ac158bfd8bd0c1d4ddc7e2f8533c7e8904 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Fri, 20 Apr 2018 18:19:38 -0500
-Subject: [PATCH 2/6] watchdog: Fix SPL builds when watchdog is enabled Without
- this fix, u-boot fails to comple as it tries to load watchdog.h during an SPL
- build. This breaks support for things such as the sunxi arch.
+Date: Thu, 4 Oct 2018 20:49:01 -0500
+Subject: [PATCH 2/6] watchdog: Fix SPL builds when watchdog is enabled
 
+Without this fix, u-boot fails to comple as it tries to load watchdog.h
+during an SPL build. This breaks support for things such as the sunxi
+arch.
+
+lib/built-in.o: In function `udelay': ./u-boot/lib/time.c:167: undefined
+reference to `hw_watchdog_reset'
+drivers/built-in.o: In function `NS16550_putc':
+./u-boot/drivers/serial/ns16550.c:217: undefined reference to
+`hw_watchdog_reset'
+drivers/built-in.o: In function `NS16550_getc':
+./u-boot/drivers/serial/ns16550.c:228: undefined reference to
+`hw_watchdog_reset'
+scripts/Makefile.spl:353: recipe for target 'spl/u-boot-spl' failed
+make[1]: *** [spl/u-boot-spl] Error 1
+Makefile:1508: recipe for target 'spl/u-boot-spl' failed
+make: *** [spl/u-boot-spl] Error 2
 ---
  include/watchdog.h | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)

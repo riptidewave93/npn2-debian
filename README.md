@@ -2,11 +2,11 @@
 
 Build script to build a Debian 9 image for FriendlyARM NanoPi H5 based boards, as well as all dependencies. This includes the following:
 
-- Mainline Linux Kernel - [v4.18-rc5](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tag/?h=v4.18-rc5)
+- Mainline Linux Kernel - [v4.18.12](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tag/?h=v4.18.12)
 - Arm Trusted Firmware - [allwinner/sunxi branch](https://github.com/apritzel/arm-trusted-firmware/tree/allwinner)
-- Mainline U-Boot - [v2018.07](https://github.com/u-boot/u-boot/tree/v2018.07)
+- Mainline U-Boot - [v2018.09](https://github.com/u-boot/u-boot/tree/v2018.09)
 
-Note that there are patches/modifications applied to the kernel and u-boot. The changes made can be seen in the `./patches` and `./overlay` directories.
+Note that there are patches/modifications applied to the kernel and u-boot. The changes made can be seen in the `./patches` and `./overlay` directories. Also, a `./downloads` directory is generated to store a copy of the toolchain during the first build.
 
 ## Supported Boards
 Currently images for the following devices are generated:
@@ -34,4 +34,4 @@ Currently images for the following devices are generated:
 
 - This is only tested on a Debian 9 x86_64 build host. Note your package names may vary per linux distro.
 - This code is very dirty, and should only be used as an example. Production use is not advised. Please only proceed if you know what you are doing!
-- Public images built from this can be found at [https://images.chrisrblake.com/](https://images.chrisrblake.com/) and are generated monthly.
+- Public images built from this can be found at [https://images.chrisrblake.com/](https://images.chrisrblake.com/) and are generated monthly as long as things don't break.

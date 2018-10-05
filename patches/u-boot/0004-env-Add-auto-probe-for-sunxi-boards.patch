@@ -1,18 +1,19 @@
-From 1f0d78e15075cec3b0058bc7650172022657b97c Mon Sep 17 00:00:00 2001
+From 316892a9e316451a5030db2cde4faa439f2649aa Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Wed, 2 May 2018 09:34:44 -0500
-Subject: [PATCH 4/6] env: Add auto probe for sunxi boards This adds the
- ability for sunxi boards to save/load their uboot env on the actual booted
- mmc, compared to what is statically set. This comes in handy when building a
- shared image that could run on either internal mmc or an sd card.
+Date: Thu, 4 Oct 2018 20:50:12 -0500
+Subject: [PATCH 4/6] env: Add auto probe for sunxi boards
 
+This adds the ability for sunxi boards to save/load their uboot env on
+the actual booted mmc, compared to what is statically set. This comes in
+handy when building a shared image that could run on either internal mmc
+or an sd card.
 ---
  env/Kconfig | 11 +++++++++++
  env/fat.c   | 43 +++++++++++++++++++++++++++++++++++++++++++
  2 files changed, 54 insertions(+)
 
 diff --git a/env/Kconfig b/env/Kconfig
-index 8618376..88ec675 100644
+index f23be00..248dd99 100644
 --- a/env/Kconfig
 +++ b/env/Kconfig
 @@ -391,6 +391,17 @@ config ENV_FAT_DEVICE_AND_PART
@@ -34,7 +35,7 @@ index 8618376..88ec675 100644
  	string "Name of the FAT file to use for the environment"
  	depends on ENV_IS_IN_FAT
 diff --git a/env/fat.c b/env/fat.c
-index 5e5b1ef..5ba0db5 100644
+index 7f74c64..44dbdad 100644
 --- a/env/fat.c
 +++ b/env/fat.c
 @@ -18,6 +18,11 @@

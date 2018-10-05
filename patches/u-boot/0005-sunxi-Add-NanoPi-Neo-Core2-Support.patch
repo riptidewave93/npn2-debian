@@ -1,22 +1,22 @@
-From 6fc27c17178bca0f15f608f4167d19a62543f9ea Mon Sep 17 00:00:00 2001
+From e0abc7dcf8e82e5090780ecda38e3c18e7b460a3 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Fri, 20 Apr 2018 18:36:43 -0500
-Subject: [PATCH 5/6] sunxi: Add NanoPi Neo Core2 Support This adds support for
- the NanoPi Neo Core2, a board based on the H5 SoC.
+Date: Thu, 4 Oct 2018 20:52:02 -0500
+Subject: [PATCH 5/6] sunxi: Add NanoPi Neo Core2 Support
 
+This adds support for the NanoPi Neo Core2, a board based on the H5 SoC.
 ---
  arch/arm/dts/Makefile                       |   1 +
- arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts | 127 ++++++++++++++++++++++++++++
- configs/nanopi_neo_core2_defconfig          |  19 +++++
- 3 files changed, 147 insertions(+)
+ arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts | 154 ++++++++++++++++++++++++++++
+ configs/nanopi_neo_core2_defconfig          |  19 ++++
+ 3 files changed, 174 insertions(+)
  create mode 100644 arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
  create mode 100644 configs/nanopi_neo_core2_defconfig
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 9460230..16337ef 100644
+index 31d9256..b9e3fe0 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -380,6 +380,7 @@ dtb-$(CONFIG_MACH_SUN8I_V3S) += \
+@@ -387,6 +387,7 @@ dtb-$(CONFIG_MACH_SUN8I_V3S) += \
  dtb-$(CONFIG_MACH_SUN50I_H5) += \
  	sun50i-h5-libretech-all-h3-cc.dtb \
  	sun50i-h5-nanopi-neo2.dtb \
@@ -26,12 +26,12 @@ index 9460230..16337ef 100644
  	sun50i-h5-orangepi-pc2.dtb \
 diff --git a/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts b/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
 new file mode 100644
-index 0000000..9eb6633
+index 0000000..28e7e8f
 --- /dev/null
 +++ b/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
-@@ -0,0 +1,127 @@
+@@ -0,0 +1,154 @@
 +/*
-+ * Copyright (C) 2017 Chris Blake <chrisrblake93@gmail.com>
++ * Copyright (C) 2017-2018 Chris Blake <chrisrblake93@gmail.com>
 + *
 + * This file is dual-licensed: you can use it either under the terms
 + * of the GPL or the X11 license, at your option. Note that this dual
@@ -73,7 +73,6 @@ index 0000000..9eb6633
 + */
 +
 +/dts-v1/;
-+
 +#include "sun50i-h5.dtsi"
 +
 +#include <dt-bindings/gpio/gpio.h>
@@ -92,17 +91,37 @@ index 0000000..9eb6633
 +		stdout-path = "serial0:115200n8";
 +	};
 +
++	leds {
++		compatible = "gpio-leds";
++
++		pwr {
++			label = "nanopi:red:pwr";
++			gpios = <&r_pio 0 10 GPIO_ACTIVE_HIGH>;
++			default-state = "on";
++		};
++
++		status {
++			label = "nanopi:green:status";
++			gpios = <&pio 0 10 GPIO_ACTIVE_HIGH>;
++		};
++	};
++
++	reg_gmac_3v3: gmac-3v3 {
++		compatible = "regulator-fixed";
++		pinctrl-names = "default";
++		regulator-name = "gmac-3v3";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		startup-delay-us = <100000>;
++		enable-active-high;
++		gpio = <&pio 3 6 GPIO_ACTIVE_HIGH>;
++	};
++
 +	reg_vcc3v3: vcc3v3 {
 +		compatible = "regulator-fixed";
 +		regulator-name = "vcc3v3";
 +		regulator-min-microvolt = <3300000>;
 +		regulator-max-microvolt = <3300000>;
-+	};
-+
-+	r_i2c: i2c@01f02400 {
-+		compatible = "allwinner,sun6i-a31-i2c";
-+		reg = <0x01f02400 0x400>;
-+		status = "okay";
 +	};
 +};
 +
@@ -113,21 +132,20 @@ index 0000000..9eb6633
 +&emac {
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&emac_rgmii_pins>;
++	phy-supply = <&reg_gmac_3v3>;
++	phy-handle = <&ext_rgmii_phy>;
 +	phy-mode = "rgmii";
-+	phy = <&phy1>;
 +	status = "okay";
++};
 +
-+	phy1: ethernet-phy@7 {
++&external_mdio {
++	ext_rgmii_phy: ethernet-phy@7 {
++		compatible = "ethernet-phy-ieee802.3-c22";
 +		reg = <7>;
 +	};
 +};
 +
 +&mmc0 {
-+	compatible = "allwinner,sun50i-h5-mmc",
-+		     "allwinner,sun50i-a64-mmc",
-+		     "allwinner,sun5i-a13-mmc";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&mmc0_pins_a>, <&mmc0_cd_pin>;
 +	vmmc-supply = <&reg_vcc3v3>;
 +	bus-width = <4>;
 +	cd-gpios = <&pio 5 6 GPIO_ACTIVE_LOW>; /* PF6 */
@@ -148,9 +166,18 @@ index 0000000..9eb6633
 +	status = "okay";
 +};
 +
++&r_i2c {
++	status = "okay";
++};
++
 +&uart0 {
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&uart0_pins_a>;
++	status = "okay";
++};
++
++&usb_otg {
++	dr_mode = "otg";
 +	status = "okay";
 +};
 +

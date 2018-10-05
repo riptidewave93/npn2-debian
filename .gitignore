@@ -1,4 +1,5 @@
 BuildEnv
 output
 requires
+downloads
 .build

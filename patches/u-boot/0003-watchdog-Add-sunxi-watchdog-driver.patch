@@ -1,20 +1,20 @@
-From 758c7e2692ff0c559a6c9032623a266645b59615 Mon Sep 17 00:00:00 2001
+From 11708335c681bc4d050dcc18c109418f709ceec9 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Fri, 20 Apr 2018 18:22:33 -0500
-Subject: [PATCH 3/6] watchdog: Add sunxi watchdog driver Based on the linux
- mainline driver, this adds support for the hardware watchdog timer found on
- sunxi boards.
+Date: Thu, 4 Oct 2018 20:49:33 -0500
+Subject: [PATCH 3/6] watchdog: Add sunxi watchdog driver
 
+Based on the linux mainline driver, this adds support for the hardware
+watchdog timer found on sunxi boards.
 ---
  common/board_f.c             |   3 +-
  drivers/watchdog/Kconfig     |  18 ++++++++
  drivers/watchdog/Makefile    |   1 +
- drivers/watchdog/sunxi_wdt.c | 102 +++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 123 insertions(+), 1 deletion(-)
+ drivers/watchdog/sunxi_wdt.c | 101 +++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 122 insertions(+), 1 deletion(-)
  create mode 100644 drivers/watchdog/sunxi_wdt.c
 
 diff --git a/common/board_f.c b/common/board_f.c
-index e943347..9571de1 100644
+index 88d7700..7b0d912 100644
 --- a/common/board_f.c
 +++ b/common/board_f.c
 @@ -91,7 +91,8 @@ static int init_func_watchdog_init(void)
@@ -28,7 +28,7 @@ index e943347..9571de1 100644
  	puts("       Watchdog enabled\n");
  # endif
 diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index 148c6a0..963cc37 100644
+index d545b3e..bd09dad 100644
 --- a/drivers/watchdog/Kconfig
 +++ b/drivers/watchdog/Kconfig
 @@ -20,6 +20,24 @@ config BCM2835_WDT
@@ -57,7 +57,7 @@ index 148c6a0..963cc37 100644
  	bool "TI OMAP watchdog driver"
  	depends on ARCH_OMAP2PLUS
 diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
-index f405f51..ce27bb5 100644
+index 08406ca..1c11646 100644
 --- a/drivers/watchdog/Makefile
 +++ b/drivers/watchdog/Makefile
 @@ -23,3 +23,4 @@ obj-$(CONFIG_BCM2835_WDT)       += bcm2835_wdt.o
@@ -67,10 +67,10 @@ index f405f51..ce27bb5 100644
 +obj-$(CONFIG_SUNXI_WDT) += sunxi_wdt.o
 diff --git a/drivers/watchdog/sunxi_wdt.c b/drivers/watchdog/sunxi_wdt.c
 new file mode 100644
-index 0000000..a334dc5
+index 0000000..7828f41
 --- /dev/null
 +++ b/drivers/watchdog/sunxi_wdt.c
-@@ -0,0 +1,102 @@
+@@ -0,0 +1,101 @@
 +/*
 + * (C) Copyright 2018 Chris Blake <chrisrblake93 at gmail.com>
 + *
@@ -86,7 +86,6 @@ index 0000000..a334dc5
 +
 +#define WDT_CTRL_RESTART	(0x1 << 0)
 +#define WDT_CTRL_KEY		(0x0a57 << 1)
-+#define WDT_MODE_EN		(0x1 << 0)
 +#define WDT_TIMEOUT_MASK	(0xf)
 +
 +struct sunxi_wdt_reg {
@@ -98,7 +97,7 @@ index 0000000..a334dc5
 +	u32 wdt_reset_val;
 +};
 +
-+static const struct sunxi_wdt_reg sun4i_wdt_reg = {
++static const struct sunxi_wdt_reg sun4i_dog_regs = {
 +	.wdt_ctrl = 0x00,
 +	.wdt_cfg = 0x04,
 +	.wdt_mode = 0x04,

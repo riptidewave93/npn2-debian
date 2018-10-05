@@ -1,0 +1,102 @@
+From 25d59b92af585a4ab05e0de1b6fb292fdb39627d Mon Sep 17 00:00:00 2001
+From: Chris Blake <chrisrblake93@gmail.com>
+Date: Thu, 4 Oct 2018 20:53:33 -0500
+Subject: [PATCH 6/6] DONOTMERGE: sunxi: Enable i2c0 on NanoPi Neo Core2
+
+This in theory should work... shrug
+---
+ arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts |  7 +++++++
+ arch/arm/include/asm/arch-sunxi/gpio.h      |  2 ++
+ board/sunxi/board.c                         | 11 ++++++++++-
+ configs/nanopi_neo_core2_defconfig          |  1 +
+ 4 files changed, 20 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts b/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
+index 28e7e8f..e31b1ef 100644
+--- a/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
++++ b/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
+@@ -52,6 +52,7 @@
+ 	aliases {
+ 		serial0 = &uart0;
+ 		ethernet0 = &emac;
++		i2c0 = &i2c0;
+ 		i2c5 = &r_i2c;
+ 	};
+ 
+@@ -113,6 +114,12 @@
+ 	};
+ };
+ 
++&i2c0 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&i2c0_pins>;
++	status = "okay";
++};
++
+ &mmc0 {
+ 	vmmc-supply = <&reg_vcc3v3>;
+ 	bus-width = <4>;
+diff --git a/arch/arm/include/asm/arch-sunxi/gpio.h b/arch/arm/include/asm/arch-sunxi/gpio.h
+index 6a5eafc..1f0cf5d 100644
+--- a/arch/arm/include/asm/arch-sunxi/gpio.h
++++ b/arch/arm/include/asm/arch-sunxi/gpio.h
+@@ -148,6 +148,8 @@ enum sunxi_gpio_number {
+ #define SUN6I_GPA_SDC2		5
+ #define SUN6I_GPA_SDC3		4
+ #define SUN8I_H3_GPA_UART0	2
++#define SUN8I_H3_GPA_TWI0	2
++#define SUN8I_H3_GPA_TWI1	3
+ 
+ #define SUN4I_GPB_PWM		2
+ #define SUN4I_GPB_TWI0		2
+diff --git a/board/sunxi/board.c b/board/sunxi/board.c
+index af65821..4fd6096 100644
+--- a/board/sunxi/board.c
++++ b/board/sunxi/board.c
+@@ -98,6 +98,10 @@ void i2c_init_board(void)
+ 	sunxi_gpio_set_cfgpin(SUNXI_GPH(2), SUN8I_GPH_TWI0);
+ 	sunxi_gpio_set_cfgpin(SUNXI_GPH(3), SUN8I_GPH_TWI0);
+ 	clock_twi_onoff(0, 1);
++#elif defined(CONFIG_MACH_SUN50I)
++	sunxi_gpio_set_cfgpin(SUNXI_GPA(11), SUN8I_H3_GPA_TWI0);
++	sunxi_gpio_set_cfgpin(SUNXI_GPA(12), SUN8I_H3_GPA_TWI0);
++	clock_twi_onoff(0, 1);
+ #endif
+ #endif
+ 
+@@ -120,6 +124,10 @@ void i2c_init_board(void)
+ 	sunxi_gpio_set_cfgpin(SUNXI_GPH(4), SUN8I_GPH_TWI1);
+ 	sunxi_gpio_set_cfgpin(SUNXI_GPH(5), SUN8I_GPH_TWI1);
+ 	clock_twi_onoff(1, 1);
++#elif defined(CONFIG_MACH_SUN50I)
++	sunxi_gpio_set_cfgpin(SUNXI_GPA(18), SUN8I_H3_GPA_TWI1);
++	sunxi_gpio_set_cfgpin(SUNXI_GPA(19), SUN8I_H3_GPA_TWI1);
++	clock_twi_onoff(1, 1);
+ #endif
+ #endif
+ 
+@@ -138,7 +146,8 @@ void i2c_init_board(void)
+ 	sunxi_gpio_set_cfgpin(SUNXI_GPH(18), SUN6I_GPH_TWI2);
+ 	sunxi_gpio_set_cfgpin(SUNXI_GPH(19), SUN6I_GPH_TWI2);
+ 	clock_twi_onoff(2, 1);
+-#elif defined(CONFIG_MACH_SUN8I)
++#elif defined(CONFIG_MACH_SUN8I) || \
++	defined(CONFIG_MACH_SUN50I)
+ 	sunxi_gpio_set_cfgpin(SUNXI_GPE(12), SUN8I_GPE_TWI2);
+ 	sunxi_gpio_set_cfgpin(SUNXI_GPE(13), SUN8I_GPE_TWI2);
+ 	clock_twi_onoff(2, 1);
+diff --git a/configs/nanopi_neo_core2_defconfig b/configs/nanopi_neo_core2_defconfig
+index 1e938fc..22c0e10 100644
+--- a/configs/nanopi_neo_core2_defconfig
++++ b/configs/nanopi_neo_core2_defconfig
+@@ -8,6 +8,7 @@ CONFIG_MACPWR="PD6"
+ CONFIG_MMC_SUNXI_SLOT_EXTRA=2
+ CONFIG_DEFAULT_DEVICE_TREE="sun50i-h5-nanopi-neo-core2"
+ CONFIG_ENV_FAT_DEVICE_AUTO_PROBE_SUNXI=y
++CONFIG_I2C0_ENABLE=y
+ # CONFIG_SYS_MALLOC_CLEAR_ON_INIT is not set
+ # CONFIG_CMD_FLASH is not set
+ # CONFIG_SPL_DOS_PARTITION is not set
+-- 
+2.7.4
+
