@@ -1,4 +1,4 @@
-From 25d59b92af585a4ab05e0de1b6fb292fdb39627d Mon Sep 17 00:00:00 2001
+From bc9809a70a0d5952e0c9b56258e51fe128b2d14a Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Thu, 4 Oct 2018 20:53:33 -0500
 Subject: [PATCH 6/6] DONOTMERGE: sunxi: Enable i2c0 on NanoPi Neo Core2
@@ -12,7 +12,7 @@ This in theory should work... shrug
  4 files changed, 20 insertions(+), 1 deletion(-)
 
 diff --git a/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts b/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
-index 28e7e8f..e31b1ef 100644
+index 992e3fc..3afd4cd 100644
 --- a/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
 +++ b/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
 @@ -52,6 +52,7 @@
@@ -50,7 +50,7 @@ index 6a5eafc..1f0cf5d 100644
  #define SUN4I_GPB_PWM		2
  #define SUN4I_GPB_TWI0		2
 diff --git a/board/sunxi/board.c b/board/sunxi/board.c
-index af65821..4fd6096 100644
+index fbb9692..9609da2 100644
 --- a/board/sunxi/board.c
 +++ b/board/sunxi/board.c
 @@ -98,6 +98,10 @@ void i2c_init_board(void)

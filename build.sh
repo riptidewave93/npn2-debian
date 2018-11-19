@@ -25,12 +25,12 @@ linaro_full_version="7.3.1-2018.05"
 
 # U-Boot settings
 uboot_repo="https://github.com/u-boot/u-boot.git"
-uboot_branch="v2018.09"
+uboot_branch="v2018.11"
 uboot_overlay_dir="u-boot"
 
 # Kernel settings
 kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git"
-kernel_branch="v4.18.12"
+kernel_branch="v4.20-rc3"
 kernel_config="nanopi_h5_defconfig" # Global config for all boards
 kernel_overlay_dir="kernel"
 
@@ -115,7 +115,7 @@ cd u-boot
 if [[ -d $ourpath/patches/u-boot/ ]]; then
 	for file in $ourpath/patches/u-boot/*.patch; do
 		echo "Applying u-boot patch $file"
-		git apply $file
+		git am $file
     runtest $?
 	done
 fi
@@ -146,7 +146,7 @@ cd linux
 if [[ -d $ourpath/patches/kernel/ ]]; then
 	for file in $ourpath/patches/kernel/*.patch; do
 		echo "Applying kernel patch $file"
-		git apply $file
+		git am $file
     runtest $?
 	done
 fi

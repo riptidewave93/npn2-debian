@@ -1,7 +1,7 @@
-From 588abff3a3cc946b1879ab8e2d96515ef90484a0 Mon Sep 17 00:00:00 2001
+From c1f7283edd19861c053431fcaa95048786c4abc1 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Fri, 29 Jun 2018 09:56:34 -0500
-Subject: [PATCH 9/9] arm64: Add Allwinner H5 defconfig
+Date: Mon, 19 Nov 2018 16:39:48 -0600
+Subject: [PATCH 4/4] arm64: Add Allwinner H5 defconfig
 
 Basic baseconfig for H5 based boards.
 ---

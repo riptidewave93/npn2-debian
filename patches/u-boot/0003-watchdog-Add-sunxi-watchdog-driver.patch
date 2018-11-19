@@ -1,4 +1,4 @@
-From 11708335c681bc4d050dcc18c109418f709ceec9 Mon Sep 17 00:00:00 2001
+From 598ffc71c2049ac277939d555d92c8a69fd2eaa8 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Thu, 4 Oct 2018 20:49:33 -0500
 Subject: [PATCH 3/6] watchdog: Add sunxi watchdog driver
@@ -14,10 +14,10 @@ watchdog timer found on sunxi boards.
  create mode 100644 drivers/watchdog/sunxi_wdt.c
 
 diff --git a/common/board_f.c b/common/board_f.c
-index 88d7700..7b0d912 100644
+index afafec5..24d8f9b 100644
 --- a/common/board_f.c
 +++ b/common/board_f.c
-@@ -91,7 +91,8 @@ static int init_func_watchdog_init(void)
+@@ -92,7 +92,8 @@ static int init_func_watchdog_init(void)
  	(defined(CONFIG_M68K) || defined(CONFIG_MICROBLAZE) || \
  	defined(CONFIG_SH) || defined(CONFIG_AT91SAM9_WATCHDOG) || \
  	defined(CONFIG_DESIGNWARE_WATCHDOG) || \
@@ -28,7 +28,7 @@ index 88d7700..7b0d912 100644
  	puts("       Watchdog enabled\n");
  # endif
 diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index d545b3e..bd09dad 100644
+index 02f4e1e..7a7cc40 100644
 --- a/drivers/watchdog/Kconfig
 +++ b/drivers/watchdog/Kconfig
 @@ -20,6 +20,24 @@ config BCM2835_WDT

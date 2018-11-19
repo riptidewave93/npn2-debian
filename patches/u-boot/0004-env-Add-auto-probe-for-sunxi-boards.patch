@@ -1,4 +1,4 @@
-From 316892a9e316451a5030db2cde4faa439f2649aa Mon Sep 17 00:00:00 2001
+From 739abae93bcb8fdfd25c4c11c75786d424c676bd Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Thu, 4 Oct 2018 20:50:12 -0500
 Subject: [PATCH 4/6] env: Add auto probe for sunxi boards
@@ -13,7 +13,7 @@ or an sd card.
  2 files changed, 54 insertions(+)
 
 diff --git a/env/Kconfig b/env/Kconfig
-index f23be00..248dd99 100644
+index 9011109..f328d01 100644
 --- a/env/Kconfig
 +++ b/env/Kconfig
 @@ -391,6 +391,17 @@ config ENV_FAT_DEVICE_AND_PART

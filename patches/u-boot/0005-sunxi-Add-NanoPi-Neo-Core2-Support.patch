@@ -1,4 +1,4 @@
-From e0abc7dcf8e82e5090780ecda38e3c18e7b460a3 Mon Sep 17 00:00:00 2001
+From d6a878709112f7613d5dc5dea27129a46b024479 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Thu, 4 Oct 2018 20:52:02 -0500
 Subject: [PATCH 5/6] sunxi: Add NanoPi Neo Core2 Support
@@ -13,10 +13,10 @@ This adds support for the NanoPi Neo Core2, a board based on the H5 SoC.
  create mode 100644 configs/nanopi_neo_core2_defconfig
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 31d9256..b9e3fe0 100644
+index d36447d..8dde365 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -387,6 +387,7 @@ dtb-$(CONFIG_MACH_SUN8I_V3S) += \
+@@ -389,6 +389,7 @@ dtb-$(CONFIG_MACH_SUN8I_V3S) += \
  dtb-$(CONFIG_MACH_SUN50I_H5) += \
  	sun50i-h5-libretech-all-h3-cc.dtb \
  	sun50i-h5-nanopi-neo2.dtb \
@@ -26,7 +26,7 @@ index 31d9256..b9e3fe0 100644
  	sun50i-h5-orangepi-pc2.dtb \
 diff --git a/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts b/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
 new file mode 100644
-index 0000000..28e7e8f
+index 0000000..992e3fc
 --- /dev/null
 +++ b/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
 @@ -0,0 +1,154 @@
@@ -38,12 +38,12 @@ index 0000000..28e7e8f
 + * licensing only applies to this file, and not this project as a
 + * whole.
 + *
-+ *  a) This library is free software; you can redistribute it and/or
++ *  a) This file is free software; you can redistribute it and/or
 + *     modify it under the terms of the GNU General Public License as
 + *     published by the Free Software Foundation; either version 2 of the
 + *     License, or (at your option) any later version.
 + *
-+ *     This library is distributed in the hope that it will be useful,
++ *     This file is distributed in the hope that it will be useful,
 + *     but WITHOUT ANY WARRANTY; without even the implied warranty of
 + *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 + *     GNU General Public License for more details.

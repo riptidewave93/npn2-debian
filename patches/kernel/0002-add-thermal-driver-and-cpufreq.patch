@@ -1,0 +1,1585 @@
+From c9f149613fa1d2e2e21b650e7e5a8ef71ee01f7f Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Thu, 12 Jan 2017 16:34:57 +0100
+Subject: [PATCH 01/16] clk: sunxi-ng: Set maximum M = 1 for H3 pll-cpux clock
+
+When using M factor greater than 1 system is experiencing
+occasional lockups.
+
+This change was verified to fix lockups with PLL stress
+tester available at https://github.com/megous/h3-firmware.
+
+Note that M factor must not be used outside the kernel
+either, so for example u-boot needs a similar patch.
+
+Patch generated from https://github.com/torvalds/linux/compare/master...megous:ths-4.20.patch
+---
+ drivers/clk/sunxi-ng/ccu-sun8i-h3.c | 24 +++++++++++++++---------
+ 1 file changed, 15 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/clk/sunxi-ng/ccu-sun8i-h3.c b/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
+index eb5c608428fa4..e38f015f6fdca 100644
+--- a/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
++++ b/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
+@@ -30,15 +30,21 @@
+ 
+ #include "ccu-sun8i-h3.h"
+ 
+-static SUNXI_CCU_NKMP_WITH_GATE_LOCK(pll_cpux_clk, "pll-cpux",
+-				     "osc24M", 0x000,
+-				     8, 5,	/* N */
+-				     4, 2,	/* K */
+-				     0, 2,	/* M */
+-				     16, 2,	/* P */
+-				     BIT(31),	/* gate */
+-				     BIT(28),	/* lock */
+-				     CLK_SET_RATE_UNGATE);
++static struct ccu_nkmp pll_cpux_clk = {
++	.enable		= BIT(31),
++	.lock		= BIT(28),
++	.n		= _SUNXI_CCU_MULT(8, 5),
++	.k		= _SUNXI_CCU_MULT(4, 2),
++	.m		= _SUNXI_CCU_DIV_MAX(0, 2, 1),
++	.p		= _SUNXI_CCU_DIV(16, 2),
++	.common		= {
++		.reg		= 0x000,
++		.hw.init	= CLK_HW_INIT("pll-cpux",
++					      "osc24M",
++					      &ccu_nkmp_ops,
++					      CLK_SET_RATE_UNGATE),
++	},
++};
+ 
+ /*
+  * The Audio PLL is supposed to have 4 outputs: 3 fixed factors from
+
+From c4190cebdf5f3874575a10bb77d98747dc777409 Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Thu, 12 Jan 2017 16:37:24 +0100
+Subject: [PATCH 02/16] clk: sunxi-ng: Allow to limit the use of NKMP clock's P
+ factor
+
+Some SoCs mandate the maximum clock rate for which the use
+of postdivider P factor is allowed. Allow to configure maximum
+clock rate.
+
+Signed-off-by: Ondrej Jirman <megous@megous.com>
+---
+ drivers/clk/sunxi-ng/ccu_nkmp.c | 13 ++++++++-----
+ drivers/clk/sunxi-ng/ccu_nkmp.h |  1 +
+ 2 files changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/clk/sunxi-ng/ccu_nkmp.c b/drivers/clk/sunxi-ng/ccu_nkmp.c
+index 9b49adb20d07c..4efc01cbc48d6 100644
+--- a/drivers/clk/sunxi-ng/ccu_nkmp.c
++++ b/drivers/clk/sunxi-ng/ccu_nkmp.c
+@@ -33,16 +33,19 @@ static unsigned long ccu_nkmp_calc_rate(unsigned long parent,
+ }
+ 
+ static void ccu_nkmp_find_best(unsigned long parent, unsigned long rate,
+-			       struct _ccu_nkmp *nkmp)
++			       struct _ccu_nkmp *nkmp, struct ccu_nkmp *_nkmp)
+ {
+ 	unsigned long best_rate = 0;
+ 	unsigned long best_n = 0, best_k = 0, best_m = 0, best_p = 0;
+-	unsigned long _n, _k, _m, _p;
++	unsigned long _n, _k, _m, _p, _max_p;
++
++	_max_p = (_nkmp->max_rate_for_p == 0 || rate <= _nkmp->max_rate_for_p) ?
++		nkmp->max_p : nkmp->min_p;
+ 
+ 	for (_k = nkmp->min_k; _k <= nkmp->max_k; _k++) {
+ 		for (_n = nkmp->min_n; _n <= nkmp->max_n; _n++) {
+ 			for (_m = nkmp->min_m; _m <= nkmp->max_m; _m++) {
+-				for (_p = nkmp->min_p; _p <= nkmp->max_p; _p <<= 1) {
++				for (_p = nkmp->min_p; _p <= _max_p; _p <<= 1) {
+ 					unsigned long tmp_rate;
+ 
+ 					tmp_rate = ccu_nkmp_calc_rate(parent,
+@@ -153,7 +156,7 @@ static long ccu_nkmp_round_rate(struct clk_hw *hw, unsigned long rate,
+ 	_nkmp.min_p = 1;
+ 	_nkmp.max_p = nkmp->p.max ?: 1 << ((1 << nkmp->p.width) - 1);
+ 
+-	ccu_nkmp_find_best(*parent_rate, rate, &_nkmp);
++	ccu_nkmp_find_best(*parent_rate, rate, &_nkmp, nkmp);
+ 
+ 	rate = ccu_nkmp_calc_rate(*parent_rate, _nkmp.n, _nkmp.k,
+ 				  _nkmp.m, _nkmp.p);
+@@ -184,7 +187,7 @@ static int ccu_nkmp_set_rate(struct clk_hw *hw, unsigned long rate,
+ 	_nkmp.min_p = 1;
+ 	_nkmp.max_p = nkmp->p.max ?: 1 << ((1 << nkmp->p.width) - 1);
+ 
+-	ccu_nkmp_find_best(parent_rate, rate, &_nkmp);
++	ccu_nkmp_find_best(parent_rate, rate, &_nkmp, nkmp);
+ 
+ 	n_mask = GENMASK(nkmp->n.width + nkmp->n.shift - 1, nkmp->n.shift);
+ 	k_mask = GENMASK(nkmp->k.width + nkmp->k.shift - 1, nkmp->k.shift);
+diff --git a/drivers/clk/sunxi-ng/ccu_nkmp.h b/drivers/clk/sunxi-ng/ccu_nkmp.h
+index a9f8c116a7453..1daf03b6b42d9 100644
+--- a/drivers/clk/sunxi-ng/ccu_nkmp.h
++++ b/drivers/clk/sunxi-ng/ccu_nkmp.h
+@@ -33,6 +33,7 @@ struct ccu_nkmp {
+ 	struct ccu_mult_internal	k;
+ 	struct ccu_div_internal		m;
+ 	struct ccu_div_internal		p;
++	unsigned long max_rate_for_p;
+ 
+ 	unsigned int		fixed_post_div;
+ 	unsigned int		max_rate;
+
+From e31725a296c134b5d95910ea3f9a7f569968fae6 Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Wed, 5 Apr 2017 15:43:48 +0200
+Subject: [PATCH 03/16] clk: sunxi-ng: Limit pll_cpux P factor for rates >
+ 288MHz on H3
+
+Datasheet for H3 mandates that CPUX PLL must not use postdivider
+(P factor must be 1) for clock rates above 288MHz.
+
+Signed-off-by: Ondrej Jirman <megous@megous.com>
+---
+ drivers/clk/sunxi-ng/ccu-sun8i-h3.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/clk/sunxi-ng/ccu-sun8i-h3.c b/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
+index e38f015f6fdca..164f48442c671 100644
+--- a/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
++++ b/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
+@@ -37,6 +37,7 @@ static struct ccu_nkmp pll_cpux_clk = {
+ 	.k		= _SUNXI_CCU_MULT(4, 2),
+ 	.m		= _SUNXI_CCU_DIV_MAX(0, 2, 1),
+ 	.p		= _SUNXI_CCU_DIV(16, 2),
++	.max_rate_for_p	= 288000000,
+ 	.common		= {
+ 		.reg		= 0x000,
+ 		.hw.init	= CLK_HW_INIT("pll-cpux",
+
+From 5a699c02288f70d6999e03d75dbf8d630b889745 Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Sat, 25 Jun 2016 21:51:05 +0200
+Subject: [PATCH 04/16] thermal: sun8i_ths: Add support for the thermal sensor
+ on Allwinner H3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This patch adds support for the sun8i thermal sensor on
+Allwinner H3 SoC.
+
+Signed-off-by: Ondřej Jirman <megous@megous.com>
+---
+ drivers/thermal/Kconfig     |   7 ++
+ drivers/thermal/Makefile    |   1 +
+ drivers/thermal/sun8i_ths.c | 239 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 247 insertions(+)
+ create mode 100644 drivers/thermal/sun8i_ths.c
+
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 5422523c03f86..60dac954726c6 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -420,6 +420,13 @@ depends on ARCH_BCM || ARCH_BRCMSTB || ARCH_BCM2835 || COMPILE_TEST
+ source "drivers/thermal/broadcom/Kconfig"
+ endmenu
+ 
++config SUN8I_THS
++	tristate "Thermal sensor driver for Allwinner H3"
++	depends on MACH_SUN8I || (ARM64 && ARCH_SUNXI)
++	depends on OF
++	help
++	  Enable this to support thermal reporting on some newer Allwinner SoCs.
++
+ menu "Texas Instruments thermal drivers"
+ depends on ARCH_HAS_BANDGAP || COMPILE_TEST
+ depends on HAS_IOMEM
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 82bb50dc64230..1deb1459962c0 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -61,3 +61,4 @@ obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
+ obj-$(CONFIG_GENERIC_ADC_THERMAL)	+= thermal-generic-adc.o
+ obj-$(CONFIG_ZX2967_THERMAL)	+= zx2967_thermal.o
+ obj-$(CONFIG_UNIPHIER_THERMAL)	+= uniphier_thermal.o
++obj-$(CONFIG_SUN8I_THS)		+= sun8i_ths.o
+diff --git a/drivers/thermal/sun8i_ths.c b/drivers/thermal/sun8i_ths.c
+new file mode 100644
+index 0000000000000..cfe7d1073b8c0
+--- /dev/null
++++ b/drivers/thermal/sun8i_ths.c
+@@ -0,0 +1,239 @@
++/*
++ * Thermal sensor driver for Allwinner H3 SoC
++ *
++ * Copyright (C) 2016 Ondřej Jirman
++ * Based on the work of Josef Gajdusek <atx@atx.name>
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ *
++ */
++
++#include <linux/clk.h>
++#include <linux/interrupt.h>
++#include <linux/io.h>
++#include <linux/module.h>
++#include <linux/of_device.h>
++#include <linux/platform_device.h>
++#include <linux/reset.h>
++#include <linux/slab.h>
++#include <linux/thermal.h>
++#include <linux/printk.h>
++
++#define THS_H3_CTRL0		0x00
++#define THS_H3_CTRL2		0x40
++#define THS_H3_INT_CTRL		0x44
++#define THS_H3_STAT		0x48
++#define THS_H3_FILTER		0x70
++#define THS_H3_CDATA		0x74
++#define THS_H3_DATA		0x80
++
++#define THS_H3_CTRL0_SENSOR_ACQ0(x)     (x)
++#define THS_H3_CTRL2_SENSE_EN           BIT(0)
++#define THS_H3_CTRL2_SENSOR_ACQ1(x)     ((x) << 16)
++#define THS_H3_INT_CTRL_DATA_IRQ_EN     BIT(8)
++#define THS_H3_INT_CTRL_THERMAL_PER(x)  ((x) << 12)
++#define THS_H3_STAT_DATA_IRQ_STS        BIT(8)
++#define THS_H3_FILTER_TYPE(x)           ((x) << 0)
++#define THS_H3_FILTER_EN                BIT(2)
++
++#define THS_H3_CLK_IN 40000000  /* Hz */
++#define THS_H3_DATA_PERIOD 330  /* ms */
++
++#define THS_H3_FILTER_TYPE_VALUE		2  /* average over 2^(n+1) samples */
++#define THS_H3_FILTER_DIV			(1 << (THS_H3_FILTER_TYPE_VALUE + 1))
++#define THS_H3_INT_CTRL_THERMAL_PER_VALUE \
++	(THS_H3_DATA_PERIOD * (THS_H3_CLK_IN / 1000) / THS_H3_FILTER_DIV / 4096 - 1)
++#define THS_H3_CTRL0_SENSOR_ACQ0_VALUE		0x3f /* 16us */
++#define THS_H3_CTRL2_SENSOR_ACQ1_VALUE		0x3f
++
++struct sun8i_ths_data {
++	struct reset_control *reset;
++	struct clk *clk;
++	struct clk *busclk;
++	void __iomem *regs;
++	struct thermal_zone_device *tzd;
++	u32 temp;
++};
++
++static int sun8i_ths_get_temp(void *_data, int *out)
++{
++	struct sun8i_ths_data *data = _data;
++
++	if (data->temp == 0)
++		return -EBUSY;
++
++	/* Formula and parameters from the Allwinner 3.4 kernel */
++	*out = 217000 - (int)((data->temp * 1000000) / 8253);
++	return 0;
++}
++
++static irqreturn_t sun8i_ths_irq_thread(int irq, void *_data)
++{
++	struct sun8i_ths_data *data = _data;
++
++	writel(THS_H3_STAT_DATA_IRQ_STS, data->regs + THS_H3_STAT);
++
++	data->temp = readl(data->regs + THS_H3_DATA);
++	if (data->temp)
++		thermal_zone_device_update(data->tzd, THERMAL_EVENT_TEMP_SAMPLE);
++
++	return IRQ_HANDLED;
++}
++
++static void sun8i_ths_h3_init(struct sun8i_ths_data *data)
++{
++	writel(THS_H3_CTRL0_SENSOR_ACQ0(THS_H3_CTRL0_SENSOR_ACQ0_VALUE),
++		data->regs + THS_H3_CTRL0);
++	writel(THS_H3_FILTER_EN | THS_H3_FILTER_TYPE(THS_H3_FILTER_TYPE_VALUE),
++		data->regs + THS_H3_FILTER);
++	writel(THS_H3_CTRL2_SENSOR_ACQ1(THS_H3_CTRL2_SENSOR_ACQ1_VALUE) |
++		THS_H3_CTRL2_SENSE_EN,
++		data->regs + THS_H3_CTRL2);
++	writel(THS_H3_INT_CTRL_THERMAL_PER(THS_H3_INT_CTRL_THERMAL_PER_VALUE) |
++		THS_H3_INT_CTRL_DATA_IRQ_EN,
++		data->regs + THS_H3_INT_CTRL);
++}
++
++static const struct thermal_zone_of_device_ops sun8i_ths_thermal_ops = {
++	.get_temp = sun8i_ths_get_temp,
++};
++
++static int sun8i_ths_probe(struct platform_device *pdev)
++{
++	struct sun8i_ths_data *data;
++	struct resource *res;
++	int ret;
++	int irq;
++
++	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++        if (!res) {
++                dev_err(&pdev->dev, "no memory resources defined\n");
++                return -EINVAL;
++        }
++
++	data->regs = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(data->regs)) {
++		ret = PTR_ERR(data->regs);
++		dev_err(&pdev->dev, "failed to ioremap THS registers: %d\n", ret);
++		return ret;
++	}
++
++	irq = platform_get_irq(pdev, 0);
++	if (irq < 0) {
++		dev_err(&pdev->dev, "failed to get IRQ: %d\n", irq);
++		return irq;
++	}
++
++	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
++					sun8i_ths_irq_thread, IRQF_ONESHOT,
++					dev_name(&pdev->dev), data);
++	if (ret)
++		return ret;
++
++	data->busclk = devm_clk_get(&pdev->dev, "ahb");
++	if (IS_ERR(data->busclk)) {
++		ret = PTR_ERR(data->busclk);
++		dev_err(&pdev->dev, "failed to get ahb clk: %d\n", ret);
++		return ret;
++	}
++
++	data->clk = devm_clk_get(&pdev->dev, "ths");
++	if (IS_ERR(data->clk)) {
++		ret = PTR_ERR(data->clk);
++		dev_err(&pdev->dev, "failed to get ths clk: %d\n", ret);
++		return ret;
++	}
++
++	data->reset = devm_reset_control_get(&pdev->dev, "ahb");
++	if (IS_ERR(data->reset)) {
++		ret = PTR_ERR(data->reset);
++		dev_err(&pdev->dev, "failed to get reset: %d\n", ret);
++		return ret;
++	}
++
++	ret = reset_control_deassert(data->reset);
++	if (ret) {
++		dev_err(&pdev->dev, "reset deassert failed: %d\n", ret);
++		return ret;
++	}
++
++	ret = clk_prepare_enable(data->busclk);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to enable bus clk: %d\n", ret);
++		goto err_assert_reset;
++	}
++
++	ret = clk_prepare_enable(data->clk);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to enable ths clk: %d\n", ret);
++		goto err_disable_bus;
++	}
++
++	ret = clk_set_rate(data->clk, THS_H3_CLK_IN);
++	if (ret)
++		goto err_disable_ths;
++
++	data->tzd = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, data,
++						    &sun8i_ths_thermal_ops);
++	if (IS_ERR(data->tzd)) {
++		ret = PTR_ERR(data->tzd);
++		dev_err(&pdev->dev, "failed to register thermal zone: %d\n",
++				ret);
++		goto err_disable_ths;
++	}
++
++	sun8i_ths_h3_init(data);
++
++	platform_set_drvdata(pdev, data);
++	return 0;
++
++err_disable_ths:
++	clk_disable_unprepare(data->clk);
++err_disable_bus:
++	clk_disable_unprepare(data->busclk);
++err_assert_reset:
++	reset_control_assert(data->reset);
++	return ret;
++}
++
++static int sun8i_ths_remove(struct platform_device *pdev)
++{
++	struct sun8i_ths_data *data = platform_get_drvdata(pdev);
++
++	reset_control_assert(data->reset);
++	clk_disable_unprepare(data->clk);
++	clk_disable_unprepare(data->busclk);
++	return 0;
++}
++
++static const struct of_device_id sun8i_ths_id_table[] = {
++	{ .compatible = "allwinner,sun8i-h3-ths", },
++	{ /* sentinel */ },
++};
++MODULE_DEVICE_TABLE(of, sun8i_ths_id_table);
++
++static struct platform_driver sun8i_ths_driver = {
++	.probe = sun8i_ths_probe,
++	.remove = sun8i_ths_remove,
++	.driver = {
++		.name = "sun8i_ths",
++		.of_match_table = sun8i_ths_id_table,
++	},
++};
++
++module_platform_driver(sun8i_ths_driver);
++
++MODULE_AUTHOR("Ondřej Jirman <megous@megous.com>");
++MODULE_DESCRIPTION("Thermal sensor driver for Allwinner H3 SoC");
++MODULE_LICENSE("GPL v2");
+
+From df6625a89d3f1c973eba73896a8e06b4c37e68c9 Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Tue, 14 Nov 2017 17:15:54 +0100
+Subject: [PATCH 05/16] thermal: sun8i: Add support for A83T thermal sensors
+
+Signed-off-by: Ondrej Jirman <megous@megous.com>
+---
+ drivers/thermal/sun8i_ths.c | 371 ++++++++++++++++++++++++++----------
+ 1 file changed, 274 insertions(+), 97 deletions(-)
+
+diff --git a/drivers/thermal/sun8i_ths.c b/drivers/thermal/sun8i_ths.c
+index cfe7d1073b8c0..2fda940da4ccf 100644
+--- a/drivers/thermal/sun8i_ths.c
++++ b/drivers/thermal/sun8i_ths.c
+@@ -1,5 +1,5 @@
+ /*
+- * Thermal sensor driver for Allwinner H3 SoC
++ * Thermal sensor driver for Allwinner SUN8I SoC
+  *
+  * Copyright (C) 2016 Ondřej Jirman
+  * Based on the work of Josef Gajdusek <atx@atx.name>
+@@ -26,79 +26,174 @@
+ #include <linux/thermal.h>
+ #include <linux/printk.h>
+ 
+-#define THS_H3_CTRL0		0x00
+-#define THS_H3_CTRL2		0x40
+-#define THS_H3_INT_CTRL		0x44
+-#define THS_H3_STAT		0x48
+-#define THS_H3_FILTER		0x70
+-#define THS_H3_CDATA		0x74
+-#define THS_H3_DATA		0x80
+-
+-#define THS_H3_CTRL0_SENSOR_ACQ0(x)     (x)
+-#define THS_H3_CTRL2_SENSE_EN           BIT(0)
+-#define THS_H3_CTRL2_SENSOR_ACQ1(x)     ((x) << 16)
+-#define THS_H3_INT_CTRL_DATA_IRQ_EN     BIT(8)
+-#define THS_H3_INT_CTRL_THERMAL_PER(x)  ((x) << 12)
+-#define THS_H3_STAT_DATA_IRQ_STS        BIT(8)
+-#define THS_H3_FILTER_TYPE(x)           ((x) << 0)
+-#define THS_H3_FILTER_EN                BIT(2)
+-
+-#define THS_H3_CLK_IN 40000000  /* Hz */
+-#define THS_H3_DATA_PERIOD 330  /* ms */
+-
+-#define THS_H3_FILTER_TYPE_VALUE		2  /* average over 2^(n+1) samples */
+-#define THS_H3_FILTER_DIV			(1 << (THS_H3_FILTER_TYPE_VALUE + 1))
+-#define THS_H3_INT_CTRL_THERMAL_PER_VALUE \
+-	(THS_H3_DATA_PERIOD * (THS_H3_CLK_IN / 1000) / THS_H3_FILTER_DIV / 4096 - 1)
+-#define THS_H3_CTRL0_SENSOR_ACQ0_VALUE		0x3f /* 16us */
+-#define THS_H3_CTRL2_SENSOR_ACQ1_VALUE		0x3f
++#define THS_SUN8I_CTRL0		0x00
++#define THS_SUN8I_CTRL2		0x40
++#define THS_SUN8I_INT_CTRL	0x44
++#define THS_SUN8I_STAT		0x48
++#define THS_SUN8I_FILTER	0x70
++#define THS_SUN8I_CDATA01	0x74
++#define THS_SUN8I_CDATA2	0x78
++#define THS_SUN8I_DATA0		0x80
++#define THS_SUN8I_DATA1		0x84
++#define THS_SUN8I_DATA2		0x88
++
++#define THS_SUN8I_CTRL0_SENSOR_ACQ0(x)		(x)
++#define THS_SUN8I_CTRL2_SENSE_EN0		BIT(0)
++#define THS_SUN8I_CTRL2_SENSE_EN1		BIT(1)
++#define THS_SUN8I_CTRL2_SENSE_EN2		BIT(2)
++#define THS_SUN8I_CTRL2_SENSOR_ACQ1(x)		((x) << 16)
++#define THS_SUN8I_INT_CTRL_DATA0_IRQ_EN		BIT(8)
++#define THS_SUN8I_INT_CTRL_DATA1_IRQ_EN		BIT(9)
++#define THS_SUN8I_INT_CTRL_DATA2_IRQ_EN		BIT(10)
++#define THS_SUN8I_INT_CTRL_THERMAL_PER(x)	((x) << 12)
++#define THS_SUN8I_STAT_DATA0_IRQ_STS		BIT(8)
++#define THS_SUN8I_STAT_DATA1_IRQ_STS		BIT(9)
++#define THS_SUN8I_STAT_DATA2_IRQ_STS		BIT(10)
++#define THS_SUN8I_STAT_CLEAR			0x777
++#define THS_SUN8I_FILTER_TYPE(x)		((x) << 0)
++#define THS_SUN8I_FILTER_EN			BIT(2)
++
++#define THS_SUN8I_CLK_IN		40000000 /* Hz */
++#define THS_SUN8I_DATA_PERIOD		330 /* ms */
++#define THS_SUN8I_FILTER_TYPE_VALUE	2 /* average over 2^(n+1) samples */
++
++//XXX: this formula doesn't work for A83T very well
++//XXX: A83T is getting slower readings out of this (1s interval?)
++//perhaps configure this in sun8i_ths_desc
++#define THS_SUN8I_FILTER_DIV		(1 << (THS_SUN8I_FILTER_TYPE_VALUE + 1))
++#define THS_SUN8I_INT_CTRL_THERMAL_PER_VALUE \
++	(THS_SUN8I_DATA_PERIOD * (THS_SUN8I_CLK_IN / 1000) / \
++	 THS_SUN8I_FILTER_DIV / 4096 - 1)
++
++#define THS_SUN8I_CTRL0_SENSOR_ACQ0_VALUE	0x3f /* 16us */
++#define THS_SUN8I_CTRL2_SENSOR_ACQ1_VALUE	0x3f
++
++#define SUN8I_THS_MAX_TZDS 3
++
++struct sun8i_ths_sensor_desc {
++	u32 data_int_en;
++	u32 data_int_flag;
++	u32 data_offset;
++	u32 sense_en;
++};
++
++struct sun8i_ths_desc {
++	int num_sensors;
++	struct sun8i_ths_sensor_desc *sensors;
++	int (*calc_temp)(u32 reg_val);
++	bool has_cal1;
++};
++
++struct sun8i_ths_tzd {
++	struct sun8i_ths_data *data;
++	struct thermal_zone_device *tzd;
++	u32 temp;
++};
+ 
+ struct sun8i_ths_data {
++	struct device *dev;
+ 	struct reset_control *reset;
+ 	struct clk *clk;
+ 	struct clk *busclk;
+ 	void __iomem *regs;
+-	struct thermal_zone_device *tzd;
+-	u32 temp;
++	void __iomem *cal_regs;
++	struct sun8i_ths_desc *desc;
++	struct sun8i_ths_tzd tzds[SUN8I_THS_MAX_TZDS];
+ };
+ 
++static int sun8i_ths_calc_temp_h3(u32 reg_val)
++{
++	uint64_t temp = (uint64_t)reg_val * 1000000ll;
++
++        do_div(temp, 8253);
++
++	return 217000 - (int)temp;
++}
++
++static int sun8i_ths_calc_temp_a83t(u32 reg_val)
++{
++	uint64_t temp = (uint64_t)reg_val * 1000000ll;
++
++        do_div(temp, 14186);
++
++	return 192000 - (int)temp;
++}
++
+ static int sun8i_ths_get_temp(void *_data, int *out)
+ {
+-	struct sun8i_ths_data *data = _data;
++	struct sun8i_ths_tzd *tzd = _data;
++	struct sun8i_ths_data *data = tzd->data;
+ 
+-	if (data->temp == 0)
++	if (tzd->temp == 0)
+ 		return -EBUSY;
+ 
+-	/* Formula and parameters from the Allwinner 3.4 kernel */
+-	*out = 217000 - (int)((data->temp * 1000000) / 8253);
++	*out = data->desc->calc_temp(tzd->temp);
+ 	return 0;
+ }
+ 
+ static irqreturn_t sun8i_ths_irq_thread(int irq, void *_data)
+ {
+ 	struct sun8i_ths_data *data = _data;
+-
+-	writel(THS_H3_STAT_DATA_IRQ_STS, data->regs + THS_H3_STAT);
+-
+-	data->temp = readl(data->regs + THS_H3_DATA);
+-	if (data->temp)
+-		thermal_zone_device_update(data->tzd, THERMAL_EVENT_TEMP_SAMPLE);
++	struct sun8i_ths_tzd *tzd;
++	struct sun8i_ths_sensor_desc *zdesc;
++	int i;
++	u32 status;
++
++	status = readl(data->regs + THS_SUN8I_STAT);
++	writel(THS_SUN8I_STAT_CLEAR, data->regs + THS_SUN8I_STAT);
++
++	for (i = 0; i < data->desc->num_sensors; i++) {
++		tzd = &data->tzds[i];
++		zdesc = &data->desc->sensors[i];
++
++		if (status & zdesc->data_int_flag) {
++			tzd->temp = readl(data->regs + zdesc->data_offset);
++			if (tzd->temp)
++				thermal_zone_device_update(tzd->tzd,
++							   THERMAL_EVENT_TEMP_SAMPLE);
++		}
++	}
+ 
+ 	return IRQ_HANDLED;
+ }
+ 
+-static void sun8i_ths_h3_init(struct sun8i_ths_data *data)
++static void sun8i_ths_init(struct sun8i_ths_data *data)
+ {
+-	writel(THS_H3_CTRL0_SENSOR_ACQ0(THS_H3_CTRL0_SENSOR_ACQ0_VALUE),
+-		data->regs + THS_H3_CTRL0);
+-	writel(THS_H3_FILTER_EN | THS_H3_FILTER_TYPE(THS_H3_FILTER_TYPE_VALUE),
+-		data->regs + THS_H3_FILTER);
+-	writel(THS_H3_CTRL2_SENSOR_ACQ1(THS_H3_CTRL2_SENSOR_ACQ1_VALUE) |
+-		THS_H3_CTRL2_SENSE_EN,
+-		data->regs + THS_H3_CTRL2);
+-	writel(THS_H3_INT_CTRL_THERMAL_PER(THS_H3_INT_CTRL_THERMAL_PER_VALUE) |
+-		THS_H3_INT_CTRL_DATA_IRQ_EN,
+-		data->regs + THS_H3_INT_CTRL);
++	int i;
++	u32 int_ctrl = 0;
++	u32 ctrl2 = 0;
++
++	writel(THS_SUN8I_CTRL0_SENSOR_ACQ0(THS_SUN8I_CTRL0_SENSOR_ACQ0_VALUE),
++		data->regs + THS_SUN8I_CTRL0);
++	writel(THS_SUN8I_FILTER_EN | THS_SUN8I_FILTER_TYPE(THS_SUN8I_FILTER_TYPE_VALUE),
++		data->regs + THS_SUN8I_FILTER);
++
++	ctrl2 |= THS_SUN8I_CTRL2_SENSOR_ACQ1(THS_SUN8I_CTRL2_SENSOR_ACQ1_VALUE);
++	int_ctrl |= THS_SUN8I_INT_CTRL_THERMAL_PER(THS_SUN8I_INT_CTRL_THERMAL_PER_VALUE);
++
++	for (i = 0; i < data->desc->num_sensors; i++) {
++		ctrl2 |= data->desc->sensors[i].sense_en;
++		int_ctrl |= data->desc->sensors[i].data_int_en;
++	}
++
++	if (data->cal_regs) {
++		u32 cal0, cal1;
++
++		cal0 = readl(data->cal_regs);
++		if (cal0)
++			writel(cal0, data->regs + THS_SUN8I_CDATA01);
++
++		if (data->desc->has_cal1) {
++			cal1 = readl(data->cal_regs + 4);
++			if (cal1)
++				writel(cal1, data->regs + THS_SUN8I_CDATA2);
++		}
++	}
++
++	writel(ctrl2, data->regs + THS_SUN8I_CTRL2);
++
++	/* enable interrupts */
++	writel(int_ctrl, data->regs + THS_SUN8I_INT_CTRL);
+ }
+ 
+ static const struct thermal_zone_of_device_ops sun8i_ths_thermal_ops = {
+@@ -108,100 +203,135 @@ static const struct thermal_zone_of_device_ops sun8i_ths_thermal_ops = {
+ static int sun8i_ths_probe(struct platform_device *pdev)
+ {
+ 	struct sun8i_ths_data *data;
++	struct device *dev = &pdev->dev;
+ 	struct resource *res;
+-	int ret;
+-	int irq;
++	int ret, irq, i;
+ 
+-	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
++	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
+ 	if (!data)
+ 		return -ENOMEM;
+ 
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	data->desc = (struct sun8i_ths_desc *)of_device_get_match_data(dev);
++	if (data->desc == NULL)
++		return -EINVAL;
++
++	data->dev = dev;
++	platform_set_drvdata(pdev, data);
++
++	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "ths");
+         if (!res) {
+-                dev_err(&pdev->dev, "no memory resources defined\n");
++                dev_err(dev, "no memory resources defined\n");
+                 return -EINVAL;
+         }
+ 
+-	data->regs = devm_ioremap_resource(&pdev->dev, res);
++	data->regs = devm_ioremap_resource(dev, res);
+ 	if (IS_ERR(data->regs)) {
+ 		ret = PTR_ERR(data->regs);
+-		dev_err(&pdev->dev, "failed to ioremap THS registers: %d\n", ret);
++		dev_err(dev, "failed to ioremap THS registers: %d\n", ret);
+ 		return ret;
+ 	}
+ 
++	/*XXX: use SRAM device in the future, instead of direct access to regs */
++	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "calibration");
++        if (res) {
++		data->cal_regs = devm_ioremap_resource(dev, res);
++		if (IS_ERR(data->cal_regs)) {
++			ret = PTR_ERR(data->cal_regs);
++			dev_err(dev, "failed to ioremap calibration SRAM: %d\n", ret);
++			return ret;
++		}
++        }
++
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq < 0) {
+-		dev_err(&pdev->dev, "failed to get IRQ: %d\n", irq);
++		dev_err(dev, "failed to get IRQ: %d\n", irq);
+ 		return irq;
+ 	}
+ 
+-	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
++	ret = devm_request_threaded_irq(dev, irq, NULL,
+ 					sun8i_ths_irq_thread, IRQF_ONESHOT,
+-					dev_name(&pdev->dev), data);
++					dev_name(dev), data);
+ 	if (ret)
+ 		return ret;
+ 
+-	data->busclk = devm_clk_get(&pdev->dev, "ahb");
++	data->busclk = devm_clk_get(dev, "ahb");
+ 	if (IS_ERR(data->busclk)) {
+ 		ret = PTR_ERR(data->busclk);
+-		dev_err(&pdev->dev, "failed to get ahb clk: %d\n", ret);
+-		return ret;
++		if (ret != -ENOENT) {
++			dev_err(dev, "failed to get ahb clk: %d\n", ret);
++			return ret;
++		}
++
++		data->busclk = NULL;
+ 	}
+ 
+-	data->clk = devm_clk_get(&pdev->dev, "ths");
++	data->clk = devm_clk_get(dev, "ths");
+ 	if (IS_ERR(data->clk)) {
+ 		ret = PTR_ERR(data->clk);
+-		dev_err(&pdev->dev, "failed to get ths clk: %d\n", ret);
+-		return ret;
++		if (ret != -ENOENT) {
++			dev_err(dev, "failed to get ths clk: %d\n", ret);
++			return ret;
++		}
++
++		data->clk = NULL;
+ 	}
+ 
+-	data->reset = devm_reset_control_get(&pdev->dev, "ahb");
++	data->reset = devm_reset_control_get_optional(dev, "ahb");
+ 	if (IS_ERR(data->reset)) {
+ 		ret = PTR_ERR(data->reset);
+-		dev_err(&pdev->dev, "failed to get reset: %d\n", ret);
++		dev_err(dev, "failed to get reset: %d\n", ret);
+ 		return ret;
+ 	}
+ 
+ 	ret = reset_control_deassert(data->reset);
+ 	if (ret) {
+-		dev_err(&pdev->dev, "reset deassert failed: %d\n", ret);
++		dev_err(dev, "reset deassert failed: %d\n", ret);
+ 		return ret;
+ 	}
+ 
+-	ret = clk_prepare_enable(data->busclk);
+-	if (ret) {
+-		dev_err(&pdev->dev, "failed to enable bus clk: %d\n", ret);
+-		goto err_assert_reset;
++	if (data->busclk) {
++		ret = clk_prepare_enable(data->busclk);
++		if (ret) {
++			dev_err(dev, "failed to enable bus clk: %d\n", ret);
++			goto err_assert_reset;
++		}
+ 	}
+ 
+-	ret = clk_prepare_enable(data->clk);
+-	if (ret) {
+-		dev_err(&pdev->dev, "failed to enable ths clk: %d\n", ret);
+-		goto err_disable_bus;
+-	}
++	if (data->clk) {
++		ret = clk_prepare_enable(data->clk);
++		if (ret) {
++			dev_err(dev, "failed to enable ths clk: %d\n", ret);
++			goto err_disable_bus;
++		}
+ 
+-	ret = clk_set_rate(data->clk, THS_H3_CLK_IN);
+-	if (ret)
+-		goto err_disable_ths;
+-
+-	data->tzd = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, data,
+-						    &sun8i_ths_thermal_ops);
+-	if (IS_ERR(data->tzd)) {
+-		ret = PTR_ERR(data->tzd);
+-		dev_err(&pdev->dev, "failed to register thermal zone: %d\n",
+-				ret);
+-		goto err_disable_ths;
++		ret = clk_set_rate(data->clk, THS_SUN8I_CLK_IN);
++		if (ret)
++			goto err_disable_ths;
+ 	}
+ 
+-	sun8i_ths_h3_init(data);
++	for (i = 0; i < data->desc->num_sensors; i++) {
++		data->tzds[i].data = data;
++		data->tzds[i].tzd =
++			devm_thermal_zone_of_sensor_register(dev, i,
++							     &data->tzds[i],
++							     &sun8i_ths_thermal_ops);
++		if (IS_ERR(data->tzds[i].tzd)) {
++			ret = PTR_ERR(data->tzds[i].tzd);
++			dev_err(dev,
++				"failed to register thermal zone: %d\n", ret);
++			goto err_disable_ths;
++		}
++	}
+ 
+-	platform_set_drvdata(pdev, data);
++	sun8i_ths_init(data);
+ 	return 0;
+ 
+ err_disable_ths:
+-	clk_disable_unprepare(data->clk);
++	if (data->clk)
++		clk_disable_unprepare(data->clk);
+ err_disable_bus:
+-	clk_disable_unprepare(data->busclk);
++	if (data->busclk)
++		clk_disable_unprepare(data->busclk);
+ err_assert_reset:
+ 	reset_control_assert(data->reset);
+ 	return ret;
+@@ -212,13 +342,60 @@ static int sun8i_ths_remove(struct platform_device *pdev)
+ 	struct sun8i_ths_data *data = platform_get_drvdata(pdev);
+ 
+ 	reset_control_assert(data->reset);
+-	clk_disable_unprepare(data->clk);
+-	clk_disable_unprepare(data->busclk);
++	if (data->clk)
++		clk_disable_unprepare(data->clk);
++	if (data->busclk)
++		clk_disable_unprepare(data->busclk);
+ 	return 0;
+ }
+ 
++struct sun8i_ths_sensor_desc sun8i_ths_h3_sensors[] = {
++	{
++		.data_int_en = THS_SUN8I_INT_CTRL_DATA0_IRQ_EN,
++		.data_int_flag = THS_SUN8I_STAT_DATA0_IRQ_STS,
++		.data_offset = THS_SUN8I_DATA0,
++		.sense_en = THS_SUN8I_CTRL2_SENSE_EN0,
++	},
++};
++
++struct sun8i_ths_sensor_desc sun8i_ths_a83t_sensors[] = {
++	{
++		.data_int_en = THS_SUN8I_INT_CTRL_DATA0_IRQ_EN,
++		.data_int_flag = THS_SUN8I_STAT_DATA0_IRQ_STS,
++		.data_offset = THS_SUN8I_DATA0,
++		.sense_en = THS_SUN8I_CTRL2_SENSE_EN0,
++	},
++	{
++		.data_int_en = THS_SUN8I_INT_CTRL_DATA1_IRQ_EN,
++		.data_int_flag = THS_SUN8I_STAT_DATA1_IRQ_STS,
++		.data_offset = THS_SUN8I_DATA1,
++		.sense_en = THS_SUN8I_CTRL2_SENSE_EN1,
++	},
++	{
++		.data_int_en = THS_SUN8I_INT_CTRL_DATA2_IRQ_EN,
++		.data_int_flag = THS_SUN8I_STAT_DATA2_IRQ_STS,
++		.data_offset = THS_SUN8I_DATA2,
++		.sense_en = THS_SUN8I_CTRL2_SENSE_EN2,
++	},
++};
++
++static const struct sun8i_ths_desc sun8i_ths_h3_desc = {
++	.num_sensors = ARRAY_SIZE(sun8i_ths_h3_sensors),
++	.sensors = sun8i_ths_h3_sensors,
++	.calc_temp = sun8i_ths_calc_temp_h3,
++	.has_cal1 = false,
++};
++
++static const struct sun8i_ths_desc sun8i_ths_a83t_desc = {
++	.num_sensors = ARRAY_SIZE(sun8i_ths_a83t_sensors),
++	.sensors = sun8i_ths_a83t_sensors,
++	.calc_temp = sun8i_ths_calc_temp_a83t,
++	.has_cal1 = true,
++};
++
+ static const struct of_device_id sun8i_ths_id_table[] = {
+-	{ .compatible = "allwinner,sun8i-h3-ths", },
++	{ .compatible = "allwinner,sun8i-h3-ths", .data = &sun8i_ths_h3_desc },
++	{ .compatible = "allwinner,sun8i-a83t-ths", .data = &sun8i_ths_a83t_desc },
+ 	{ /* sentinel */ },
+ };
+ MODULE_DEVICE_TABLE(of, sun8i_ths_id_table);
+@@ -235,5 +412,5 @@ static struct platform_driver sun8i_ths_driver = {
+ module_platform_driver(sun8i_ths_driver);
+ 
+ MODULE_AUTHOR("Ondřej Jirman <megous@megous.com>");
+-MODULE_DESCRIPTION("Thermal sensor driver for Allwinner H3 SoC");
++MODULE_DESCRIPTION("Thermal sensor driver for Allwinner SUN8I SoCs");
+ MODULE_LICENSE("GPL v2");
+
+From fd40e74f08b58c730ff7ca5d038fa2575585a2f7 Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Sat, 25 Jun 2016 00:02:04 +0200
+Subject: [PATCH 06/16] dt-bindings: document sun8i_ths - H3 thermal sensor
+ driver
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This patch adds the binding documentation for the
+sun8i_ths driver. This is a driver for thermal sensor
+found in Allwinner H3 SoC.
+
+Signed-off-by: Ondřej Jirman <megous@megous.com>
+---
+ .../devicetree/bindings/thermal/sun8i-ths.txt | 24 +++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/sun8i-ths.txt
+
+diff --git a/Documentation/devicetree/bindings/thermal/sun8i-ths.txt b/Documentation/devicetree/bindings/thermal/sun8i-ths.txt
+new file mode 100644
+index 0000000000000..ba1288165e90c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/sun8i-ths.txt
+@@ -0,0 +1,24 @@
++* Thermal sensor driver for Allwinner H3 SoC
++
++Required properties:
++- compatible : "allwinner,sun8i-h3-ths"
++- reg : Address range of the thermal sensor registers
++- resets : Must contain phandles to reset controls matching the entries
++  of the names
++- reset-names : Must include the name "ahb"
++- clocks : Must contain phandles to clock controls matching the entries
++  of the names
++- clock-names : Must contain "ahb" for the bus gate and "ths" for the THS
++  clock
++
++Example:
++ths: ths@01c25000 {
++	#thermal-sensor-cells = <0>;
++	compatible = "allwinner,sun8i-h3-ths";
++	reg = <0x01c25000 0x400>;
++	interrupts = <GIC_SPI 63 IRQ_TYPE_LEVEL_HIGH>;
++	resets = <&bus_rst 136>;
++	reset-names = "ahb";
++	clocks = <&bus_gates 72>, <&ths_clk>;
++	clock-names = "ahb", "ths";
++};
+
+From 86f06f74a34463871b53ef3e09b4eacb2e766677 Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Sun, 26 Feb 2017 16:05:58 +0100
+Subject: [PATCH 07/16] ARM: dts: sunxi-h3-h5: Add thermal sensor node to H3/H5
+
+Signed-off-by: Ondrej Jirman <megous@megous.com>
+---
+ arch/arm/boot/dts/sunxi-h3-h5.dtsi | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/arch/arm/boot/dts/sunxi-h3-h5.dtsi b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
+index 4b1530ebe4272..2cb2c871a6f0a 100644
+--- a/arch/arm/boot/dts/sunxi-h3-h5.dtsi
++++ b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
+@@ -488,6 +488,19 @@
+ 			};
+ 		};
+ 
++		ths: ths@1c25000 {
++			#thermal-sensor-cells = <0>;
++			compatible = "allwinner,sun8i-h3-ths";
++			reg = <0x01c25000 0x400>,
++			      <0x01c14234 0x4>;
++			reg-names = "ths", "calibration";
++			interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
++			resets = <&ccu RST_BUS_THS>;
++			reset-names = "ahb";
++			clocks = <&ccu CLK_BUS_THS>, <&ccu CLK_THS>;
++			clock-names = "ahb", "ths";
++		};
++
+ 		timer@1c20c00 {
+ 			compatible = "allwinner,sun4i-a10-timer";
+ 			reg = <0x01c20c00 0xa0>;
+@@ -855,4 +868,12 @@
+ 			};
+ 		};
+ 	};
++
++	thermal-zones {
++		cpu_thermal: cpu_thermal {
++			polling-delay-passive = <330>;
++			polling-delay = <1000>;
++			thermal-sensors = <&ths 0>;
++		};
++	};
+ };
+
+From 2e360430aee97e0a50db49150e5a0ab5eaf20b7b Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Thu, 30 Mar 2017 12:58:43 +0200
+Subject: [PATCH 08/16] cpufreq: dt-platdev: Add allwinner,sun50i-h5 compatible
+
+---
+ drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index b1c5468dca16b..2ca98f1bad7ab 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -29,6 +29,7 @@ static const struct of_device_id whitelist[] __initconst = {
+ 	{ .compatible = "allwinner,sun8i-a23", },
+ 	{ .compatible = "allwinner,sun8i-a83t", },
+ 	{ .compatible = "allwinner,sun8i-h3", },
++	{ .compatible = "allwinner,sun50i-h5", },
+ 
+ 	{ .compatible = "apm,xgene-shadowcat", },
+ 
+
+From fbc490ea3f82c62247c29d98ca4d7497ad7deda0 Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Sun, 13 May 2018 21:00:43 +0200
+Subject: [PATCH 09/16] ARM: dts: sun8i: Increase max CPUX voltage to 1.4V on
+ Orange Pi PC
+
+When using thermal regulation we can afford to go higher. Also add
+regulator-ramp-delay, because regulator takes some time to change
+voltage.
+
+Signed-off-by: Ondrej Jirman <megous@megous.com>
+---
+ arch/arm/boot/dts/sun8i-h3-orangepi-pc.dts | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/sun8i-h3-orangepi-pc.dts b/arch/arm/boot/dts/sun8i-h3-orangepi-pc.dts
+index 46240334128f2..83f1866ed9e70 100644
+--- a/arch/arm/boot/dts/sun8i-h3-orangepi-pc.dts
++++ b/arch/arm/boot/dts/sun8i-h3-orangepi-pc.dts
+@@ -204,7 +204,8 @@
+ 		 * Use 1.0V as the minimum voltage instead.
+ 		 */
+ 		regulator-min-microvolt = <1000000>;
+-		regulator-max-microvolt = <1300000>;
++		regulator-max-microvolt = <1400000>;
++		regulator-ramp-delay = <200>;
+ 		regulator-boot-on;
+ 		regulator-always-on;
+ 	};
+
+From edf646af828ddeb30f3f5471d31e5538cdc65009 Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Mon, 27 Jun 2016 16:08:26 +0200
+Subject: [PATCH 10/16] ARM: dts: sun8i-h3: Add clock-frequency
+
+To avoid error messages during boot.
+
+Signed-off-by: Ondrej Jirman <megous@megous.com>
+---
+ arch/arm/boot/dts/sun8i-h3.dtsi | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi b/arch/arm/boot/dts/sun8i-h3.dtsi
+index 3ecfabb101519..c83ac4d2aa7cc 100644
+--- a/arch/arm/boot/dts/sun8i-h3.dtsi
++++ b/arch/arm/boot/dts/sun8i-h3.dtsi
+@@ -78,6 +78,7 @@
+ 			clock-names = "cpu";
+ 			operating-points-v2 = <&cpu0_opp_table>;
+ 			#cooling-cells = <2>;
++			clock-frequency = <1200000000>;
+ 		};
+ 
+ 		cpu@1 {
+@@ -88,6 +89,7 @@
+ 			clock-names = "cpu";
+ 			operating-points-v2 = <&cpu0_opp_table>;
+ 			#cooling-cells = <2>;
++			clock-frequency = <1200000000>;
+ 		};
+ 
+ 		cpu@2 {
+@@ -98,6 +100,7 @@
+ 			clock-names = "cpu";
+ 			operating-points-v2 = <&cpu0_opp_table>;
+ 			#cooling-cells = <2>;
++			clock-frequency = <1200000000>;
+ 		};
+ 
+ 		cpu@3 {
+@@ -108,6 +111,7 @@
+ 			clock-names = "cpu";
+ 			operating-points-v2 = <&cpu0_opp_table>;
+ 			#cooling-cells = <2>;
++			clock-frequency = <1200000000>;
+ 		};
+ 	};
+ 
+
+From a70fa39ec7896bfcebb1a370df0b7fee2bdbcbd9 Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Thu, 30 Mar 2017 13:04:25 +0200
+Subject: [PATCH 11/16] arm64: dts: sun50i-h5: Add clock-frequency
+
+To avoid error messages during boot.
+
+Signed-off-by: Ondrej Jirman <megous@megous.com>
+---
+ arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
+index b41dc1aab67d3..f9365f58a3222 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
++++ b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
+@@ -52,6 +52,7 @@
+ 			device_type = "cpu";
+ 			reg = <0>;
+ 			enable-method = "psci";
++			clock-frequency = <1200000000>;
+ 		};
+ 
+ 		cpu@1 {
+@@ -59,6 +60,7 @@
+ 			device_type = "cpu";
+ 			reg = <1>;
+ 			enable-method = "psci";
++			clock-frequency = <1200000000>;
+ 		};
+ 
+ 		cpu@2 {
+@@ -66,6 +68,7 @@
+ 			device_type = "cpu";
+ 			reg = <2>;
+ 			enable-method = "psci";
++			clock-frequency = <1200000000>;
+ 		};
+ 
+ 		cpu@3 {
+@@ -73,6 +76,7 @@
+ 			device_type = "cpu";
+ 			reg = <3>;
+ 			enable-method = "psci";
++			clock-frequency = <1200000000>;
+ 		};
+ 	};
+ 
+
+From ab6558c5c51a2727d2b313883ca4890f98755050 Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Mon, 14 May 2018 00:56:50 +0200
+Subject: [PATCH 12/16] ARM: dts: sunxi-h3-h5: Move CPU OPP table to dtsi
+ shared by H3/H5
+
+It is identical for H3 and H5, so it better live there.
+
+Signed-off-by: Ondrej Jirman <megous@megous.com>
+---
+ arch/arm/boot/dts/sun8i-h3.dtsi    | 23 -----------------------
+ arch/arm/boot/dts/sunxi-h3-h5.dtsi | 23 +++++++++++++++++++++++
+ 2 files changed, 23 insertions(+), 23 deletions(-)
+
+diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi b/arch/arm/boot/dts/sun8i-h3.dtsi
+index c83ac4d2aa7cc..9636055ff2115 100644
+--- a/arch/arm/boot/dts/sun8i-h3.dtsi
++++ b/arch/arm/boot/dts/sun8i-h3.dtsi
+@@ -43,29 +43,6 @@
+ #include "sunxi-h3-h5.dtsi"
+ 
+ / {
+-	cpu0_opp_table: opp_table0 {
+-		compatible = "operating-points-v2";
+-		opp-shared;
+-
+-		opp@648000000 {
+-			opp-hz = /bits/ 64 <648000000>;
+-			opp-microvolt = <1040000 1040000 1300000>;
+-			clock-latency-ns = <244144>; /* 8 32k periods */
+-		};
+-
+-		opp@816000000 {
+-			opp-hz = /bits/ 64 <816000000>;
+-			opp-microvolt = <1100000 1100000 1300000>;
+-			clock-latency-ns = <244144>; /* 8 32k periods */
+-		};
+-
+-		opp@1008000000 {
+-			opp-hz = /bits/ 64 <1008000000>;
+-			opp-microvolt = <1200000 1200000 1300000>;
+-			clock-latency-ns = <244144>; /* 8 32k periods */
+-		};
+-	};
+-
+ 	cpus {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+diff --git a/arch/arm/boot/dts/sunxi-h3-h5.dtsi b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
+index 2cb2c871a6f0a..684630c5b36ca 100644
+--- a/arch/arm/boot/dts/sunxi-h3-h5.dtsi
++++ b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
+@@ -105,6 +105,29 @@
+ 		};
+ 	};
+ 
++	cpu0_opp_table: opp_table0 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp@648000000 {
++			opp-hz = /bits/ 64 <648000000>;
++			opp-microvolt = <1040000 1040000 1300000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@816000000 {
++			opp-hz = /bits/ 64 <816000000>;
++			opp-microvolt = <1100000 1100000 1300000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1008000000 {
++			opp-hz = /bits/ 64 <1008000000>;
++			opp-microvolt = <1200000 1200000 1300000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++	};
++
+ 	de: display-engine {
+ 		compatible = "allwinner,sun8i-h3-display-engine";
+ 		allwinner,pipelines = <&mixer0>;
+
+From e75235663cf64df1d722ee725b944554713d3d0c Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Mon, 14 May 2018 01:13:01 +0200
+Subject: [PATCH 13/16] ARM: dts: sunxi-h3-h5: Add more CPU OPP for H3/H5
+
+These OPPs can be used with better cooling and/or thermal regulation.
+
+Signed-off-by: Ondrej Jirman <megous@megous.com>
+---
+ arch/arm/boot/dts/sunxi-h3-h5.dtsi | 78 ++++++++++++++++++++++++++++++
+ 1 file changed, 78 insertions(+)
+
+diff --git a/arch/arm/boot/dts/sunxi-h3-h5.dtsi b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
+index 684630c5b36ca..71204a0c688f8 100644
+--- a/arch/arm/boot/dts/sunxi-h3-h5.dtsi
++++ b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
+@@ -109,6 +109,24 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
++		opp@120000000 {
++			opp-hz = /bits/ 64 <120000000>;
++			opp-microvolt = <1040000 1040000 1300000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@240000000 {
++			opp-hz = /bits/ 64 <240000000>;
++			opp-microvolt = <1040000 1040000 1300000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@480000000 {
++			opp-hz = /bits/ 64 <480000000>;
++			opp-microvolt = <1040000 1040000 1300000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
+ 		opp@648000000 {
+ 			opp-hz = /bits/ 64 <648000000>;
+ 			opp-microvolt = <1040000 1040000 1300000>;
+@@ -121,11 +139,71 @@
+ 			clock-latency-ns = <244144>; /* 8 32k periods */
+ 		};
+ 
++		opp@960000000 {
++			opp-hz = /bits/ 64 <960000000>;
++			opp-microvolt = <1200000 1200000 1300000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
+ 		opp@1008000000 {
+ 			opp-hz = /bits/ 64 <1008000000>;
+ 			opp-microvolt = <1200000 1200000 1300000>;
+ 			clock-latency-ns = <244144>; /* 8 32k periods */
+ 		};
++
++		opp@1056000000 {
++			opp-hz = /bits/ 64 <1056000000>;
++			opp-microvolt = <1320000 1320000 1320000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1104000000 {
++			opp-hz = /bits/ 64 <1104000000>;
++			opp-microvolt = <1320000 1320000 1320000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1152000000 {
++			opp-hz = /bits/ 64 <1152000000>;
++			opp-microvolt = <1320000 1320000 1320000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1200000000 {
++			opp-hz = /bits/ 64 <1200000000>;
++			opp-microvolt = <1320000 1320000 1320000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1224000000 {
++			opp-hz = /bits/ 64 <1224000000>;
++			opp-microvolt = <1340000 1340000 1340000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1248000000 {
++			opp-hz = /bits/ 64 <1248000000>;
++			opp-microvolt = <1340000 1340000 1340000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1296000000 {
++			opp-hz = /bits/ 64 <1296000000>;
++			opp-microvolt = <1340000 1340000 1340000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1344000000 {
++			opp-hz = /bits/ 64 <1344000000>;
++			opp-microvolt = <1400000 1400000 1400000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1368000000 {
++			opp-hz = /bits/ 64 <1368000000>;
++			opp-microvolt = <1400000 1400000 1400000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
+ 	};
+ 
+ 	de: display-engine {
+
+From 4660c139797ceb5cfc0ae644a889c69ab6ded64f Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Mon, 14 May 2018 01:16:06 +0200
+Subject: [PATCH 14/16] ARM: dts: sunxi-h3-h5: Add thermal zone trip points
+
+This enables passive cooling by downregulating CPU voltage/frequency.
+
+Signed-off-by: Ondrej Jirman <megous@megous.com>
+---
+ arch/arm/boot/dts/sun8i-h3.dtsi              |  4 +++-
+ arch/arm/boot/dts/sunxi-h3-h5.dtsi           | 21 ++++++++++++++++++++
+ arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi |  3 +++
+ 3 files changed, 27 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi b/arch/arm/boot/dts/sun8i-h3.dtsi
+index 9636055ff2115..915a31b3af04e 100644
+--- a/arch/arm/boot/dts/sun8i-h3.dtsi
++++ b/arch/arm/boot/dts/sun8i-h3.dtsi
+@@ -54,8 +54,10 @@
+ 			clocks = <&ccu CLK_CPUX>;
+ 			clock-names = "cpu";
+ 			operating-points-v2 = <&cpu0_opp_table>;
+-			#cooling-cells = <2>;
+ 			clock-frequency = <1200000000>;
++			#cooling-cells = <2>;
++			cooling-min-level = <0>;
++			cooling-max-level = <15>;
+ 		};
+ 
+ 		cpu@1 {
+diff --git a/arch/arm/boot/dts/sunxi-h3-h5.dtsi b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
+index 71204a0c688f8..c776d6f71472b 100644
+--- a/arch/arm/boot/dts/sunxi-h3-h5.dtsi
++++ b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
+@@ -47,6 +47,7 @@
+ #include <dt-bindings/reset/sun8i-de2.h>
+ #include <dt-bindings/reset/sun8i-h3-ccu.h>
+ #include <dt-bindings/reset/sun8i-r-ccu.h>
++#include <dt-bindings/thermal/thermal.h>
+ 
+ / {
+ 	interrupt-parent = <&gic>;
+@@ -975,6 +976,26 @@
+ 			polling-delay-passive = <330>;
+ 			polling-delay = <1000>;
+ 			thermal-sensors = <&ths 0>;
++
++			trips {
++				cpu_hot_trip: cpu-warm {
++					temperature = <65000>;
++					hysteresis = <2000>;
++					type = "passive";
++				};
++				cpu_very_hot_trip: cpu-very-hot {
++					temperature = <90000>;
++					hysteresis = <2000>;
++					type = "critical";
++				};
++			};
++
++			cooling-maps {
++				cpu-warm-limit {
++					trip = <&cpu_hot_trip>;
++					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++				};
++			};
+ 		};
+ 	};
+ };
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
+index f9365f58a3222..8424fc97b89cc 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
++++ b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
+@@ -53,6 +53,9 @@
+ 			reg = <0>;
+ 			enable-method = "psci";
+ 			clock-frequency = <1200000000>;
++			#cooling-cells = <2>;
++			cooling-min-level = <0>;
++			cooling-max-level = <15>;
+ 		};
+ 
+ 		cpu@1 {
+
+From b88df0433f655f14b21685b078a7573303a48a32 Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Mon, 14 May 2018 01:19:06 +0200
+Subject: [PATCH 15/16] arm64: dts: sun50i-h5: Enable cpufreq-dt on H5 CPU
+
+Uses OPPs shared with H3.
+
+Signed-off-by: Ondrej Jirman <megous@megous.com>
+---
+ arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
+index 8424fc97b89cc..a5b196f1d025f 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
++++ b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
+@@ -52,6 +52,9 @@
+ 			device_type = "cpu";
+ 			reg = <0>;
+ 			enable-method = "psci";
++			clocks = <&ccu CLK_CPUX>;
++			clock-names = "cpu";
++			operating-points-v2 = <&cpu0_opp_table>;
+ 			clock-frequency = <1200000000>;
+ 			#cooling-cells = <2>;
+ 			cooling-min-level = <0>;
+@@ -63,6 +66,7 @@
+ 			device_type = "cpu";
+ 			reg = <1>;
+ 			enable-method = "psci";
++			operating-points-v2 = <&cpu0_opp_table>;
+ 			clock-frequency = <1200000000>;
+ 		};
+ 
+@@ -71,6 +75,7 @@
+ 			device_type = "cpu";
+ 			reg = <2>;
+ 			enable-method = "psci";
++			operating-points-v2 = <&cpu0_opp_table>;
+ 			clock-frequency = <1200000000>;
+ 		};
+ 
+@@ -79,6 +84,7 @@
+ 			device_type = "cpu";
+ 			reg = <3>;
+ 			enable-method = "psci";
++			operating-points-v2 = <&cpu0_opp_table>;
+ 			clock-frequency = <1200000000>;
+ 		};
+ 	};
+
+From 8f9893a0a764dac9d524ba06334bd628702a717b Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Thu, 30 Mar 2017 13:01:10 +0200
+Subject: [PATCH 16/16] arm64: dts: sun50i-h5-orange-pi-pc2: Setup CPUX voltage
+ regulator
+
+Orange Pi PC2 features sy8106a regulator just like Orange Pi PC.
+
+Signed-off-by: Ondrej Jirman <megous@megous.com>
+---
+ .../dts/allwinner/sun50i-h5-orangepi-pc2.dts  | 29 +++++++++++++++++++
+ 1 file changed, 29 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-pc2.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-pc2.dts
+index 3e0d5a9c096d3..af8e3fe26e200 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-pc2.dts
++++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-pc2.dts
+@@ -124,6 +124,10 @@
+ 	};
+ };
+ 
++&cpu0 {
++	cpu-supply = <&reg_vdd_cpux>;
++};
++
+ &codec {
+ 	allwinner,audio-routing =
+ 		"Line Out", "LINEOUT",
+@@ -219,6 +223,31 @@
+ 	};
+ };
+ 
++&r_i2c {
++	status = "okay";
++
++	reg_vdd_cpux: regulator@65 {
++		compatible = "silergy,sy8106a";
++		reg = <0x65>;
++		regulator-name = "vdd-cpux";
++		silergy,fixed-microvolt = <1200000>;
++		/*
++		 * The datasheet uses 1.1V as the minimum value of VDD-CPUX,
++		 * however both the Armbian DVFS table and the official one
++		 * have operating points with voltage under 1.1V, and both
++		 * DVFS table are known to work properly at the lowest
++		 * operating point.
++		 *
++		 * Use 1.0V as the minimum voltage instead.
++		 */
++		regulator-min-microvolt = <1000000>;
++		regulator-max-microvolt = <1400000>;
++		regulator-ramp-delay = <200>;
++		regulator-boot-on;
++		regulator-always-on;
++	};
++};
++
+ &uart0 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&uart0_pins_a>;
