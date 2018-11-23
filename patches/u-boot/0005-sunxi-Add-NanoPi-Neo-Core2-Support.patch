@@ -29,7 +29,7 @@ new file mode 100644
 index 0000000..992e3fc
 --- /dev/null
 +++ b/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
-@@ -0,0 +1,154 @@
+@@ -0,0 +1,158 @@
 +/*
 + * Copyright (C) 2017-2018 Chris Blake <chrisrblake93@gmail.com>
 + *
@@ -162,6 +162,10 @@ index 0000000..992e3fc
 +	status = "okay";
 +};
 +
++&mmc2_8bit_pins {
++	drive-strength = <40>;
++};
++
 +&ohci1 {
 +	status = "okay";
 +};
@@ -209,6 +213,5 @@ index 0000000..1e938fc
 +CONFIG_SUNXI_WDT=y
 +CONFIG_USB_EHCI_HCD=y
 +CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
--- 
+--
 2.7.4
-

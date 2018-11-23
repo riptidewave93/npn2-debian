@@ -29,7 +29,7 @@ new file mode 100644
 index 0000000..01666da
 --- /dev/null
 +++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-core2.dts
-@@ -0,0 +1,216 @@
+@@ -0,0 +1,220 @@
 +/*
 + * Copyright (C) 2017 Chris Blake <chrisrblake93@gmail.com>
 + * Copyright (C) 2016 ARM Ltd.
@@ -197,6 +197,10 @@ index 0000000..01666da
 +	status = "okay";
 +};
 +
++&mmc2_8bit_pins {
++	drive-strength = <40>;
++};
++
 +&ohci0 {
 +	status = "okay";
 +};
@@ -246,6 +250,5 @@ index 0000000..01666da
 +	usb0_vbus-supply = <&reg_usb0_vbus>;
 +	status = "okay";
 +};
--- 
+--
 2.7.4
-
