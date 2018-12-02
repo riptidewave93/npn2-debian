@@ -1,0 +1,27 @@
+From ef5346fb2b5fbadcfb3cc6be459ba2b846e14298 Mon Sep 17 00:00:00 2001
+From: Chris Blake <chrisrblake93@gmail.com>
+Date: Sun, 2 Dec 2018 12:18:17 -0600
+Subject: [PATCH] Revert: mmc: sunxi: Use new timing mode for A64 eMMC
+ controller
+
+This reverts 07bafc1e3536a4e3c422dbd13341688b54f159bb since it breaks eMMC on
+the H5 SoC. Tested on a NanoPi Neo Core2.
+
+---
+ drivers/mmc/host/sunxi-mmc.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/mmc/host/sunxi-mmc.c b/drivers/mmc/host/sunxi-mmc.c
+index 279e326e397e..5f8d3ea0a0f8 100644
+--- a/drivers/mmc/host/sunxi-mmc.c
++++ b/drivers/mmc/host/sunxi-mmc.c
+@@ -1177,7 +1177,6 @@ static const struct sunxi_mmc_cfg sun50i_a64_emmc_cfg = {
+ 	.idma_des_size_bits = 13,
+ 	.clk_delays = NULL,
+ 	.can_calibrate = true,
+-	.needs_new_timings = true,
+ };
+
+ static const struct of_device_id sunxi_mmc_of_match[] = {
+--
+2.17.1
