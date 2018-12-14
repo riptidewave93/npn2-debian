@@ -23,6 +23,11 @@ bootfs="${rootfs}/boot"
 linaro_release="7.3-2018.05"
 linaro_full_version="7.3.1-2018.05"
 
+# Arm Trusted Firmware settings
+atf_repo="https://github.com/ARM-software/arm-trusted-firmware.git"
+atf_branch="master"
+atf_platform="sun50i_a64"
+
 # U-Boot settings
 uboot_repo="https://github.com/u-boot/u-boot.git"
 uboot_branch="v2018.11"
@@ -30,7 +35,7 @@ uboot_overlay_dir="u-boot"
 
 # Kernel settings
 kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git"
-kernel_branch="v4.20-rc4"
+kernel_branch="v4.20-rc6"
 kernel_config="nanopi_h5_defconfig" # Global config for all boards
 kernel_overlay_dir="kernel"
 
@@ -101,11 +106,11 @@ mkdir -p $buildenv/git
 cd $buildenv/git
 
 # Build ARM Trusted Firmware
-git clone https://github.com/apritzel/arm-trusted-firmware.git --depth 1 -b allwinner
+git clone $atf_repo --depth 1 -b $atf_branch
 cd arm-trusted-firmware
-make PLAT=sun50iw1p1 bl31
+make PLAT=$atf_platform bl31
 runtest $?
-export BL31=$buildenv/git/arm-trusted-firmware/build/sun50iw1p1/release/bl31.bin
+export BL31=$buildenv/git/arm-trusted-firmware/build/$atf_platform/release/bl31.bin
 cd $buildenv/git
 
 # Build U-Boot
@@ -292,10 +297,7 @@ rm -f /etc/udev/rules.d/70-persistent-net.rules
 sed -i 's|#PermitRootLogin prohibit-password|PermitRootLogin yes|g' /etc/ssh/sshd_config
 echo 'HWCLOCKACCESS=yes' >> /etc/default/hwclock
 echo 'RAMTMP=yes' >> /etc/default/tmpfs
-apt-get install -y wireless-tools wpasupplicant firmware-brcm80211 wireless-regdb crda
-wget http://ftp.us.debian.org/debian/pool/non-free/f/firmware-nonfree/firmware-realtek_20161130-3_all.deb -O /root/firmware-realtek_20161130-3_all.deb
-dpkg -i /root/firmware-realtek_20161130-3_all.deb
-rm /root/firmware-realtek_20161130-3_all.deb
+apt-get install -y wireless-tools wpasupplicant firmware-brcm80211 wireless-regdb crda firmware-realtek
 rm -f third-stage
 EOF
 chmod +x third-stage
