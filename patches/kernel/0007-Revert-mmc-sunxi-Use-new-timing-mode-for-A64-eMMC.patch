@@ -1,0 +1,36 @@
+From e6dc0c42a8efe03f157b969db44582b2836c662f Mon Sep 17 00:00:00 2001
+From: Chris Blake <chrisrblake93@gmail.com>
+Date: Sun, 2 Dec 2018 12:18:17 -0600
+Subject: [PATCH] Revert: mmc: sunxi: Use new timing mode for A64 eMMC
+ controller
+
+This reverts 07bafc1e3536a4e3c422dbd13341688b54f159bb and moves us to
+use ccu_has_timings_switch, which will allow for testing for support.
+---
+ drivers/mmc/host/sunxi-mmc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/mmc/host/sunxi-mmc.c b/drivers/mmc/host/sunxi-mmc.c
+index 279e326e397e..57951d4fc6cd 100644
+--- a/drivers/mmc/host/sunxi-mmc.c
++++ b/drivers/mmc/host/sunxi-mmc.c
+@@ -1170,14 +1170,14 @@ static const struct sunxi_mmc_cfg sun50i_a64_cfg = {
+ 	.clk_delays = NULL,
+ 	.can_calibrate = true,
+ 	.mask_data0 = true,
+-	.needs_new_timings = true,
++	.ccu_has_timings_switch = true,
+ };
+ 
+ static const struct sunxi_mmc_cfg sun50i_a64_emmc_cfg = {
+ 	.idma_des_size_bits = 13,
+ 	.clk_delays = NULL,
+ 	.can_calibrate = true,
+-	.needs_new_timings = true,
++	.ccu_has_timings_switch = true,
+ };
+ 
+ static const struct of_device_id sunxi_mmc_of_match[] = {
+-- 
+2.17.1
+

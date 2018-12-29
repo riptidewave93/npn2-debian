@@ -2,7 +2,7 @@
 
 Build script to build a Debian 9 image for FriendlyARM NanoPi H5 based boards, as well as all dependencies. This includes the following:
 
-- Mainline Linux Kernel - [v4.20-rc6](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tag/?h=v4.20-rc6)
+- Mainline Linux Kernel - [v4.20](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=linux-4.20.y)
 - Arm Trusted Firmware - [arm-trusted-firmware/master branch](https://github.com/ARM-software/arm-trusted-firmware/tree/master)
 - Mainline U-Boot - [v2018.11](https://github.com/u-boot/u-boot/tree/v2018.11)
 
