@@ -12,7 +12,7 @@ Note that there are patches/modifications applied to the kernel and u-boot. The 
 Currently images for the following devices are generated:
 * FriendlyARM NanoPi Neo2
 * FriendlyARM NanoPi Neo Core2
-* FriendlyARM NanoPi Neo Plus2 (untested)
+* FriendlyARM NanoPi Neo Plus2
 
 ## Requirements
 
@@ -29,6 +29,7 @@ Currently images for the following devices are generated:
 
 ## To Do
 * Bring back kernel overlay support (hoping this gets mainlined for arm64)
+* Figure out how to "properly" add WiFi blobs for the Plus2 - AKA fix wifi
 
 ## Notes
 

@@ -5,8 +5,8 @@ Subject: [PATCH 4/4] arm64: Add Allwinner H5 defconfig
 
 Basic baseconfig for H5 based boards.
 ---
- arch/arm64/configs/nanopi_h5_defconfig | 301 +++++++++++++++++++++++++++++++++
- 1 file changed, 301 insertions(+)
+ arch/arm64/configs/nanopi_h5_defconfig | 307 +++++++++++++++++++++++++++++++++
+ 1 file changed, 307 insertions(+)
  create mode 100644 arch/arm64/configs/nanopi_h5_defconfig
 
 diff --git a/arch/arm64/configs/nanopi_h5_defconfig b/arch/arm64/configs/nanopi_h5_defconfig
@@ -14,7 +14,7 @@ new file mode 100644
 index 0000000..4484ba9
 --- /dev/null
 +++ b/arch/arm64/configs/nanopi_h5_defconfig
-@@ -0,0 +1,301 @@
+@@ -0,0 +1,307 @@
 +CONFIG_64BIT=y
 +CONFIG_AEABI=y
 +CONFIG_AHCI_SUNXI=y
@@ -35,6 +35,11 @@ index 0000000..4484ba9
 +CONFIG_BLK_DEV_INITRD=y
 +CONFIG_BLK_DEV_SD=y
 +CONFIG_BPF_JIT=y
++CONFIG_BRCMUTIL=m
++# CONFIG_BRCMSMAC is not set
++CONFIG_BRCMFMAC=m
++CONFIG_BRCMFMAC_PROTO_BCDC=y
++CONFIG_BRCMFMAC_SDIO=y
 +CONFIG_BRIDGE=m
 +CONFIG_BRIDGE_VLAN_FILTERING=y
 +# CONFIG_BT_DEBUGFS is not set
@@ -316,6 +321,6 @@ index 0000000..4484ba9
 +CONFIG_VLAN_8021Q_MVRP=y
 +CONFIG_WATCHDOG=y
 +CONFIG_WLAN=y
--- 
++CONFIG_WLAN_VENDOR_BROADCOM=y
+--
 2.7.4
-
