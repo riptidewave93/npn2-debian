@@ -2,7 +2,7 @@
 
 Build script to build a Debian 9 image for FriendlyARM NanoPi H5 based boards, as well as all dependencies. This includes the following:
 
-- Mainline Linux Kernel - [v4.20](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=linux-4.20.y)
+- Mainline Linux Kernel - [v4.20.y](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=linux-4.20.y)
 - Arm Trusted Firmware - [arm-trusted-firmware/master branch](https://github.com/ARM-software/arm-trusted-firmware/tree/master)
 - Mainline U-Boot - [v2018.11](https://github.com/u-boot/u-boot/tree/v2018.11)
 
@@ -29,7 +29,7 @@ Currently images for the following devices are generated:
 
 ## To Do
 * Bring back kernel overlay support (hoping this gets mainlined for arm64)
-* Figure out how to "properly" add WiFi blobs for the Plus2 - AKA fix wifi
+* Get bluetooth working on the Plus2 as well as Onboard EMMC boot support
 
 ## Notes
 

@@ -297,7 +297,13 @@ rm -f /etc/udev/rules.d/70-persistent-net.rules
 sed -i 's|#PermitRootLogin prohibit-password|PermitRootLogin yes|g' /etc/ssh/sshd_config
 echo 'HWCLOCKACCESS=yes' >> /etc/default/hwclock
 echo 'RAMTMP=yes' >> /etc/default/tmpfs
-apt-get install -y wireless-tools wpasupplicant firmware-brcm80211 wireless-regdb crda firmware-realtek
+apt-get install -y wireless-tools wpasupplicant firmware-brcm80211 wireless-regdb crda firmware-realtek bluez bluez-tools
+git clone https://github.com/mirsys/fw_ap6212.git /lib/firmware/ap6212
+rm -rf /lib/firmware/ap6212/.git
+ln -s /lib/firmware/ap6212/fw_bcm43438a0.bin /lib/firmware/brcm/brcmfmac43430-sdio.bin
+ln -s /lib/firmware/ap6212/nvram_ap6212.txt /lib/firmware/brcm/brcmfmac43430-sdio.txt
+ln -s /lib/firmware/ap6212/fw_bcm43438a1.bin /lib/firmware/brcm/brcmfmac43430a1-sdio.bin
+ln -s /lib/firmware/ap6212/nvram_ap6212a.txt /lib/firmware/brcm/brcmfmac43430a1-sdio.txt
 rm -f third-stage
 EOF
 chmod +x third-stage
