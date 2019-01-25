@@ -30,7 +30,7 @@ atf_platform="sun50i_a64"
 
 # U-Boot settings
 uboot_repo="https://github.com/u-boot/u-boot.git"
-uboot_branch="v2018.11"
+uboot_branch="v2019.01"
 uboot_overlay_dir="u-boot"
 
 # Kernel settings

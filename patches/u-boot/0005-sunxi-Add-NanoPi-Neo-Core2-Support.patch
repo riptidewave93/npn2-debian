@@ -1,22 +1,22 @@
-From d6a878709112f7613d5dc5dea27129a46b024479 Mon Sep 17 00:00:00 2001
+From 51cb20c15479f4212dc4d2082e510c3abd5320a3 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Thu, 4 Oct 2018 20:52:02 -0500
+Date: Fri, 23 Nov 2018 10:23:47 -0600
 Subject: [PATCH 5/6] sunxi: Add NanoPi Neo Core2 Support
 
 This adds support for the NanoPi Neo Core2, a board based on the H5 SoC.
 ---
  arch/arm/dts/Makefile                       |   1 +
- arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts | 154 ++++++++++++++++++++++++++++
- configs/nanopi_neo_core2_defconfig          |  19 ++++
- 3 files changed, 174 insertions(+)
+ arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts | 158 ++++++++++++++++++++
+ configs/nanopi_neo_core2_defconfig          |  19 +++
+ 3 files changed, 178 insertions(+)
  create mode 100644 arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
  create mode 100644 configs/nanopi_neo_core2_defconfig
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index d36447d..8dde365 100644
+index dda4e59491..cdfa86d9a3 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -389,6 +389,7 @@ dtb-$(CONFIG_MACH_SUN8I_V3S) += \
+@@ -397,6 +397,7 @@ dtb-$(CONFIG_MACH_SUN8I_V3S) += \
  dtb-$(CONFIG_MACH_SUN50I_H5) += \
  	sun50i-h5-libretech-all-h3-cc.dtb \
  	sun50i-h5-nanopi-neo2.dtb \
@@ -26,7 +26,7 @@ index d36447d..8dde365 100644
  	sun50i-h5-orangepi-pc2.dtb \
 diff --git a/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts b/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
 new file mode 100644
-index 0000000..992e3fc
+index 0000000000..e9a03fbc94
 --- /dev/null
 +++ b/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
 @@ -0,0 +1,158 @@
@@ -190,7 +190,7 @@ index 0000000..992e3fc
 +};
 diff --git a/configs/nanopi_neo_core2_defconfig b/configs/nanopi_neo_core2_defconfig
 new file mode 100644
-index 0000000..1e938fc
+index 0000000000..1e938fc74f
 --- /dev/null
 +++ b/configs/nanopi_neo_core2_defconfig
 @@ -0,0 +1,19 @@
@@ -213,5 +213,6 @@ index 0000000..1e938fc
 +CONFIG_SUNXI_WDT=y
 +CONFIG_USB_EHCI_HCD=y
 +CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
---
-2.7.4
+-- 
+2.17.1
+

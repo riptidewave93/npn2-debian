@@ -1,25 +1,28 @@
-From 598ffc71c2049ac277939d555d92c8a69fd2eaa8 Mon Sep 17 00:00:00 2001
+From 7332f520eab8379477b68dd71f04ecb78e600ed4 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Thu, 4 Oct 2018 20:49:33 -0500
+Date: Fri, 25 Jan 2019 08:13:51 -0600
 Subject: [PATCH 3/6] watchdog: Add sunxi watchdog driver
 
 Based on the linux mainline driver, this adds support for the hardware
 watchdog timer found on sunxi boards.
+
+TO:DO - This needs to be converted to the new driver format at some
+point before it can go mainline.
 ---
  common/board_f.c             |   3 +-
- drivers/watchdog/Kconfig     |  18 ++++++++
+ drivers/watchdog/Kconfig     |  18 +++++++
  drivers/watchdog/Makefile    |   1 +
- drivers/watchdog/sunxi_wdt.c | 101 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/watchdog/sunxi_wdt.c | 101 +++++++++++++++++++++++++++++++++++
  4 files changed, 122 insertions(+), 1 deletion(-)
  create mode 100644 drivers/watchdog/sunxi_wdt.c
 
 diff --git a/common/board_f.c b/common/board_f.c
-index afafec5..24d8f9b 100644
+index 149a7229e8..976402d5c6 100644
 --- a/common/board_f.c
 +++ b/common/board_f.c
-@@ -92,7 +92,8 @@ static int init_func_watchdog_init(void)
+@@ -96,7 +96,8 @@ static int init_func_watchdog_init(void)
  	(defined(CONFIG_M68K) || defined(CONFIG_MICROBLAZE) || \
- 	defined(CONFIG_SH) || defined(CONFIG_AT91SAM9_WATCHDOG) || \
+ 	defined(CONFIG_SH) || \
  	defined(CONFIG_DESIGNWARE_WATCHDOG) || \
 -	defined(CONFIG_IMX_WATCHDOG))
 +	defined(CONFIG_IMX_WATCHDOG) || \
@@ -28,10 +31,10 @@ index afafec5..24d8f9b 100644
  	puts("       Watchdog enabled\n");
  # endif
 diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index 02f4e1e..7a7cc40 100644
+index 10fd3039aa..dc91c61b7a 100644
 --- a/drivers/watchdog/Kconfig
 +++ b/drivers/watchdog/Kconfig
-@@ -20,6 +20,24 @@ config BCM2835_WDT
+@@ -26,6 +26,24 @@ config BCM2835_WDT
  	  This provides basic infrastructure to support BCM2835/2836 watchdog
  	  hardware, with a max timeout of ~15secs.
  
@@ -57,17 +60,17 @@ index 02f4e1e..7a7cc40 100644
  	bool "TI OMAP watchdog driver"
  	depends on ARCH_OMAP2PLUS
 diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
-index 08406ca..1c11646 100644
+index d901240ad1..e990d32b08 100644
 --- a/drivers/watchdog/Makefile
 +++ b/drivers/watchdog/Makefile
-@@ -23,3 +23,4 @@ obj-$(CONFIG_BCM2835_WDT)       += bcm2835_wdt.o
- obj-$(CONFIG_WDT_ORION) += orion_wdt.o
- obj-$(CONFIG_WDT_CDNS) += cdns_wdt.o
+@@ -27,3 +27,4 @@ obj-$(CONFIG_WDT_CDNS) += cdns_wdt.o
  obj-$(CONFIG_MPC8xx_WATCHDOG) += mpc8xx_wdt.o
+ obj-$(CONFIG_WDT_MT7621) += mt7621_wdt.o
+ obj-$(CONFIG_WDT_MTK) += mtk_wdt.o
 +obj-$(CONFIG_SUNXI_WDT) += sunxi_wdt.o
 diff --git a/drivers/watchdog/sunxi_wdt.c b/drivers/watchdog/sunxi_wdt.c
 new file mode 100644
-index 0000000..7828f41
+index 0000000000..7828f4178c
 --- /dev/null
 +++ b/drivers/watchdog/sunxi_wdt.c
 @@ -0,0 +1,101 @@
@@ -173,5 +176,5 @@ index 0000000..7828f41
 +	writel(reg, wdt_base + regs->wdt_mode);
 + }
 -- 
-2.7.4
+2.17.1
 
