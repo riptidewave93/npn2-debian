@@ -147,6 +147,7 @@ cd $buildenv/git
 mkdir linux-build && cd ./linux-build
 git clone $kernel_repo --depth 1 -b $kernel_branch ./linux
 cd linux
+touch .scmversion
 # If we have patches, apply them
 if [[ -d $ourpath/patches/kernel/ ]]; then
 	for file in $ourpath/patches/kernel/*.patch; do
