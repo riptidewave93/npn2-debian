@@ -1,0 +1,29 @@
+From 005438931cfe7f25526e2b6f172024bb9ca13783 Mon Sep 17 00:00:00 2001
+From: Chris Blake <chrisrblake93@gmail.com>
+Date: Fri, 1 Feb 2019 13:54:41 -0600
+Subject: [PATCH] arm64: dts: sun50i-h5: Fixup Status LED on Neo Plus2
+
+This is the correct GPIO for this LED, per
+https://github.com/friendlyarm/linux/blob/e3c927ecb52e60becd563e332cac7efd74d84b9f/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi.dtsi#L103
+---
+ arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-plus2.dts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-plus2.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-plus2.dts
+index a3e78b57bae0..ea4d1ee14edb 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-plus2.dts
++++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-plus2.dts
+@@ -71,8 +71,8 @@
+ 		};
+ 
+ 		status {
+-			label = "nanopi:red:status";
+-			gpios = <&pio 0 20 GPIO_ACTIVE_HIGH>;
++			label = "nanopi:blue:status";
++			gpios = <&pio 0 10 GPIO_ACTIVE_HIGH>;
+ 		};
+ 	};
+ 
+-- 
+2.17.1
+

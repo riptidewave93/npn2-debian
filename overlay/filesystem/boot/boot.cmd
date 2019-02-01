@@ -30,6 +30,15 @@ fdt set / serial-number ${serial#}
 # Set cmdline
 setenv bootargs console=ttyS0,115200 earlyprintk root=/dev/mmcblk${mmc_bootdev}p2 rootfstype=ext4 rw rootwait fsck.repair=${fsck.repair} panic=10 ${extra}
 
+# Dirty hack to allow the Plus2 board boot from onboard MMC
+# This is due to the fact we don't expose MMC1 for wifi to U-Boot
+# so it sees MMC2 as MMC1, causing boot issues once we enter linux
+if test "${fdtfile}" = "allwinner/sun50i-h5-nanopi-neo-plus2.dtb"; then
+	if test "${mmc_bootdev}" = "1"; then
+		setenv bootargs console=ttyS0,115200 earlyprintk root=/dev/mmcblk2p2 rootfstype=ext4 rw rootwait fsck.repair=${fsck.repair} panic=10 ${extra}
+	fi
+fi
+
 # Boot our image
 fatload mmc ${mmc_bootdev} ${kernel_addr_r} ${kernel}
 fatload mmc ${mmc_bootdev} ${ramdisk_addr_r} ${ramdisk}

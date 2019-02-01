@@ -29,7 +29,7 @@ Currently images for the following devices are generated:
 
 ## To Do
 * Bring back kernel overlay support (hoping this gets mainlined for arm64)
-* Get bluetooth working on the Plus2 as well as Onboard EMMC boot support
+* Get bluetooth working on the Plus2 board
 
 ## Notes
 

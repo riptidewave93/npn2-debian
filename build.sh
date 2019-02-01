@@ -365,14 +365,10 @@ service ssh start
 update-rc.d ssh defaults
 
 # Figure out which mmc we are on
-if [[ "\$(cat /proc/cmdline)" = *"root=/dev/mmcblk0"* ]]; then
-  bootedmmc="/dev/mmcblk0"
-else
-  bootedmmc="/dev/mmcblk1"
-fi
+bootedmmc=\$(cat /proc/cmdline | sed 's| |\n|g' | sed -n 's/^root=//p')
 
 # Resize root disk
-fdisk \${bootedmmc} << LEL
+fdisk \${bootedmmc%??} << LEL
 d
 2
 
@@ -386,7 +382,7 @@ n
 w
 LEL
 partprobe
-resize2fs \${bootedmmc}p2
+resize2fs \${bootedmmc%??}p2
 sync
 
 # Fixup initramfs for fsck on boot to work
@@ -395,7 +391,7 @@ rm /boot/initramfs.cpio.gz
 mv /boot/initrd.img-* /boot/initramfs.cpio.gz
 
 # Add our mount for boot and mount it
-echo "\${bootedmmc}p1  /boot           vfat    defaults        0       1" >> /etc/fstab
+echo "\${bootedmmc%??}p1  /boot           vfat    defaults        0       1" >> /etc/fstab
 mount -a
 
 # Cleanup
