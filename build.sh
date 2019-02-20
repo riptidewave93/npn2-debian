@@ -39,6 +39,10 @@ kernel_branch="linux-4.20.y"
 kernel_config="nanopi_h5_defconfig" # Global config for all boards
 kernel_overlay_dir="kernel"
 
+# Wireguard settings
+wg_repo="git://git.zx2c4.com/WireGuard"
+wg_branch="0.0.20190123"
+
 # Distro settings
 distrib_name="debian"
 deb_mirror="https://mirrors.kernel.org/debian/"
@@ -143,6 +147,9 @@ for board in "${supported_devices[@]}"; do
 done
 cd $buildenv/git
 
+# Pull down Wireguard
+git clone $wg_repo --depth 1 -b $wg_branch ./wireguard
+
 # Build the Linux Kernel
 mkdir linux-build && cd ./linux-build
 git clone $kernel_repo --depth 1 -b $kernel_branch ./linux
@@ -160,6 +167,9 @@ if [[ -d $ourpath/overlay/$kernel_overlay_dir/ ]]; then
 	echo "Applying $kernel_overlay_dir overlay"
 	cp -R $ourpath/overlay/$kernel_overlay_dir/* ./
 fi
+# Now that things are applied, make sure we pull in wireguard with the kernel
+$buildenv/git/wireguard/contrib/kernel-tree/jury-rig.sh "$buildenv/git/linux-build/linux"
+# Build as normal
 make $kernel_config
 make -j`getconf _NPROCESSORS_ONLN` deb-pkg dtbs
 runtest $?
