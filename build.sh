@@ -292,9 +292,11 @@ cat << EOF > third-stage
 export DEBIAN_FRONTEND=noninteractive
 debconf-set-selections /debconf.set
 rm -f /debconf.set
+echo 'deb http://deb.debian.org/debian/ unstable main' > /etc/apt/sources.list.d/debian-unstable.list
+printf 'Package: *\nPin: release a=unstable\nPin-Priority: 90\n' > /etc/apt/preferences.d/limit-unstable
 apt-get update
 apt-get -y install git-core binutils ca-certificates e2fsprogs ntp parted curl \
-locales console-common openssh-server less vim net-tools initramfs-tools \
+locales console-common openssh-server less vim net-tools initramfs-tools wireguard-tools \
 u-boot-tools
 export LANGUAGE=en_US.UTF-8
 export LANG=en_US.UTF-8
