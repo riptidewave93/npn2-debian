@@ -1,7 +1,7 @@
-From 7332f520eab8379477b68dd71f04ecb78e600ed4 Mon Sep 17 00:00:00 2001
+From 62ad8b1e1f0c4a92a7cc5179e645e081665371ff Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Fri, 25 Jan 2019 08:13:51 -0600
-Subject: [PATCH 3/6] watchdog: Add sunxi watchdog driver
+Subject: [PATCH 3/7] watchdog: Add sunxi watchdog driver
 
 Based on the linux mainline driver, this adds support for the hardware
 watchdog timer found on sunxi boards.
@@ -31,7 +31,7 @@ index 149a7229e8..976402d5c6 100644
  	puts("       Watchdog enabled\n");
  # endif
 diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index 10fd3039aa..dc91c61b7a 100644
+index 115fc4551f..db664848a1 100644
 --- a/drivers/watchdog/Kconfig
 +++ b/drivers/watchdog/Kconfig
 @@ -26,6 +26,24 @@ config BCM2835_WDT

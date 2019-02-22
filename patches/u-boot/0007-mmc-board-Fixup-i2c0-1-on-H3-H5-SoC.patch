@@ -1,17 +1,18 @@
-From 463818f556ac216f12a9b1401e915446f0cfa5e3 Mon Sep 17 00:00:00 2001
+From 5d6c381078bac80c5c0c878ebbfb4dd00efaa41f Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Sat, 15 Dec 2018 10:14:57 -0600
-Subject: [PATCH 6/6] sunxi: Enable i2c0-2 on H3/H5
+Date: Fri, 22 Feb 2019 13:10:00 -0600
+Subject: [PATCH 7/7] mmc: board: Fixup i2c0-1 on H3/H5 SoC
 
-The sun50i boards (H3/H5) use different pullups than the sun8i platform.
-This change allows for working i2c once enabled in your defconfig.
+While the H3/H5 are both sun8i "based" SoCs, they use different pins for
+i2c 0 and 1. U-Boot also selects MACH_SUN8i when MACH_SUNXI_H3_H5 is
+set, so we need to be careful of the order.
 ---
- arch/arm/include/asm/arch-sunxi/gpio.h |  2 ++
- board/sunxi/board.c                    | 14 +++++++++++++-
- 2 files changed, 15 insertions(+), 1 deletion(-)
+ arch/arm/include/asm/arch-sunxi/gpio.h | 2 ++
+ board/sunxi/board.c                    | 8 ++++++++
+ 2 files changed, 10 insertions(+)
 
 diff --git a/arch/arm/include/asm/arch-sunxi/gpio.h b/arch/arm/include/asm/arch-sunxi/gpio.h
-index 2daf23f6f5..fd5cebb618 100644
+index 40a3f845d0..7bd7c64d47 100644
 --- a/arch/arm/include/asm/arch-sunxi/gpio.h
 +++ b/arch/arm/include/asm/arch-sunxi/gpio.h
 @@ -148,6 +148,8 @@ enum sunxi_gpio_number {
@@ -24,44 +25,31 @@ index 2daf23f6f5..fd5cebb618 100644
  #define SUN4I_GPB_PWM		2
  #define SUN4I_GPB_TWI0		2
 diff --git a/board/sunxi/board.c b/board/sunxi/board.c
-index d8cdaff9f3..d8ef4ebcde 100644
+index 7dfafd8800..983ffb9766 100644
 --- a/board/sunxi/board.c
 +++ b/board/sunxi/board.c
-@@ -94,6 +94,11 @@ void i2c_init_board(void)
+@@ -94,6 +94,10 @@ void i2c_init_board(void)
  	sunxi_gpio_set_cfgpin(SUNXI_GPH(14), SUN6I_GPH_TWI0);
  	sunxi_gpio_set_cfgpin(SUNXI_GPH(15), SUN6I_GPH_TWI0);
  	clock_twi_onoff(0, 1);
-+#elif defined(CONFIG_MACH_SUNXI_H3_H5) || \
-+    defined(CONFIG_MACH_SUN50I)
++#elif defined(CONFIG_MACH_SUNXI_H3_H5)
 +	sunxi_gpio_set_cfgpin(SUNXI_GPA(11), SUN8I_H3_GPA_TWI0);
 +	sunxi_gpio_set_cfgpin(SUNXI_GPA(12), SUN8I_H3_GPA_TWI0);
 +	clock_twi_onoff(0, 1);
  #elif defined(CONFIG_MACH_SUN8I)
  	sunxi_gpio_set_cfgpin(SUNXI_GPH(2), SUN8I_GPH_TWI0);
  	sunxi_gpio_set_cfgpin(SUNXI_GPH(3), SUN8I_GPH_TWI0);
-@@ -116,6 +121,11 @@ void i2c_init_board(void)
+@@ -120,6 +124,10 @@ void i2c_init_board(void)
  	sunxi_gpio_set_cfgpin(SUNXI_GPH(16), SUN6I_GPH_TWI1);
  	sunxi_gpio_set_cfgpin(SUNXI_GPH(17), SUN6I_GPH_TWI1);
  	clock_twi_onoff(1, 1);
-+#elif defined(CONFIG_MACH_SUNXI_H3_H5) || \
-+    defined(CONFIG_MACH_SUN50I)
++#elif defined(CONFIG_MACH_SUNXI_H3_H5)
 +	sunxi_gpio_set_cfgpin(SUNXI_GPA(18), SUN8I_H3_GPA_TWI1);
 +	sunxi_gpio_set_cfgpin(SUNXI_GPA(19), SUN8I_H3_GPA_TWI1);
 +	clock_twi_onoff(1, 1);
  #elif defined(CONFIG_MACH_SUN8I)
  	sunxi_gpio_set_cfgpin(SUNXI_GPH(4), SUN8I_GPH_TWI1);
  	sunxi_gpio_set_cfgpin(SUNXI_GPH(5), SUN8I_GPH_TWI1);
-@@ -138,7 +148,9 @@ void i2c_init_board(void)
- 	sunxi_gpio_set_cfgpin(SUNXI_GPH(18), SUN6I_GPH_TWI2);
- 	sunxi_gpio_set_cfgpin(SUNXI_GPH(19), SUN6I_GPH_TWI2);
- 	clock_twi_onoff(2, 1);
--#elif defined(CONFIG_MACH_SUN8I)
-+#elif defined(CONFIG_MACH_SUN8I) || \
-+    defined(CONFIG_MACH_SUNXI_H3_H5) || \
-+    defined(CONFIG_MACH_SUN50I)
- 	sunxi_gpio_set_cfgpin(SUNXI_GPE(12), SUN8I_GPE_TWI2);
- 	sunxi_gpio_set_cfgpin(SUNXI_GPE(13), SUN8I_GPE_TWI2);
- 	clock_twi_onoff(2, 1);
 -- 
 2.17.1
 

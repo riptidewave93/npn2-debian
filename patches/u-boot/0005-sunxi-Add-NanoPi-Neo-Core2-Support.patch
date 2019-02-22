@@ -1,23 +1,23 @@
-From 51cb20c15479f4212dc4d2082e510c3abd5320a3 Mon Sep 17 00:00:00 2001
+From 8466a13c3da8bee19401e5274104e3df47b46eb6 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Fri, 23 Nov 2018 10:23:47 -0600
-Subject: [PATCH 5/6] sunxi: Add NanoPi Neo Core2 Support
+Date: Fri, 22 Feb 2019 13:12:38 -0600
+Subject: [PATCH 5/7] sunxi: Add NanoPi Neo Core2 Support
 
 This adds support for the NanoPi Neo Core2, a board based on the H5 SoC.
 ---
  arch/arm/dts/Makefile                       |   1 +
- arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts | 158 ++++++++++++++++++++
- configs/nanopi_neo_core2_defconfig          |  19 +++
- 3 files changed, 178 insertions(+)
+ arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts | 184 ++++++++++++++++++++
+ configs/nanopi_neo_core2_defconfig          |  20 +++
+ 3 files changed, 205 insertions(+)
  create mode 100644 arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
  create mode 100644 configs/nanopi_neo_core2_defconfig
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index dda4e59491..cdfa86d9a3 100644
+index fbc0f8afea..68ce88e8a9 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -397,6 +397,7 @@ dtb-$(CONFIG_MACH_SUN8I_V3S) += \
- dtb-$(CONFIG_MACH_SUN50I_H5) += \
+@@ -409,6 +409,7 @@ dtb-$(CONFIG_MACH_SUN50I_H5) += \
+ 	sun50i-h5-emlid-neutis-n5-devboard.dtb \
  	sun50i-h5-libretech-all-h3-cc.dtb \
  	sun50i-h5-nanopi-neo2.dtb \
 +	sun50i-h5-nanopi-neo-core2.dtb \
@@ -26,12 +26,12 @@ index dda4e59491..cdfa86d9a3 100644
  	sun50i-h5-orangepi-pc2.dtb \
 diff --git a/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts b/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
 new file mode 100644
-index 0000000000..e9a03fbc94
+index 0000000000..58a6c0f0a4
 --- /dev/null
 +++ b/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
-@@ -0,0 +1,158 @@
+@@ -0,0 +1,184 @@
 +/*
-+ * Copyright (C) 2017-2018 Chris Blake <chrisrblake93@gmail.com>
++ * Copyright (C) 2017-2019 Chris Blake <chrisrblake93@gmail.com>
 + *
 + * This file is dual-licensed: you can use it either under the terms
 + * of the GPL or the X11 license, at your option. Note that this dual
@@ -76,15 +76,20 @@ index 0000000000..e9a03fbc94
 +#include "sun50i-h5.dtsi"
 +
 +#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/input/input.h>
++#include <dt-bindings/pinctrl/sun4i-a10.h>
 +
 +/ {
-+	model = "FriendlyARM NanoPi NEO Core2";
-+	compatible = "friendlyarm,nanopi-neo-core2", "allwinner,sun50i-h5";
++  model = "FriendlyARM NanoPi NEO Core2";
++  compatible = "friendlyarm,nanopi-neo-core2", "allwinner,sun50i-h5";
 +
 +	aliases {
-+		serial0 = &uart0;
 +		ethernet0 = &emac;
++		i2c0 = &i2c0;
++		i2c1 = &i2c1;
++		i2c2 = &i2c2;
 +		i2c5 = &r_i2c;
++		serial0 = &uart0;
 +	};
 +
 +	chosen {
@@ -125,6 +130,14 @@ index 0000000000..e9a03fbc94
 +	};
 +};
 +
++&codec {
++	allwinner,audio-routing =
++		"Line Out", "LINEOUT",
++		"MIC1", "Mic",
++		"Mic",  "MBIAS";
++	status = "okay";
++};
++
 +&ehci1 {
 +	status = "okay";
 +};
@@ -143,6 +156,18 @@ index 0000000000..e9a03fbc94
 +		compatible = "ethernet-phy-ieee802.3-c22";
 +		reg = <7>;
 +	};
++};
++
++&i2c0 {
++	status = "okay";
++};
++
++&i2c1 {
++	status = "okay";
++};
++
++&i2c2 {
++	status = "okay";
 +};
 +
 +&mmc0 {
@@ -181,19 +206,20 @@ index 0000000000..e9a03fbc94
 +};
 +
 +&usb_otg {
-+	dr_mode = "otg";
++	dr_mode = "host";
 +	status = "okay";
 +};
 +
 +&usbphy {
++	/* USB Type-A ports' VBUS is always on */
 +	status = "okay";
 +};
 diff --git a/configs/nanopi_neo_core2_defconfig b/configs/nanopi_neo_core2_defconfig
 new file mode 100644
-index 0000000000..1e938fc74f
+index 0000000000..ded44e5053
 --- /dev/null
 +++ b/configs/nanopi_neo_core2_defconfig
-@@ -0,0 +1,19 @@
+@@ -0,0 +1,20 @@
 +CONFIG_ARM=y
 +CONFIG_ARCH_SUNXI=y
 +CONFIG_SPL=y
@@ -202,17 +228,18 @@ index 0000000000..1e938fc74f
 +CONFIG_DRAM_ZQ=3881977
 +CONFIG_MACPWR="PD6"
 +CONFIG_MMC_SUNXI_SLOT_EXTRA=2
-+CONFIG_DEFAULT_DEVICE_TREE="sun50i-h5-nanopi-neo-core2"
-+CONFIG_ENV_FAT_DEVICE_AUTO_PROBE_SUNXI=y
++CONFIG_NR_DRAM_BANKS=1
 +# CONFIG_SYS_MALLOC_CLEAR_ON_INIT is not set
 +# CONFIG_CMD_FLASH is not set
 +# CONFIG_SPL_DOS_PARTITION is not set
 +# CONFIG_SPL_EFI_PARTITION is not set
++CONFIG_DEFAULT_DEVICE_TREE="sun50i-h5-nanopi-neo-core2"
++CONFIG_ENV_FAT_DEVICE_AUTO_PROBE_SUNXI=y
 +CONFIG_SUN8I_EMAC=y
 +CONFIG_SUNXI_SY8106A_HACK=y
 +CONFIG_SUNXI_WDT=y
 +CONFIG_USB_EHCI_HCD=y
-+CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
++CONFIG_USB_OHCI_HCD=y
 -- 
 2.17.1
 

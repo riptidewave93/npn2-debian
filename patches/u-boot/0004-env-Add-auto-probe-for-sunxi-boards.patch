@@ -1,7 +1,7 @@
-From ba448e4e8f60db81290b09d28fdc06af10b90af7 Mon Sep 17 00:00:00 2001
+From 8faa37f608c59ad51c83b5cfe2e3bf654691eaee Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Fri, 25 Jan 2019 08:01:45 -0600
-Subject: [PATCH 4/6] env: Add auto probe for sunxi boards
+Subject: [PATCH 4/7] env: Add auto probe for sunxi boards
 
 This adds the ability for sunxi boards to save/load their uboot env on
 the actual booted mmc, compared to what is statically set. This comes in
@@ -13,7 +13,7 @@ or an sd card.
  2 files changed, 54 insertions(+)
 
 diff --git a/env/Kconfig b/env/Kconfig
-index 9011109b47..f328d0112d 100644
+index c22cbbdadc..fddafc034a 100644
 --- a/env/Kconfig
 +++ b/env/Kconfig
 @@ -391,6 +391,17 @@ config ENV_FAT_DEVICE_AND_PART
