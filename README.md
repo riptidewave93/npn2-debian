@@ -3,9 +3,9 @@
 Build script to build a Debian 9 image for FriendlyARM NanoPi H5 based boards, as well as all dependencies. This includes the following:
 
 - Mainline Linux Kernel - [v4.20.y](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=linux-4.20.y)
-  - Wireguard VPN - [0.0.20190227](https://git.zx2c4.com/WireGuard/tag/?h=0.0.20190227)
+  - Wireguard VPN - [0.0.20190702](https://git.zx2c4.com/WireGuard/tag/?h=0.0.20190702)
 - Arm Trusted Firmware - [arm-trusted-firmware/master branch](https://github.com/ARM-software/arm-trusted-firmware/tree/master)
-- Mainline U-Boot - [v2019.04-rc4](https://github.com/u-boot/u-boot/tree/v2019.04-rc4)
+- Mainline U-Boot - [v2019.04](https://github.com/u-boot/u-boot/tree/v2019.04)
 
 Note that there are patches/modifications applied to the kernel and u-boot. The changes made can be seen in the `./patches` and `./overlay` directories. Also, a `./downloads` directory is generated to store a copy of the toolchain during the first build.
 
