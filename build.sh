@@ -46,7 +46,7 @@ wg_branch="0.0.20190702"
 # Distro settings
 distrib_name="debian"
 deb_mirror="https://mirrors.kernel.org/debian/"
-deb_release="stretch"
+deb_release="buster"
 deb_arch="arm64"
 fs_overlay_dir="filesystem"
 
@@ -295,16 +295,15 @@ rm -f /debconf.set
 echo 'deb http://deb.debian.org/debian/ unstable main' > /etc/apt/sources.list.d/debian-unstable.list
 printf 'Package: *\nPin: release a=unstable\nPin-Priority: 90\n' > /etc/apt/preferences.d/limit-unstable
 apt-get update
-apt-get -y install git-core binutils ca-certificates e2fsprogs ntp parted curl \
-locales console-common openssh-server less vim net-tools initramfs-tools wireguard-tools \
-u-boot-tools
+apt-get -y install git binutils ca-certificates e2fsprogs ntp parted curl \
+locales console-common openssh-server less vim net-tools initramfs-tools \
+wireguard-tools u-boot-tools locales
 export LANGUAGE=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen
 locale-gen
 echo "root:debian" | chpasswd
-sed -i -e 's/KERNEL\!=\"eth\*|/KERNEL\!=\"/' /lib/udev/rules.d/75-persistent-net-generator.rules
 rm -f /etc/udev/rules.d/70-persistent-net.rules
 sed -i 's|#PermitRootLogin prohibit-password|PermitRootLogin yes|g' /etc/ssh/sshd_config
 echo 'HWCLOCKACCESS=yes' >> /etc/default/hwclock

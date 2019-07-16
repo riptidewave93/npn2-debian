@@ -1,6 +1,6 @@
 # npn2-debian
 
-Build script to build a Debian 9 image for FriendlyARM NanoPi H5 based boards, as well as all dependencies. This includes the following:
+Build script to build a Debian 10 image for FriendlyARM NanoPi H5 based boards, as well as all dependencies. This includes the following:
 
 - Mainline Linux Kernel - [v4.20.y](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=linux-4.20.y)
   - Wireguard VPN - [0.0.20190702](https://git.zx2c4.com/WireGuard/tag/?h=0.0.20190702)
