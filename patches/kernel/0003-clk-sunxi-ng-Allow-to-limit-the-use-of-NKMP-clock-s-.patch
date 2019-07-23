@@ -1,0 +1,76 @@
+From 7afbf5aba9d64bf0fbb6fe0119a2550a0a158086 Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Thu, 12 Jan 2017 16:37:24 +0100
+Subject: [PATCH 03/20] clk: sunxi-ng: Allow to limit the use of NKMP clock's P
+ factor
+
+Some SoCs mandate the maximum clock rate for which the use
+of postdivider P factor is allowed. Allow to configure maximum
+clock rate.
+
+Signed-off-by: Ondrej Jirman <megous@megous.com>
+---
+ drivers/clk/sunxi-ng/ccu_nkmp.c | 13 ++++++++-----
+ drivers/clk/sunxi-ng/ccu_nkmp.h |  1 +
+ 2 files changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/clk/sunxi-ng/ccu_nkmp.c b/drivers/clk/sunxi-ng/ccu_nkmp.c
+index bda87b38c45c..4ea7ec59301d 100644
+--- a/drivers/clk/sunxi-ng/ccu_nkmp.c
++++ b/drivers/clk/sunxi-ng/ccu_nkmp.c
+@@ -30,16 +30,19 @@ static unsigned long ccu_nkmp_calc_rate(unsigned long parent,
+ }
+ 
+ static void ccu_nkmp_find_best(unsigned long parent, unsigned long rate,
+-			       struct _ccu_nkmp *nkmp)
++			       struct _ccu_nkmp *nkmp, struct ccu_nkmp *_nkmp)
+ {
+ 	unsigned long best_rate = 0;
+ 	unsigned long best_n = 0, best_k = 0, best_m = 0, best_p = 0;
+-	unsigned long _n, _k, _m, _p;
++	unsigned long _n, _k, _m, _p, _max_p;
++
++	_max_p = (_nkmp->max_rate_for_p == 0 || rate <= _nkmp->max_rate_for_p) ?
++		nkmp->max_p : nkmp->min_p;
+ 
+ 	for (_k = nkmp->min_k; _k <= nkmp->max_k; _k++) {
+ 		for (_n = nkmp->min_n; _n <= nkmp->max_n; _n++) {
+ 			for (_m = nkmp->min_m; _m <= nkmp->max_m; _m++) {
+-				for (_p = nkmp->min_p; _p <= nkmp->max_p; _p <<= 1) {
++				for (_p = nkmp->min_p; _p <= _max_p; _p <<= 1) {
+ 					unsigned long tmp_rate;
+ 
+ 					tmp_rate = ccu_nkmp_calc_rate(parent,
+@@ -150,7 +153,7 @@ static long ccu_nkmp_round_rate(struct clk_hw *hw, unsigned long rate,
+ 	_nkmp.min_p = 1;
+ 	_nkmp.max_p = nkmp->p.max ?: 1 << ((1 << nkmp->p.width) - 1);
+ 
+-	ccu_nkmp_find_best(*parent_rate, rate, &_nkmp);
++	ccu_nkmp_find_best(*parent_rate, rate, &_nkmp, nkmp);
+ 
+ 	rate = ccu_nkmp_calc_rate(*parent_rate, _nkmp.n, _nkmp.k,
+ 				  _nkmp.m, _nkmp.p);
+@@ -181,7 +184,7 @@ static int ccu_nkmp_set_rate(struct clk_hw *hw, unsigned long rate,
+ 	_nkmp.min_p = 1;
+ 	_nkmp.max_p = nkmp->p.max ?: 1 << ((1 << nkmp->p.width) - 1);
+ 
+-	ccu_nkmp_find_best(parent_rate, rate, &_nkmp);
++	ccu_nkmp_find_best(parent_rate, rate, &_nkmp, nkmp);
+ 
+ 	/*
+ 	 * If width is 0, GENMASK() macro may not generate expected mask (0)
+diff --git a/drivers/clk/sunxi-ng/ccu_nkmp.h b/drivers/clk/sunxi-ng/ccu_nkmp.h
+index f3b78157f172..747130606473 100644
+--- a/drivers/clk/sunxi-ng/ccu_nkmp.h
++++ b/drivers/clk/sunxi-ng/ccu_nkmp.h
+@@ -25,6 +25,7 @@ struct ccu_nkmp {
+ 	struct ccu_mult_internal	k;
+ 	struct ccu_div_internal		m;
+ 	struct ccu_div_internal		p;
++	unsigned long max_rate_for_p;
+ 
+ 	unsigned int		fixed_post_div;
+ 	unsigned int		max_rate;
+-- 
+2.17.1
+

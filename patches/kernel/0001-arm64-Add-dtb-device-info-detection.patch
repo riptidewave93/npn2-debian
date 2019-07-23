@@ -1,7 +1,7 @@
-From 52c22ac9bd12515a522f232c4fbd93e68de75b13 Mon Sep 17 00:00:00 2001
+From 13e8872cc116e3fed68df2eeca09323e2f30ebd9 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Fri, 29 Jun 2018 09:34:24 -0500
-Subject: [PATCH 1/9] arm64: Add dtb device info detection
+Date: Tue, 23 Jul 2019 12:45:30 -0500
+Subject: [PATCH 01/20] arm64: Add dtb device info detection
 
 This allows for the device name and serial to be loaded from the dtb
 into /proc/cpuinfo
@@ -10,10 +10,10 @@ into /proc/cpuinfo
  1 file changed, 23 insertions(+)
 
 diff --git a/arch/arm64/kernel/cpuinfo.c b/arch/arm64/kernel/cpuinfo.c
-index e9ab7b3..cca3348 100644
+index 876055e37352..b61be98cfe1e 100644
 --- a/arch/arm64/kernel/cpuinfo.c
 +++ b/arch/arm64/kernel/cpuinfo.c
-@@ -27,6 +27,8 @@
+@@ -17,6 +17,8 @@
  #include <linux/elf.h>
  #include <linux/init.h>
  #include <linux/kernel.h>
@@ -22,7 +22,7 @@ index e9ab7b3..cca3348 100644
  #include <linux/personality.h>
  #include <linux/preempt.h>
  #include <linux/printk.h>
-@@ -125,6 +127,10 @@ static int c_show(struct seq_file *m, void *v)
+@@ -128,6 +130,10 @@ static int c_show(struct seq_file *m, void *v)
  {
  	int i, j;
  	bool compat = personality(current->personality) == PER_LINUX32;
@@ -33,7 +33,7 @@ index e9ab7b3..cca3348 100644
  
  	for_each_online_cpu(i) {
  		struct cpuinfo_arm64 *cpuinfo = &per_cpu(cpu_data, i);
-@@ -176,6 +182,23 @@ static int c_show(struct seq_file *m, void *v)
+@@ -179,6 +185,23 @@ static int c_show(struct seq_file *m, void *v)
  		seq_printf(m, "CPU revision\t: %d\n\n", MIDR_REVISION(midr));
  	}
  
@@ -58,5 +58,5 @@ index e9ab7b3..cca3348 100644
  }
  
 -- 
-2.7.4
+2.17.1
 

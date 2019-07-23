@@ -34,8 +34,8 @@ uboot_branch="v2019.04"
 uboot_overlay_dir="u-boot"
 
 # Kernel settings
-kernel_repo="git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git"
-kernel_branch="linux-4.20.y"
+kernel_repo="https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux.git"
+kernel_branch="v5.3-rc1"
 kernel_config="nanopi_h5_defconfig" # Global config for all boards
 kernel_overlay_dir="kernel"
 

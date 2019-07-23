@@ -2,7 +2,7 @@
 
 Build script to build a Debian 10 image for FriendlyARM NanoPi H5 based boards, as well as all dependencies. This includes the following:
 
-- Mainline Linux Kernel - [v4.20.y](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=linux-4.20.y)
+- Mainline Linux Kernel - [v5.3-rc1](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tag/?h=v5.3-rc1)
   - Wireguard VPN - [0.0.20190702](https://git.zx2c4.com/WireGuard/tag/?h=0.0.20190702)
 - Arm Trusted Firmware - [arm-trusted-firmware/master branch](https://github.com/ARM-software/arm-trusted-firmware/tree/master)
 - Mainline U-Boot - [v2019.04](https://github.com/u-boot/u-boot/tree/v2019.04)
@@ -35,5 +35,6 @@ Currently images for the following devices are generated:
 ## Notes
 
 - This is only tested on a Debian 9 x86_64 build host. Note your package names may vary per linux distro.
+- At this time the Neo2 image works for both the v1.0 and v1.1 boards. To do this, we only run CPU frequencies that support the 1.1V. Note that a seperate image for the v1.1 board may come out later to allow for use of the faster CPU frequencies.
 - This code is very dirty, and should only be used as an example. Production use is not advised. Please only proceed if you know what you are doing!
 - Public images built from this can be found at [https://images.cblake.io/](https://images.cblake.io/) and are generated monthly as long as things don't break.
