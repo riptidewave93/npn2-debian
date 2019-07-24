@@ -12,6 +12,7 @@ Note that there are patches/modifications applied to the kernel and u-boot. The 
 ## Supported Boards
 Currently images for the following devices are generated:
 * FriendlyARM NanoPi Neo2
+* FriendlyARM NanoPi Neo2 v1.1
 * FriendlyARM NanoPi Neo Core2
 * FriendlyARM NanoPi Neo Plus2
 
@@ -33,8 +34,7 @@ Currently images for the following devices are generated:
 * Get bluetooth working on the Plus2 board
 
 ## Notes
-
 - This is only tested on a Debian 9 x86_64 build host. Note your package names may vary per linux distro.
-- At this time the Neo2 image works for both the v1.0 and v1.1 boards. To do this, we only run CPU frequencies that support the 1.1V. Note that a seperate image for the v1.1 board may come out later to allow for use of the faster CPU frequencies.
 - This code is very dirty, and should only be used as an example. Production use is not advised. Please only proceed if you know what you are doing!
+- The Neo2 image will work on both version v1.0 and v1.1. The v1.1 image will only boot correctly on v1.1 boards, due to it supporting higher voltage CPU speeds. Running the v1.1 image on a v1.0 board WILL cause kernel panics during boot!
 - Public images built from this can be found at [https://images.cblake.io/](https://images.cblake.io/) and are generated monthly as long as things don't break.

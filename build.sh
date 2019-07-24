@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Supported boards
-supported_devices=(sun50i-h5-nanopi-neo2 sun50i-h5-nanopi-neo-core2 sun50i-h5-nanopi-neo-plus2)
+supported_devices=(sun50i-h5-nanopi-neo2 sun50i-h5-nanopi-neo2-v1-1 sun50i-h5-nanopi-neo-core2 sun50i-h5-nanopi-neo-plus2)
 
 # Date format, used in the image file name
 mydate=`date +%Y%m%d-%H%M`
@@ -58,7 +58,7 @@ fs_overlay_dir="filesystem"
 runtest() {
   if [ $1 -ne 0 ]; then
     echo "Build Failed!"
-	rm -rf "$ourpath/BuildEnv" "$ourpath/.build" "$ourpath/requires" "$ourpath/output"
+    rm -rf "$ourpath/.build" "$ourpath/requires" "$ourpath/output" "$ourpath/BuildEnv"
     exit 1
   fi
 }
@@ -112,7 +112,7 @@ cd $buildenv/git
 # Build ARM Trusted Firmware
 git clone $atf_repo --depth 1 -b $atf_branch
 cd arm-trusted-firmware
-make PLAT=$atf_platform bl31
+make LOG_LEVEL=10 PLAT=$atf_platform bl31
 runtest $?
 export BL31=$buildenv/git/arm-trusted-firmware/build/$atf_platform/release/bl31.bin
 cd $buildenv/git
@@ -433,7 +433,7 @@ savedir="$ourpath/output/$mydate"
 mkdir -p $savedir
 mv ${image} $savedir/headless_${distrib_name}_${deb_release}_${deb_arch}_${mydate}.img
 for board in "${supported_devices[@]}"; do
-	ShortName="$(echo $board | cut -f4-5 -d "-")"
+	ShortName="$(echo $board | cut -f4-6 -d "-")"
 	cp $savedir/headless_${distrib_name}_${deb_release}_${deb_arch}_${mydate}.img $savedir/${ShortName}_headless_${distrib_name}_${deb_release}_${deb_arch}_${mydate}.img
 	# Install OUR u-boot
 	dd if=$ourpath/requires/$board.uboot of=$savedir/${ShortName}_headless_${distrib_name}_${deb_release}_${deb_arch}_${mydate}.img bs=8k seek=1 conv=notrunc
