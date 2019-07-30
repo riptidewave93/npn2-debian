@@ -30,7 +30,8 @@ atf_platform="sun50i_a64"
 
 # U-Boot settings
 uboot_repo="https://github.com/u-boot/u-boot.git"
-uboot_branch="v2019.04"
+uboot_branch="v2019.10-rc1"
+#uboot_commit=""
 uboot_overlay_dir="u-boot"
 
 # Kernel settings
@@ -120,6 +121,10 @@ cd $buildenv/git
 # Build U-Boot
 git clone $uboot_repo --depth 1 -b $uboot_branch ./u-boot
 cd u-boot
+# If we have a commit to target, do so
+if [ ! -z "$uboot_commit" ]; then
+  git checkout $uboot_commit
+fi
 # If we have patches, apply them
 if [[ -d $ourpath/patches/u-boot/ ]]; then
 	for file in $ourpath/patches/u-boot/*.patch; do
@@ -141,9 +146,7 @@ for board in "${supported_devices[@]}"; do
 	make $cfg
 	make -j`getconf _NPROCESSORS_ONLN`
   runtest $?
-	touch $ourpath/requires/$board.uboot
-	dd if=spl/sunxi-spl.bin of=$ourpath/requires/$board.uboot bs=8k
-	dd if=u-boot.itb of=$ourpath/requires/$board.uboot bs=8k seek=4
+  mv u-boot-sunxi-with-spl.bin $ourpath/requires/$board.uboot
 done
 cd $buildenv/git
 

@@ -1,7 +1,7 @@
-From 8466a13c3da8bee19401e5274104e3df47b46eb6 Mon Sep 17 00:00:00 2001
+From 5e824ff237f8c0cc8ad8a3dc6eafbbf2b0041db0 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Fri, 22 Feb 2019 13:12:38 -0600
-Subject: [PATCH 5/7] sunxi: Add NanoPi Neo Core2 Support
+Subject: [PATCH 5/8] sunxi: Add NanoPi Neo Core2 Support
 
 This adds support for the NanoPi Neo Core2, a board based on the H5 SoC.
 ---
@@ -13,10 +13,10 @@ This adds support for the NanoPi Neo Core2, a board based on the H5 SoC.
  create mode 100644 configs/nanopi_neo_core2_defconfig
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index fbc0f8afea..68ce88e8a9 100644
+index 20dbc2ff84..c7676808ce 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -409,6 +409,7 @@ dtb-$(CONFIG_MACH_SUN50I_H5) += \
+@@ -502,6 +502,7 @@ dtb-$(CONFIG_MACH_SUN50I_H5) += \
  	sun50i-h5-emlid-neutis-n5-devboard.dtb \
  	sun50i-h5-libretech-all-h3-cc.dtb \
  	sun50i-h5-nanopi-neo2.dtb \

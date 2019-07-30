@@ -1,7 +1,7 @@
-From 62ad8b1e1f0c4a92a7cc5179e645e081665371ff Mon Sep 17 00:00:00 2001
+From 27b4e5da6cd73ec52c5f1ebe6e41385f791d5316 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Fri, 25 Jan 2019 08:13:51 -0600
-Subject: [PATCH 3/7] watchdog: Add sunxi watchdog driver
+Subject: [PATCH 3/8] watchdog: Add sunxi watchdog driver
 
 Based on the linux mainline driver, this adds support for the hardware
 watchdog timer found on sunxi boards.
@@ -17,7 +17,7 @@ point before it can go mainline.
  create mode 100644 drivers/watchdog/sunxi_wdt.c
 
 diff --git a/common/board_f.c b/common/board_f.c
-index 149a7229e8..976402d5c6 100644
+index c25eb188fb..4c367e5298 100644
 --- a/common/board_f.c
 +++ b/common/board_f.c
 @@ -96,7 +96,8 @@ static int init_func_watchdog_init(void)
@@ -31,12 +31,12 @@ index 149a7229e8..976402d5c6 100644
  	puts("       Watchdog enabled\n");
  # endif
 diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index 115fc4551f..db664848a1 100644
+index ee0ddffe73..8f7d1c3824 100644
 --- a/drivers/watchdog/Kconfig
 +++ b/drivers/watchdog/Kconfig
-@@ -26,6 +26,24 @@ config BCM2835_WDT
- 	  This provides basic infrastructure to support BCM2835/2836 watchdog
- 	  hardware, with a max timeout of ~15secs.
+@@ -41,6 +41,24 @@ config OMAP_WATCHDOG
+ 	help
+ 	  Say Y here to enable the OMAP3+ watchdog driver.
  
 +config SUNXI_WDT
 +	bool "SUNXI watchdog timer support"
@@ -56,17 +56,17 @@ index 115fc4551f..db664848a1 100644
 +
 +endif
 +
- config OMAP_WATCHDOG
- 	bool "TI OMAP watchdog driver"
- 	depends on ARCH_OMAP2PLUS
+ config ULP_WATCHDOG
+ 	bool "i.MX7ULP watchdog"
+ 	help
 diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
-index d901240ad1..e990d32b08 100644
+index 68c989aa0b..98ec9770f1 100644
 --- a/drivers/watchdog/Makefile
 +++ b/drivers/watchdog/Makefile
-@@ -27,3 +27,4 @@ obj-$(CONFIG_WDT_CDNS) += cdns_wdt.o
- obj-$(CONFIG_MPC8xx_WATCHDOG) += mpc8xx_wdt.o
- obj-$(CONFIG_WDT_MT7621) += mt7621_wdt.o
- obj-$(CONFIG_WDT_MTK) += mtk_wdt.o
+@@ -29,3 +29,4 @@ obj-$(CONFIG_WDT_MTK) += mtk_wdt.o
+ obj-$(CONFIG_WDT_SP805) += sp805_wdt.o
+ obj-$(CONFIG_WDT_STM32MP) += stm32mp_wdt.o
+ obj-$(CONFIG_WDT_TANGIER) += tangier_wdt.o
 +obj-$(CONFIG_SUNXI_WDT) += sunxi_wdt.o
 diff --git a/drivers/watchdog/sunxi_wdt.c b/drivers/watchdog/sunxi_wdt.c
 new file mode 100644
