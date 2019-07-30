@@ -36,7 +36,7 @@ uboot_overlay_dir="u-boot"
 
 # Kernel settings
 kernel_repo="https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux.git"
-kernel_branch="v5.3-rc1"
+kernel_branch="v5.3-rc2"
 kernel_config="nanopi_h5_defconfig" # Global config for all boards
 kernel_overlay_dir="kernel"
 
