@@ -30,19 +30,19 @@ atf_platform="sun50i_a64"
 
 # U-Boot settings
 uboot_repo="https://github.com/u-boot/u-boot.git"
-uboot_branch="v2019.10-rc1"
+uboot_branch="v2019.10-rc3"
 #uboot_commit=""
 uboot_overlay_dir="u-boot"
 
 # Kernel settings
 kernel_repo="https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux.git"
-kernel_branch="v5.3-rc2"
+kernel_branch="v5.3"
 kernel_config="nanopi_h5_defconfig" # Global config for all boards
 kernel_overlay_dir="kernel"
 
 # Wireguard settings
 wg_repo="git://git.zx2c4.com/WireGuard"
-wg_branch="0.0.20190702"
+wg_branch="0.0.20190913"
 
 # Distro settings
 distrib_name="debian"
