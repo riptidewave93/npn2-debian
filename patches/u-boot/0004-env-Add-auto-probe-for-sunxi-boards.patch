@@ -1,7 +1,7 @@
-From 03f92a429d21434e91dfceea52d9dc9d268fdf68 Mon Sep 17 00:00:00 2001
+From 06100e90240da8c6f82b5854a0e18d0f67b2d82f Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Fri, 25 Jan 2019 08:01:45 -0600
-Subject: [PATCH 4/8] env: Add auto probe for sunxi boards
+Subject: [PATCH 4/9] env: Add auto probe for sunxi boards
 
 This adds the ability for sunxi boards to save/load their uboot env on
 the actual booted mmc, compared to what is statically set. This comes in
@@ -13,10 +13,10 @@ or an sd card.
  2 files changed, 54 insertions(+)
 
 diff --git a/env/Kconfig b/env/Kconfig
-index b9439171fd..e409b62fb5 100644
+index bc88c59cd5..27c923ee23 100644
 --- a/env/Kconfig
 +++ b/env/Kconfig
-@@ -424,6 +424,17 @@ config ENV_FAT_DEVICE_AND_PART
+@@ -427,6 +427,17 @@ config ENV_FAT_DEVICE_AND_PART
  	                   If none, first valid partition in device D. If no
  	                   partition table then means device D.
  
@@ -35,10 +35,10 @@ index b9439171fd..e409b62fb5 100644
  	string "Name of the FAT file to use for the environment"
  	depends on ENV_IS_IN_FAT
 diff --git a/env/fat.c b/env/fat.c
-index 7f74c64dfe..a1916b6860 100644
+index 1836556f36..bb571a30be 100644
 --- a/env/fat.c
 +++ b/env/fat.c
-@@ -18,6 +18,11 @@
+@@ -19,6 +19,11 @@
  #include <fat.h>
  #include <mmc.h>
  
@@ -50,7 +50,7 @@ index 7f74c64dfe..a1916b6860 100644
  #ifdef CONFIG_SPL_BUILD
  /* TODO(sjg@chromium.org): Figure out why this is needed */
  # if !defined(CONFIG_TARGET_AM335X_EVM) || defined(CONFIG_SPL_OS_BOOT)
-@@ -44,9 +49,28 @@ static int env_fat_save(void)
+@@ -45,9 +50,28 @@ static int env_fat_save(void)
  	if (err)
  		return err;
  
@@ -79,7 +79,7 @@ index 7f74c64dfe..a1916b6860 100644
  	if (part < 0)
  		return 1;
  
-@@ -91,9 +115,28 @@ static int env_fat_load(void)
+@@ -92,9 +116,28 @@ static int env_fat_load(void)
  		mmc_initialize(NULL);
  #endif
  

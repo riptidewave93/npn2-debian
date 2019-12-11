@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Supported boards
-supported_devices=(sun50i-h5-nanopi-neo2 sun50i-h5-nanopi-neo2-v1-1 sun50i-h5-nanopi-neo-core2 sun50i-h5-nanopi-neo-plus2)
+supported_devices=(sun50i-h5-nanopi-neo2-black sun50i-h5-nanopi-neo2 sun50i-h5-nanopi-neo2-v1-1 sun50i-h5-nanopi-neo-core2 sun50i-h5-nanopi-neo-plus2)
 
 # Date format, used in the image file name
 mydate=`date +%Y%m%d-%H%M`
@@ -30,19 +30,19 @@ atf_platform="sun50i_a64"
 
 # U-Boot settings
 uboot_repo="https://github.com/u-boot/u-boot.git"
-uboot_branch="v2019.10-rc3"
+uboot_branch="v2020.01-rc4"
 #uboot_commit=""
 uboot_overlay_dir="u-boot"
 
 # Kernel settings
-kernel_repo="https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux.git"
-kernel_branch="v5.3"
+kernel_repo="https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux.git"
+kernel_branch="linux-5.3.y"
 kernel_config="nanopi_h5_defconfig" # Global config for all boards
 kernel_overlay_dir="kernel"
 
 # Wireguard settings
 wg_repo="git://git.zx2c4.com/WireGuard"
-wg_branch="0.0.20190913"
+wg_branch="0.0.20191206"
 
 # Distro settings
 distrib_name="debian"

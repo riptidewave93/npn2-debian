@@ -1,7 +1,7 @@
-From 900bf2661558ca99b4f5b5898fc66eca9359063d Mon Sep 17 00:00:00 2001
+From 6cb206803fc72933227e4deba19c7d0c9c585d8b Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Fri, 22 Feb 2019 13:15:00 -0600
-Subject: [PATCH 6/8] mmc: sunxi: Remove calibration support for H3/H5
+Subject: [PATCH 6/9] mmc: sunxi: Remove calibration support for H3/H5
 
 As mentioned at
 https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?id=d49d92ace4974510dd5845ff91860823cf30dc08,

@@ -1,37 +1,38 @@
-From 3325bc8a6453875cd385aed8b81ece9b1b50ae5b Mon Sep 17 00:00:00 2001
+From 7ef330990954fb5b159f486be0a82bef9d06362b Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Fri, 22 Feb 2019 13:12:38 -0600
-Subject: [PATCH 5/9] sunxi: Add NanoPi Neo Core2 Support
+Date: Tue, 10 Dec 2019 16:06:57 -0600
+Subject: [PATCH 9/9] sunxi: Add NanoPi Neo2 Black Support
 
-This adds support for the NanoPi Neo Core2, a board based on the H5 SoC.
+Same as the neo2, but with a r_i2c CPU regulator & emmc storage & dual
+channel memory.
 ---
- arch/arm/dts/Makefile                       |   1 +
- arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts | 184 ++++++++++++++++++++
- configs/nanopi_neo_core2_defconfig          |  20 +++
- 3 files changed, 205 insertions(+)
- create mode 100644 arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
- create mode 100644 configs/nanopi_neo_core2_defconfig
+ arch/arm/dts/Makefile                         |   1 +
+ arch/arm/dts/sun50i-h5-nanopi-neo2-black.dts  | 172 ++++++++++++++++++
+ configs/sun50i-h5-nanopi-neo2-black_defconfig |  20 ++
+ 3 files changed, 193 insertions(+)
+ create mode 100644 arch/arm/dts/sun50i-h5-nanopi-neo2-black.dts
+ create mode 100644 configs/sun50i-h5-nanopi-neo2-black_defconfig
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index d8846df1bd..b0fa9996af 100644
+index 89504e3363..91f98491c6 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -533,6 +533,7 @@ dtb-$(CONFIG_MACH_SUN50I_H5) += \
- 	sun50i-h5-emlid-neutis-n5-devboard.dtb \
+@@ -534,6 +534,7 @@ dtb-$(CONFIG_MACH_SUN50I_H5) += \
  	sun50i-h5-libretech-all-h3-cc.dtb \
+ 	sun50i-h5-nanopi-neo2-v1-1.dtb \
  	sun50i-h5-nanopi-neo2.dtb \
-+	sun50i-h5-nanopi-neo-core2.dtb \
++	sun50i-h5-nanopi-neo2-black.dtb \
+ 	sun50i-h5-nanopi-neo-core2.dtb \
  	sun50i-h5-nanopi-neo-plus2.dtb \
  	sun50i-h5-orangepi-zero-plus.dtb \
- 	sun50i-h5-orangepi-pc2.dtb \
-diff --git a/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts b/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
+diff --git a/arch/arm/dts/sun50i-h5-nanopi-neo2-black.dts b/arch/arm/dts/sun50i-h5-nanopi-neo2-black.dts
 new file mode 100644
-index 0000000000..58a6c0f0a4
+index 0000000000..61535b3c43
 --- /dev/null
-+++ b/arch/arm/dts/sun50i-h5-nanopi-neo-core2.dts
-@@ -0,0 +1,184 @@
++++ b/arch/arm/dts/sun50i-h5-nanopi-neo2-black.dts
+@@ -0,0 +1,172 @@
 +/*
-+ * Copyright (C) 2017-2019 Chris Blake <chrisrblake93@gmail.com>
++ * Copyright (C) 2019 Chris Blake <chrisrblake93@gmail.com>
 + *
 + * This file is dual-licensed: you can use it either under the terms
 + * of the GPL or the X11 license, at your option. Note that this dual
@@ -76,19 +77,14 @@ index 0000000000..58a6c0f0a4
 +#include "sun50i-h5.dtsi"
 +
 +#include <dt-bindings/gpio/gpio.h>
-+#include <dt-bindings/input/input.h>
-+#include <dt-bindings/pinctrl/sun4i-a10.h>
 +
 +/ {
-+  model = "FriendlyARM NanoPi NEO Core2";
-+  compatible = "friendlyarm,nanopi-neo-core2", "allwinner,sun50i-h5";
++	model = "FriendlyARM NanoPi NEO 2 Black";
++	compatible = "friendlyarm,nanopi-neo2-black", "allwinner,sun50i-h5";
 +
 +	aliases {
 +		ethernet0 = &emac;
-+		i2c0 = &i2c0;
-+		i2c1 = &i2c1;
-+		i2c2 = &i2c2;
-+		i2c5 = &r_i2c;
++    i2c5 = &r_i2c;
 +		serial0 = &uart0;
 +	};
 +
@@ -113,7 +109,6 @@ index 0000000000..58a6c0f0a4
 +
 +	reg_gmac_3v3: gmac-3v3 {
 +		compatible = "regulator-fixed";
-+		pinctrl-names = "default";
 +		regulator-name = "gmac-3v3";
 +		regulator-min-microvolt = <3300000>;
 +		regulator-max-microvolt = <3300000>;
@@ -128,17 +123,23 @@ index 0000000000..58a6c0f0a4
 +		regulator-min-microvolt = <3300000>;
 +		regulator-max-microvolt = <3300000>;
 +	};
++
++	reg_usb0_vbus: usb0-vbus {
++		compatible = "regulator-fixed";
++		regulator-name = "usb0-vbus";
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		enable-active-high;
++		gpio = <&r_pio 0 2 GPIO_ACTIVE_HIGH>; /* PL2 */
++		status = "okay";
++	};
 +};
 +
-+&codec {
-+	allwinner,audio-routing =
-+		"Line Out", "LINEOUT",
-+		"MIC1", "Mic",
-+		"Mic",  "MBIAS";
++&ehci0 {
 +	status = "okay";
 +};
 +
-+&ehci1 {
++&ehci3 {
 +	status = "okay";
 +};
 +
@@ -158,18 +159,6 @@ index 0000000000..58a6c0f0a4
 +	};
 +};
 +
-+&i2c0 {
-+	status = "okay";
-+};
-+
-+&i2c1 {
-+	status = "okay";
-+};
-+
-+&i2c2 {
-+	status = "okay";
-+};
-+
 +&mmc0 {
 +	vmmc-supply = <&reg_vcc3v3>;
 +	bus-width = <4>;
@@ -187,11 +176,11 @@ index 0000000000..58a6c0f0a4
 +	status = "okay";
 +};
 +
-+&mmc2_8bit_pins {
-+	drive-strength = <40>;
++&ohci0 {
++	status = "okay";
 +};
 +
-+&ohci1 {
++&ohci3 {
 +	status = "okay";
 +};
 +
@@ -211,35 +200,34 @@ index 0000000000..58a6c0f0a4
 +};
 +
 +&usbphy {
-+	/* USB Type-A ports' VBUS is always on */
++	/* USB Type-A port's VBUS is always on */
 +	status = "okay";
 +};
-diff --git a/configs/nanopi_neo_core2_defconfig b/configs/nanopi_neo_core2_defconfig
+diff --git a/configs/sun50i-h5-nanopi-neo2-black_defconfig b/configs/sun50i-h5-nanopi-neo2-black_defconfig
 new file mode 100644
-index 0000000000..ded44e5053
+index 0000000000..61e558a1b0
 --- /dev/null
-+++ b/configs/nanopi_neo_core2_defconfig
++++ b/configs/sun50i-h5-nanopi-neo2-black_defconfig
 @@ -0,0 +1,20 @@
 +CONFIG_ARM=y
 +CONFIG_ARCH_SUNXI=y
++CONFIG_NR_DRAM_BANKS=2
 +CONFIG_SPL=y
 +CONFIG_MACH_SUN50I_H5=y
 +CONFIG_DRAM_CLK=504
 +CONFIG_DRAM_ZQ=3881977
 +CONFIG_MACPWR="PD6"
 +CONFIG_MMC_SUNXI_SLOT_EXTRA=2
-+CONFIG_NR_DRAM_BANKS=1
 +# CONFIG_SYS_MALLOC_CLEAR_ON_INIT is not set
 +# CONFIG_CMD_FLASH is not set
 +# CONFIG_SPL_DOS_PARTITION is not set
 +# CONFIG_SPL_EFI_PARTITION is not set
-+CONFIG_DEFAULT_DEVICE_TREE="sun50i-h5-nanopi-neo-core2"
++CONFIG_DEFAULT_DEVICE_TREE="sun50i-h5-nanopi-neo2-black"
 +CONFIG_ENV_FAT_DEVICE_AUTO_PROBE_SUNXI=y
 +CONFIG_SUN8I_EMAC=y
 +CONFIG_SUNXI_SY8106A_HACK=y
 +CONFIG_SUNXI_WDT=y
 +CONFIG_USB_EHCI_HCD=y
 +CONFIG_USB_OHCI_HCD=y
--- 
+--
 2.17.1
-

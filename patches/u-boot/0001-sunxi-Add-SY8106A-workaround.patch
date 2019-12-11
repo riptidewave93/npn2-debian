@@ -1,7 +1,7 @@
-From cfaaf7809ec55688890fbd8ceae91f53ed91f34f Mon Sep 17 00:00:00 2001
+From 657b741a7385c9eae8e8c9a2bf91618aa4a76513 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Fri, 22 Feb 2019 11:22:30 -0600
-Subject: [PATCH 1/8] sunxi: Add SY8106A workaround
+Subject: [PATCH 1/9] sunxi: Add SY8106A workaround
 
 Currently the u-boot SY8106A voltage regulator driver only works in the
 SPL. Issue is, sunxi boards are out of space in the SPL so this
@@ -26,10 +26,10 @@ index ee387127f3..b24f6e42cc 100644
  unsigned int clock_get_pll6(void);
  unsigned int clock_get_mipi_pll(void);
 diff --git a/arch/arm/mach-sunxi/Kconfig b/arch/arm/mach-sunxi/Kconfig
-index 1669e62a6d..2c4f86174b 100644
+index 16d41b83af..d75e6fabd2 100644
 --- a/arch/arm/mach-sunxi/Kconfig
 +++ b/arch/arm/mach-sunxi/Kconfig
-@@ -295,6 +295,27 @@ config MACH_SUN50I_H5
+@@ -298,6 +298,27 @@ config MACH_SUN50I_H5
  	select FIT
  	select SPL_LOAD_FIT
  
@@ -58,7 +58,7 @@ index 1669e62a6d..2c4f86174b 100644
  	bool "sun50i (Allwinner H6)"
  	select ARM64
 diff --git a/arch/arm/mach-sunxi/clock_sun6i.c b/arch/arm/mach-sunxi/clock_sun6i.c
-index 1628f3a7b6..9d70995a04 100644
+index 6ca38f73d9..3435cf9bac 100644
 --- a/arch/arm/mach-sunxi/clock_sun6i.c
 +++ b/arch/arm/mach-sunxi/clock_sun6i.c
 @@ -106,7 +106,7 @@ void clock_init_uart(void)
@@ -93,10 +93,10 @@ index 1628f3a7b6..9d70995a04 100644
  
  void clock_set_pll3(unsigned int clk)
 diff --git a/board/sunxi/board.c b/board/sunxi/board.c
-index 98bc3cd0c1..7dfafd8800 100644
+index b9450a0e36..5fc945ab5b 100644
 --- a/board/sunxi/board.c
 +++ b/board/sunxi/board.c
-@@ -284,6 +284,60 @@ int board_init(void)
+@@ -286,6 +286,60 @@ int board_init(void)
  #endif
  #endif	/* CONFIG_DM_MMC */
  
@@ -157,7 +157,7 @@ index 98bc3cd0c1..7dfafd8800 100644
  	/* Uses dm gpio code so do this here and not in i2c_init_board() */
  	return soft_i2c_board_init();
  }
-@@ -672,6 +726,8 @@ void sunxi_board_init(void)
+@@ -674,6 +728,8 @@ void sunxi_board_init(void)
  
  	sunxi_spl_store_dram_size(gd->ram_size);
  
@@ -166,7 +166,7 @@ index 98bc3cd0c1..7dfafd8800 100644
  	/*
  	 * Only clock up the CPU to full speed if we are reasonably
  	 * assured it's being powered with suitable core voltage
-@@ -680,6 +736,7 @@ void sunxi_board_init(void)
+@@ -682,6 +738,7 @@ void sunxi_board_init(void)
  		clock_set_pll1(CONFIG_SYS_CLK_FREQ);
  	else
  		printf("Failed to set core voltage! Can't set CPU frequency\n");

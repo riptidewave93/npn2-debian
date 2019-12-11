@@ -2,10 +2,10 @@
 
 Build script to build a Debian 10 image for FriendlyARM NanoPi H5 based boards, as well as all dependencies. This includes the following:
 
-- Mainline Linux Kernel - [v5.3](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tag/?h=v5.3)
-  - Wireguard VPN - [0.0.20190913](https://git.zx2c4.com/WireGuard/tag/?h=0.0.20190913)
+- Mainline Linux Kernel - [linux-5.3.y](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=linux-5.3.y)
+  - Wireguard VPN - [0.0.20191206](https://git.zx2c4.com/WireGuard/tag/?h=0.0.20191206)
 - Arm Trusted Firmware - [arm-trusted-firmware/master branch](https://github.com/ARM-software/arm-trusted-firmware/tree/master)
-- Mainline U-Boot - [v2019.10-rc3](https://github.com/u-boot/u-boot/tree/v2019.10-rc3)
+- Mainline U-Boot - [v2020.01-rc4](https://github.com/u-boot/u-boot/tree/v2020.01-rc4)
 
 Note that there are patches/modifications applied to the kernel and u-boot. The changes made can be seen in the `./patches` and `./overlay` directories. Also, a `./downloads` directory is generated to store a copy of the toolchain during the first build.
 
@@ -13,6 +13,7 @@ Note that there are patches/modifications applied to the kernel and u-boot. The 
 Currently images for the following devices are generated:
 * FriendlyARM NanoPi Neo2
 * FriendlyARM NanoPi Neo2 v1.1
+* FriendlyARM NanoPi Neo2 Black
 * FriendlyARM NanoPi Neo Core2
 * FriendlyARM NanoPi Neo Plus2
 

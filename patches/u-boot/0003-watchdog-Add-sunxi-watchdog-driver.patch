@@ -1,7 +1,7 @@
-From 27b4e5da6cd73ec52c5f1ebe6e41385f791d5316 Mon Sep 17 00:00:00 2001
+From 7dd6645fe88a92a6d2fd166ca67caf14050f128a Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Fri, 25 Jan 2019 08:13:51 -0600
-Subject: [PATCH 3/8] watchdog: Add sunxi watchdog driver
+Subject: [PATCH 3/9] watchdog: Add sunxi watchdog driver
 
 Based on the linux mainline driver, this adds support for the hardware
 watchdog timer found on sunxi boards.
@@ -17,10 +17,10 @@ point before it can go mainline.
  create mode 100644 drivers/watchdog/sunxi_wdt.c
 
 diff --git a/common/board_f.c b/common/board_f.c
-index c25eb188fb..4c367e5298 100644
+index d66afb37ca..d3540ad0be 100644
 --- a/common/board_f.c
 +++ b/common/board_f.c
-@@ -96,7 +96,8 @@ static int init_func_watchdog_init(void)
+@@ -101,7 +101,8 @@ static int init_func_watchdog_init(void)
  	(defined(CONFIG_M68K) || defined(CONFIG_MICROBLAZE) || \
  	defined(CONFIG_SH) || \
  	defined(CONFIG_DESIGNWARE_WATCHDOG) || \
@@ -31,10 +31,10 @@ index c25eb188fb..4c367e5298 100644
  	puts("       Watchdog enabled\n");
  # endif
 diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index ee0ddffe73..8f7d1c3824 100644
+index 8c16d69d33..c0eeb34827 100644
 --- a/drivers/watchdog/Kconfig
 +++ b/drivers/watchdog/Kconfig
-@@ -41,6 +41,24 @@ config OMAP_WATCHDOG
+@@ -40,6 +40,24 @@ config OMAP_WATCHDOG
  	help
  	  Say Y here to enable the OMAP3+ watchdog driver.
  
@@ -60,10 +60,10 @@ index ee0ddffe73..8f7d1c3824 100644
  	bool "i.MX7ULP watchdog"
  	help
 diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
-index 68c989aa0b..98ec9770f1 100644
+index 955caef815..70a019b66b 100644
 --- a/drivers/watchdog/Makefile
 +++ b/drivers/watchdog/Makefile
-@@ -29,3 +29,4 @@ obj-$(CONFIG_WDT_MTK) += mtk_wdt.o
+@@ -29,3 +29,4 @@ obj-$(CONFIG_WDT_OMAP3) += omap_wdt.o
  obj-$(CONFIG_WDT_SP805) += sp805_wdt.o
  obj-$(CONFIG_WDT_STM32MP) += stm32mp_wdt.o
  obj-$(CONFIG_WDT_TANGIER) += tangier_wdt.o

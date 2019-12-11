@@ -1,7 +1,7 @@
-From 9582df46890bb67c5642411306c5805365b5e112 Mon Sep 17 00:00:00 2001
+From 324c9994715e904c538369ada4f9d741842d0f11 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Fri, 22 Feb 2019 13:10:00 -0600
-Subject: [PATCH 7/8] mmc: board: Fixup i2c0-1 on H3/H5 SoC
+Subject: [PATCH 7/9] mmc: board: Fixup i2c0-1 on H3/H5 SoC
 
 While the H3/H5 are both sun8i "based" SoCs, they use different pins for
 i2c 0 and 1. U-Boot also selects MACH_SUN8i when MACH_SUNXI_H3_H5 is
@@ -12,10 +12,10 @@ set, so we need to be careful of the order.
  2 files changed, 10 insertions(+)
 
 diff --git a/arch/arm/include/asm/arch-sunxi/gpio.h b/arch/arm/include/asm/arch-sunxi/gpio.h
-index 40a3f845d0..7bd7c64d47 100644
+index a646ea6a3c..9fbf19003d 100644
 --- a/arch/arm/include/asm/arch-sunxi/gpio.h
 +++ b/arch/arm/include/asm/arch-sunxi/gpio.h
-@@ -148,6 +148,8 @@ enum sunxi_gpio_number {
+@@ -151,6 +151,8 @@ enum sunxi_gpio_number {
  #define SUN6I_GPA_SDC2		5
  #define SUN6I_GPA_SDC3		4
  #define SUN8I_H3_GPA_UART0	2
@@ -25,10 +25,10 @@ index 40a3f845d0..7bd7c64d47 100644
  #define SUN4I_GPB_PWM		2
  #define SUN4I_GPB_TWI0		2
 diff --git a/board/sunxi/board.c b/board/sunxi/board.c
-index 7dfafd8800..983ffb9766 100644
+index 5fc945ab5b..40318d9b17 100644
 --- a/board/sunxi/board.c
 +++ b/board/sunxi/board.c
-@@ -94,6 +94,10 @@ void i2c_init_board(void)
+@@ -96,6 +96,10 @@ void i2c_init_board(void)
  	sunxi_gpio_set_cfgpin(SUNXI_GPH(14), SUN6I_GPH_TWI0);
  	sunxi_gpio_set_cfgpin(SUNXI_GPH(15), SUN6I_GPH_TWI0);
  	clock_twi_onoff(0, 1);
@@ -39,7 +39,7 @@ index 7dfafd8800..983ffb9766 100644
  #elif defined(CONFIG_MACH_SUN8I)
  	sunxi_gpio_set_cfgpin(SUNXI_GPH(2), SUN8I_GPH_TWI0);
  	sunxi_gpio_set_cfgpin(SUNXI_GPH(3), SUN8I_GPH_TWI0);
-@@ -120,6 +124,10 @@ void i2c_init_board(void)
+@@ -122,6 +126,10 @@ void i2c_init_board(void)
  	sunxi_gpio_set_cfgpin(SUNXI_GPH(16), SUN6I_GPH_TWI1);
  	sunxi_gpio_set_cfgpin(SUNXI_GPH(17), SUN6I_GPH_TWI1);
  	clock_twi_onoff(1, 1);
