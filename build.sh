@@ -346,6 +346,7 @@ ln -s /lib/firmware/ap6212/fw_bcm43438a1.bin /lib/firmware/brcm/brcmfmac43430a1-
 ln -s /lib/firmware/ap6212/nvram_ap6212a.txt /lib/firmware/brcm/brcmfmac43430a1-sdio.txt
 wget -O /lib/firmware/regulatory.db https://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git/plain/regulatory.db
 wget -O /lib/firmware/regulatory.db.p7s https://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git/plain/regulatory.db.p7s
+wget -O /lib/firmware/rtl_nic/rtl8153b-2.fw https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_nic/rtl8153b-2.fw
 rm -f third-stage
 EOF
 chmod +x third-stage
