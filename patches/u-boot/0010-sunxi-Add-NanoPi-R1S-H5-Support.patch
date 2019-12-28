@@ -1,0 +1,355 @@
+From b23b670e5a0f63485400c9702e6165bd7a7c1ab3 Mon Sep 17 00:00:00 2001
+From: Chris Blake <chrisrblake93@gmail.com>
+Date: Tue, 24 Dec 2019 08:55:28 -0600
+Subject: [PATCH 10/10] sunxi: Add NanoPi R1S H5 Support
+
+This is pretty much a Neo2 v1.1, but with WiFi & a USB ethernet port.
+
+Note GPIO PL5 is used to control the 5v fan header on the board (on or
+off).
+---
+ arch/arm/dts/Makefile                     |   1 +
+ arch/arm/dts/sun50i-h5-nanopi-r1s-h5.dts  | 212 ++++++++++++++++++++++
+ arch/arm/mach-sunxi/Kconfig               |  23 ++-
+ board/sunxi/board.c                       |  23 ++-
+ configs/sun50i-h5-nanopi-r1s-h5_defconfig |  21 +++
+ 5 files changed, 275 insertions(+), 5 deletions(-)
+ create mode 100644 arch/arm/dts/sun50i-h5-nanopi-r1s-h5.dts
+ create mode 100644 configs/sun50i-h5-nanopi-r1s-h5_defconfig
+
+diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
+index 633944e10e..506fec8e11 100644
+--- a/arch/arm/dts/Makefile
++++ b/arch/arm/dts/Makefile
+@@ -537,6 +537,7 @@ dtb-$(CONFIG_MACH_SUN50I_H5) += \
+ 	sun50i-h5-nanopi-neo2-black.dtb \
+ 	sun50i-h5-nanopi-neo-core2.dtb \
+ 	sun50i-h5-nanopi-neo-plus2.dtb \
++	sun50i-h5-nanopi-r1s-h5.dtb \
+ 	sun50i-h5-orangepi-zero-plus.dtb \
+ 	sun50i-h5-orangepi-pc2.dtb \
+ 	sun50i-h5-orangepi-prime.dtb \
+diff --git a/arch/arm/dts/sun50i-h5-nanopi-r1s-h5.dts b/arch/arm/dts/sun50i-h5-nanopi-r1s-h5.dts
+new file mode 100644
+index 0000000000..383dd509b4
+--- /dev/null
++++ b/arch/arm/dts/sun50i-h5-nanopi-r1s-h5.dts
+@@ -0,0 +1,212 @@
++/*
++ * Copyright (C) 2017 2019 Chris Blake <chrisrblake93@gmail.com>
++ *
++ * This file is dual-licensed: you can use it either under the terms
++ * of the GPL or the X11 license, at your option. Note that this dual
++ * licensing only applies to this file, and not this project as a
++ * whole.
++ *
++ *  a) This file is free software; you can redistribute it and/or
++ *     modify it under the terms of the GNU General Public License as
++ *     published by the Free Software Foundation; either version 2 of the
++ *     License, or (at your option) any later version.
++ *
++ *     This file is distributed in the hope that it will be useful,
++ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *     GNU General Public License for more details.
++ *
++ * Or, alternatively,
++ *
++ *  b) Permission is hereby granted, free of charge, to any person
++ *     obtaining a copy of this software and associated documentation
++ *     files (the "Software"), to deal in the Software without
++ *     restriction, including without limitation the rights to use,
++ *     copy, modify, merge, publish, distribute, sublicense, and/or
++ *     sell copies of the Software, and to permit persons to whom the
++ *     Software is furnished to do so, subject to the following
++ *     conditions:
++ *
++ *     The above copyright notice and this permission notice shall be
++ *     included in all copies or substantial portions of the Software.
++ *
++ *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
++ *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
++ *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
++ *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
++ *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
++ *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
++ *     OTHER DEALINGS IN THE SOFTWARE.
++ */
++
++/dts-v1/;
++#include "sun50i-h5.dtsi"
++
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/input/input.h>
++
++/ {
++	model = "FriendlyARM NanoPi R1S H5";
++	compatible = "friendlyarm,nanopi-r1s-h5", "allwinner,sun50i-h5";
++
++	aliases {
++		ethernet0 = &emac;
++    i2c0 = &i2c0;
++		serial0 = &uart0;
++	};
++
++	chosen {
++		stdout-path = "serial0:115200n8";
++	};
++
++	leds {
++		compatible = "gpio-leds";
++
++    sys {
++			label = "nanopi:red:sys";
++			gpios = <&pio 0 10 GPIO_ACTIVE_HIGH>; /* PA10 */
++			default-state = "on";
++		};
++
++		led2 {
++			label = "nanopi:green:wan";
++			gpios = <&pio 6 11 GPIO_ACTIVE_HIGH>; /* PG11 */
++		};
++
++		led3 {
++			label = "nanopi:green:lan";
++			gpios = <&pio 0 9 GPIO_ACTIVE_HIGH>; /* PA9 */
++		};
++
++	};
++
++  r-gpio-keys {
++		compatible = "gpio-keys";
++
++		rst {
++			label = "Reset";
++			linux,code = <KEY_POWER>;
++			gpios = <&r_pio 0 3 GPIO_ACTIVE_LOW>; /* PL3 */
++		};
++	};
++
++  reg_gmac_3v3: gmac-3v3 {
++		compatible = "regulator-fixed";
++		pinctrl-names = "default";
++		regulator-name = "gmac-3v3";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		startup-delay-us = <100000>;
++		enable-active-high;
++		gpio = <&pio 3 6 GPIO_ACTIVE_HIGH>;
++	};
++
++  reg_usb0_vbus: usb0-vbus {
++		compatible = "regulator-fixed";
++		regulator-name = "usb0-vbus";
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		enable-active-high;
++		gpio = <&r_pio 0 2 GPIO_ACTIVE_HIGH>; /* PL2 */
++		status = "okay";
++	};
++
++	reg_vcc3v3: vcc3v3 {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc3v3";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++	};
++
++  vdd_cpux: gpio-regulator {
++		compatible = "regulator-gpio";
++		pinctrl-names = "default";
++		regulator-name = "vdd-cpux";
++		regulator-type = "voltage";
++		regulator-boot-on;
++		regulator-always-on;
++		regulator-min-microvolt = <1100000>;
++		regulator-max-microvolt = <1300000>;
++		regulator-ramp-delay = <50>; /* 4ms */
++		gpios = <&r_pio 0 6 GPIO_ACTIVE_HIGH>; /* PL6 */
++		gpios-states = <0x1>;
++		states = <1100000 0x0
++			  1300000 0x1>;
++	};
++
++  wifi_pwrseq: wifi_pwrseq {
++		compatible = "mmc-pwrseq-simple";
++		pinctrl-names = "default";
++		reset-gpios = <&r_pio 0 7 GPIO_ACTIVE_LOW>; /* PL7 */
++		post-power-on-delay-ms = <200>;
++	};
++};
++
++&ehci0 {
++	status = "okay";
++};
++
++&ehci3 {
++	status = "okay";
++};
++
++&emac {
++	pinctrl-names = "default";
++	pinctrl-0 = <&emac_rgmii_pins>;
++	phy-supply = <&reg_gmac_3v3>;
++	phy-handle = <&ext_rgmii_phy>;
++	phy-mode = "rgmii";
++	status = "okay";
++};
++
++&external_mdio {
++	ext_rgmii_phy: ethernet-phy@7 {
++		compatible = "ethernet-phy-ieee802.3-c22";
++		reg = <7>;
++	};
++};
++
++&i2c0 {
++	status = "okay";
++
++	eeprom@51 {
++		compatible = "microchip,24c02";
++		reg = <0x51>;
++		pagesize = <16>;
++    read-only; /* This has our MAC */
++	};
++};
++
++&mmc0 {
++	vmmc-supply = <&reg_vcc3v3>;
++	bus-width = <4>;
++	cd-gpios = <&pio 5 6 GPIO_ACTIVE_LOW>; /* PF6 */
++	status = "okay";
++};
++
++&ohci0 {
++	status = "okay";
++};
++
++&ohci3 {
++	status = "okay";
++};
++
++&uart0 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&uart0_pins_a>;
++	status = "okay";
++};
++
++&usb_otg {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usbphy {
++	/* USB Type-A port's VBUS is always on */
++	usb0_id_det-gpios = <&pio 6 12 GPIO_ACTIVE_HIGH>; /* PG12 */
++	usb0_vbus-supply = <&reg_usb0_vbus>;
++	status = "okay";
++};
+diff --git a/arch/arm/mach-sunxi/Kconfig b/arch/arm/mach-sunxi/Kconfig
+index d75e6fabd2..69bd1bef16 100644
+--- a/arch/arm/mach-sunxi/Kconfig
++++ b/arch/arm/mach-sunxi/Kconfig
+@@ -298,8 +298,10 @@ config MACH_SUN50I_H5
+ 	select FIT
+ 	select SPL_LOAD_FIT
+ 
+-if MACH_SUN50I_H5 # Hack for CONFIG_SUNXI_SY8106A_HACK
++# START SUNXI HACKS
++if MACH_SUN50I_H5
+ 
++# Hack for CONFIG_SUNXI_SY8106A_HACK
+ config SUNXI_SY8106A_HACK
+ 	bool "H5 SY8106A Hack"
+ 	select R_I2C_ENABLE
+@@ -317,7 +319,24 @@ config SUNXI_SY8106A_HACK_DEV
+ 	Set the I2C # for the SUNXI_SYS8106A Hack. This number should match  what
+ 	is configured in your DTS.
+ 
+-endif # End hack for CONFIG_SUNXI_SY8106A_HACK
++# End hack for CONFIG_SUNXI_SY8106A_HACK
++
++# Hack for CONFIG_SUNXI_NANOPI_R1S_MAC
++config SUNXI_NANOPI_R1S_MAC
++	bool "NanoPi R1S H5 EEPROM MAC Hack"
++	select CMD_EEPROM
++	select DM_I2C_COMPAT
++	select I2C0_ENABLE
++	select I2C_EEPROM
++	default n
++	---help---
++	This enables the ability for the NanoPi R1S H5 to load it's
++	MAC address off of it's EEPROM. We have to gate this via KConfig to prevent failed builds for other boards that use this
++	source code.
++
++# End Hack for CONFIG_SUNXI_NANOPI_R1S_MAC
++
++endif # END SUNXI HACKS
+ 
+ config MACH_SUN50I_H6
+ 	bool "sun50i (Allwinner H6)"
+diff --git a/board/sunxi/board.c b/board/sunxi/board.c
+index 40318d9b17..9048b1961f 100644
+--- a/board/sunxi/board.c
++++ b/board/sunxi/board.c
+@@ -878,9 +878,26 @@ static void setup_environment(const void *fdt)
+ 			else
+ 				sprintf(ethaddr, "eth%daddr", i);
+ 
+-			if (env_get(ethaddr))
+-				continue;
+-
++			/* While we want to trust this, we can't since
++			 * it could change if a SD is moved between boards.
++			 * Let's play it safe and just generate every boot.
++			 */
++			//if (env_get(ethaddr))
++			//	continue;
++
++#ifdef CONFIG_SUNXI_NANOPI_R1S_MAC
++			#include <eeprom.h>
++			// Are we an R1S-H5? If so, EEPROM is where we go for our MAC.
++			if(of_machine_is_compatible("friendlyarm,nanopi-r1s-h5")) {
++				memset(mac_addr, 0, sizeof(mac_addr));
++				eeprom_init(0);
++				ret = eeprom_read(0x51, 0xfa, mac_addr, sizeof(mac_addr));
++				if (is_valid_ethaddr(mac_addr)) {
++					eth_env_set_enetaddr(ethaddr, mac_addr);
++					continue;
++				}
++			}
++#endif
+ 			/* Non OUI / registered MAC address */
+ 			mac_addr[0] = (i << 4) | 0x02;
+ 			mac_addr[1] = (sid[0] >>  0) & 0xff;
+diff --git a/configs/sun50i-h5-nanopi-r1s-h5_defconfig b/configs/sun50i-h5-nanopi-r1s-h5_defconfig
+new file mode 100644
+index 0000000000..646aa64ea9
+--- /dev/null
++++ b/configs/sun50i-h5-nanopi-r1s-h5_defconfig
+@@ -0,0 +1,21 @@
++CONFIG_ARM=y
++CONFIG_ARCH_SUNXI=y
++CONFIG_SPL=y
++CONFIG_MACH_SUN50I_H5=y
++CONFIG_DRAM_CLK=408
++CONFIG_DRAM_ZQ=3881977
++CONFIG_NR_DRAM_BANKS=1
++CONFIG_MACPWR="PD6"
++# CONFIG_SYS_MALLOC_CLEAR_ON_INIT is not set
++# CONFIG_CMD_FLASH is not set
++# CONFIG_SPL_DOS_PARTITION is not set
++# CONFIG_SPL_EFI_PARTITION is not set
++CONFIG_MISC=y
++CONFIG_SUNXI_NANOPI_R1S_MAC=y
++CONFIG_SYS_I2C_EEPROM_ADDR=0x51
++CONFIG_DEFAULT_DEVICE_TREE="sun50i-h5-nanopi-r1s-h5"
++CONFIG_SUN8I_EMAC=y
++CONFIG_SUNXI_WDT=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_OHCI_HCD=y
++CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
+-- 
+2.17.1
+

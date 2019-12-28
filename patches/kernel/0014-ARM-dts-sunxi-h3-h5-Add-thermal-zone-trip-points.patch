@@ -1,7 +1,7 @@
-From 3cbbc3b353ac9b25c575709a2e3c631eb238a4b5 Mon Sep 17 00:00:00 2001
+From c749de5094adeac4f3179eadd08c4d86adb89fda Mon Sep 17 00:00:00 2001
 From: Ondrej Jirman <megous@megous.com>
 Date: Mon, 14 May 2018 01:16:06 +0200
-Subject: [PATCH 14/20] ARM: dts: sunxi-h3-h5: Add thermal zone trip points
+Subject: [PATCH 14/23] ARM: dts: sunxi-h3-h5: Add thermal zone trip points
 
 This enables passive cooling by downregulating CPU voltage/frequency.
 
@@ -13,7 +13,7 @@ Signed-off-by: Ondrej Jirman <megous@megous.com>
  3 files changed, 27 insertions(+), 1 deletion(-)
 
 diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi b/arch/arm/boot/dts/sun8i-h3.dtsi
-index 15008a1a707d..23e5b4a60a3b 100644
+index bbda577c1ce8..1f35e7195ec5 100644
 --- a/arch/arm/boot/dts/sun8i-h3.dtsi
 +++ b/arch/arm/boot/dts/sun8i-h3.dtsi
 @@ -54,8 +54,10 @@
@@ -29,7 +29,7 @@ index 15008a1a707d..23e5b4a60a3b 100644
  
  		cpu@1 {
 diff --git a/arch/arm/boot/dts/sunxi-h3-h5.dtsi b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
-index 2d67732d90cf..67faee9db63c 100644
+index 795f72f6f8a2..4f928cf1b1f7 100644
 --- a/arch/arm/boot/dts/sunxi-h3-h5.dtsi
 +++ b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
 @@ -47,6 +47,7 @@
@@ -40,7 +40,7 @@ index 2d67732d90cf..67faee9db63c 100644
  
  / {
  	interrupt-parent = <&gic>;
-@@ -986,6 +987,26 @@
+@@ -1007,6 +1008,26 @@
  			polling-delay-passive = <330>;
  			polling-delay = <1000>;
  			thermal-sensors = <&ths 0>;
@@ -68,7 +68,7 @@ index 2d67732d90cf..67faee9db63c 100644
  	};
  };
 diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
-index 9be29c18ebc1..35480d3ded20 100644
+index 1c768b97522e..27ecaa468d50 100644
 --- a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
 +++ b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
 @@ -53,6 +53,9 @@

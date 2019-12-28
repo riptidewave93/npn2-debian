@@ -1,7 +1,7 @@
-From 0a70c089aabd646d31114d3ca06ac8abab23f893 Mon Sep 17 00:00:00 2001
+From 5ebfe2e7148c0cf3d5e22d124c7e3d799443755c Mon Sep 17 00:00:00 2001
 From: Ondrej Jirman <megous@megous.com>
 Date: Mon, 14 May 2018 01:13:01 +0200
-Subject: [PATCH 13/20] ARM: dts: sunxi-h3-h5: Add more CPU OPP for H3/H5
+Subject: [PATCH 13/23] ARM: dts: sunxi-h3-h5: Add more CPU OPP for H3/H5
 
 These OPPs can be used with better cooling and/or thermal regulation.
 
@@ -11,7 +11,7 @@ Signed-off-by: Ondrej Jirman <megous@megous.com>
  1 file changed, 78 insertions(+)
 
 diff --git a/arch/arm/boot/dts/sunxi-h3-h5.dtsi b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
-index 37aa0326f7e9..2d67732d90cf 100644
+index bab09ace158a..795f72f6f8a2 100644
 --- a/arch/arm/boot/dts/sunxi-h3-h5.dtsi
 +++ b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
 @@ -103,6 +103,24 @@

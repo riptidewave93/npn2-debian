@@ -1,14 +1,14 @@
-From 54c1d895b4dbf95ac89bdf42d08a66a7ceb88fc9 Mon Sep 17 00:00:00 2001
+From 843b79da0f786521d8d59b4e17ff953614cd304f Mon Sep 17 00:00:00 2001
 From: Ondrej Jirman <megous@megous.com>
 Date: Thu, 30 Mar 2017 12:58:43 +0200
-Subject: [PATCH 09/20] cpufreq: dt-platdev: Add allwinner,sun50i-h5 compatible
+Subject: [PATCH 09/23] cpufreq: dt-platdev: Add allwinner,sun50i-h5 compatible
 
 ---
  drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
  1 file changed, 1 insertion(+)
 
 diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index 03dc4244ab00..d57b50d40e0f 100644
+index f1d170dcf4d3..be95b786a4cf 100644
 --- a/drivers/cpufreq/cpufreq-dt-platdev.c
 +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
 @@ -26,6 +26,7 @@ static const struct of_device_id whitelist[] __initconst = {

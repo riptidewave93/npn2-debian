@@ -1,7 +1,7 @@
-From 84a3dceca07e14806862cf68e14bb85d43a876d8 Mon Sep 17 00:00:00 2001
+From b59d17d169606327fc1c8dc32406ea764ce665cd Mon Sep 17 00:00:00 2001
 From: Ondrej Jirman <megous@megous.com>
 Date: Mon, 27 Jun 2016 16:08:26 +0200
-Subject: [PATCH 10/20] ARM: dts: sun8i-h3: Add clock-frequency
+Subject: [PATCH 10/23] ARM: dts: sun8i-h3: Add clock-frequency
 
 To avoid error messages during boot.
 
@@ -11,7 +11,7 @@ Signed-off-by: Ondrej Jirman <megous@megous.com>
  1 file changed, 4 insertions(+)
 
 diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi b/arch/arm/boot/dts/sun8i-h3.dtsi
-index e37c30e811d3..3ea1707d2238 100644
+index fe773c72a69b..dfd135c42153 100644
 --- a/arch/arm/boot/dts/sun8i-h3.dtsi
 +++ b/arch/arm/boot/dts/sun8i-h3.dtsi
 @@ -78,6 +78,7 @@

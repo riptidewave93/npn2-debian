@@ -1,7 +1,7 @@
-From 657b741a7385c9eae8e8c9a2bf91618aa4a76513 Mon Sep 17 00:00:00 2001
+From c25d681da221129e1b40bfe800ca379c6c1b684a Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Fri, 22 Feb 2019 11:22:30 -0600
-Subject: [PATCH 1/9] sunxi: Add SY8106A workaround
+Subject: [PATCH 01/10] sunxi: Add SY8106A workaround
 
 Currently the u-boot SY8106A voltage regulator driver only works in the
 SPL. Issue is, sunxi boards are out of space in the SPL so this

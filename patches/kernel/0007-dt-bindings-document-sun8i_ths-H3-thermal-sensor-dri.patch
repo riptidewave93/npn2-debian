@@ -1,7 +1,7 @@
-From 85bee457f4c3508b86cc7a5b12b1e11bf8e30c04 Mon Sep 17 00:00:00 2001
+From 8d18ed25b191c35ea98ce919cf1ea146db8058fa Mon Sep 17 00:00:00 2001
 From: Ondrej Jirman <megous@megous.com>
 Date: Sat, 25 Jun 2016 00:02:04 +0200
-Subject: [PATCH 07/20] dt-bindings: document sun8i_ths - H3 thermal sensor
+Subject: [PATCH 07/23] dt-bindings: document sun8i_ths - H3 thermal sensor
  driver
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8

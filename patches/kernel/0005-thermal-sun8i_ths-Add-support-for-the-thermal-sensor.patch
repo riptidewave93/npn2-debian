@@ -1,16 +1,11 @@
-From 5ee816c5e335316cc328ca3b4bdc9f9cb0b50eab Mon Sep 17 00:00:00 2001
-From: Ondrej Jirman <megous@megous.com>
-Date: Sat, 25 Jun 2016 21:51:05 +0200
-Subject: [PATCH 05/20] thermal: sun8i_ths: Add support for the thermal sensor
- on Allwinner H3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+From dbba7a252f0a68049b597dd541b57f5f703e44ef Mon Sep 17 00:00:00 2001
+From: Chris Blake <chrisrblake93@gmail.com>
+Date: Sat, 28 Dec 2019 10:07:38 -0600
+Subject: [PATCH 05/23] thermal: sun8i_ths: Add support for the thermal sensor
+ on Allwinner H3/H5
 
-This patch adds support for the sun8i thermal sensor on
-Allwinner H3 SoC.
-
-Signed-off-by: Ondřej Jirman <megous@megous.com>
+This patch adds support for the sun8i thermal sensor on Allwinner H3/H5
+SoC.
 ---
  drivers/thermal/Kconfig     |   7 ++
  drivers/thermal/Makefile    |   1 +
@@ -19,10 +14,10 @@ Signed-off-by: Ondřej Jirman <megous@megous.com>
  create mode 100644 drivers/thermal/sun8i_ths.c
 
 diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 9966364a6deb..47c71091edc3 100644
+index 79b27865c6f4..32fc8da8fd2f 100644
 --- a/drivers/thermal/Kconfig
 +++ b/drivers/thermal/Kconfig
-@@ -359,6 +359,13 @@ depends on ARCH_BCM || ARCH_BRCMSTB || ARCH_BCM2835 || ARCH_BCM_IPROC || \
+@@ -371,6 +371,13 @@ depends on ARCH_BCM || ARCH_BRCMSTB || ARCH_BCM2835 || ARCH_BCM_IPROC || \
  source "drivers/thermal/broadcom/Kconfig"
  endmenu
  
@@ -37,13 +32,13 @@ index 9966364a6deb..47c71091edc3 100644
  depends on ARCH_HAS_BANDGAP || COMPILE_TEST
  depends on HAS_IOMEM
 diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 74a37c7f847a..fc03ab5858f3 100644
+index baeb70bf0568..90afaf866a63 100644
 --- a/drivers/thermal/Makefile
 +++ b/drivers/thermal/Makefile
-@@ -54,3 +54,4 @@ obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
- obj-$(CONFIG_GENERIC_ADC_THERMAL)	+= thermal-generic-adc.o
+@@ -55,3 +55,4 @@ obj-$(CONFIG_GENERIC_ADC_THERMAL)	+= thermal-generic-adc.o
  obj-$(CONFIG_ZX2967_THERMAL)	+= zx2967_thermal.o
  obj-$(CONFIG_UNIPHIER_THERMAL)	+= uniphier_thermal.o
+ obj-$(CONFIG_AMLOGIC_THERMAL)     += amlogic_thermal.o
 +obj-$(CONFIG_SUN8I_THS)		+= sun8i_ths.o
 diff --git a/drivers/thermal/sun8i_ths.c b/drivers/thermal/sun8i_ths.c
 new file mode 100644

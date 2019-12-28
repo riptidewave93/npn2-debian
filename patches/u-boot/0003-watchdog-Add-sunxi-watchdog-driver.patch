@@ -1,7 +1,7 @@
-From 7dd6645fe88a92a6d2fd166ca67caf14050f128a Mon Sep 17 00:00:00 2001
+From 343e4ebf6043c2d07778efd9b197c870d3fccff1 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Fri, 25 Jan 2019 08:13:51 -0600
-Subject: [PATCH 3/9] watchdog: Add sunxi watchdog driver
+Subject: [PATCH 03/10] watchdog: Add sunxi watchdog driver
 
 Based on the linux mainline driver, this adds support for the hardware
 watchdog timer found on sunxi boards.

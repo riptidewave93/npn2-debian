@@ -1,18 +1,17 @@
-From 3d4c897441319f1a056f5901c3aea61c326f2714 Mon Sep 17 00:00:00 2001
-From: Ondrej Jirman <megous@megous.com>
-Date: Sun, 26 Feb 2017 16:05:58 +0100
-Subject: [PATCH 08/20] ARM: dts: sunxi-h3-h5: Add thermal sensor node to H3/H5
+From 6d5d0c5a150fd1113836a5c59cb409b834e398d4 Mon Sep 17 00:00:00 2001
+From: Chris Blake <chrisrblake93@gmail.com>
+Date: Sat, 28 Dec 2019 10:11:12 -0600
+Subject: [PATCH 08/23] ARM: dts: sunxi-h3-h5: Add thermal sensor node to H3/H5
 
-Signed-off-by: Ondrej Jirman <megous@megous.com>
 ---
  arch/arm/boot/dts/sunxi-h3-h5.dtsi | 21 +++++++++++++++++++++
  1 file changed, 21 insertions(+)
 
 diff --git a/arch/arm/boot/dts/sunxi-h3-h5.dtsi b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
-index 84977d4eb97a..af19ecdea045 100644
+index 0afea59486c2..2a4df3c971bd 100644
 --- a/arch/arm/boot/dts/sunxi-h3-h5.dtsi
 +++ b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
-@@ -483,6 +483,19 @@
+@@ -495,6 +495,19 @@
  			};
  		};
  
@@ -30,9 +29,9 @@ index 84977d4eb97a..af19ecdea045 100644
 +		};
 +
  		timer@1c20c00 {
- 			compatible = "allwinner,sun4i-a10-timer";
+ 			compatible = "allwinner,sun8i-a23-timer";
  			reg = <0x01c20c00 0xa0>;
-@@ -866,4 +879,12 @@
+@@ -887,4 +900,12 @@
  			};
  		};
  	};

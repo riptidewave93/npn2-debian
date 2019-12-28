@@ -1,7 +1,7 @@
-From 26b97170c85c984730a56a546d85bb56913bec18 Mon Sep 17 00:00:00 2001
+From 85740015443925af20ede7ee9b9c995ca37bfd5f Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Tue, 23 Jul 2019 13:49:12 -0500
-Subject: [PATCH 18/20] arm64: dts: sun50i-h5: Add FriendlyARM Neo Core2
+Subject: [PATCH 18/23] arm64: dts: sun50i-h5: Add FriendlyARM Neo Core2
  Support
 
 The following adds support for the FriendlyARM  NanoPi Neo Core2. This
@@ -14,10 +14,10 @@ onboard mmc.
  create mode 100644 arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-core2.dts
 
 diff --git a/arch/arm64/boot/dts/allwinner/Makefile b/arch/arm64/boot/dts/allwinner/Makefile
-index f6db0611cb85..f888bbd2f6f9 100644
+index d2418021768b..52f53e8ec5fe 100644
 --- a/arch/arm64/boot/dts/allwinner/Makefile
 +++ b/arch/arm64/boot/dts/allwinner/Makefile
-@@ -15,6 +15,7 @@ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-bananapi-m2-plus-v1.2.dtb
+@@ -16,6 +16,7 @@ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-bananapi-m2-plus-v1.2.dtb
  dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-emlid-neutis-n5-devboard.dtb
  dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-libretech-all-h3-cc.dtb
  dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo2.dtb
@@ -27,7 +27,7 @@ index f6db0611cb85..f888bbd2f6f9 100644
  dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-orangepi-prime.dtb
 diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-core2.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-core2.dts
 new file mode 100644
-index 000000000000..320390e53e50
+index 000000000000..24358483d600
 --- /dev/null
 +++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-core2.dts
 @@ -0,0 +1,220 @@
@@ -251,5 +251,6 @@ index 000000000000..320390e53e50
 +	usb0_vbus-supply = <&reg_usb0_vbus>;
 +	status = "okay";
 +};
---
+-- 
 2.17.1
+

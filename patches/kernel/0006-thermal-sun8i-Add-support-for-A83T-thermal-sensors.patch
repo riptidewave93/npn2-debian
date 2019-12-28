@@ -1,7 +1,7 @@
-From 0bcb0eaddfbdef2ff008e22b390cb5dd011c6b97 Mon Sep 17 00:00:00 2001
+From 0cc30e8b2e73e994c96469fdbbfd85dd8d025c1b Mon Sep 17 00:00:00 2001
 From: Ondrej Jirman <megous@megous.com>
 Date: Tue, 14 Nov 2017 17:15:54 +0100
-Subject: [PATCH 06/20] thermal: sun8i: Add support for A83T thermal sensors
+Subject: [PATCH 06/23] thermal: sun8i: Add support for A83T thermal sensors
 
 Signed-off-by: Ondrej Jirman <megous@megous.com>
 ---

@@ -1,7 +1,7 @@
-From e93c6b139a042a5c67cb2802cd039bef7b4f2847 Mon Sep 17 00:00:00 2001
+From 13307c91bfef644ce01a9ea0e4fcb7f9abe1d03d Mon Sep 17 00:00:00 2001
 From: Ondrej Jirman <megous@megous.com>
 Date: Thu, 30 Mar 2017 13:04:25 +0200
-Subject: [PATCH 11/20] arm64: dts: sun50i-h5: Add clock-frequency
+Subject: [PATCH 11/23] arm64: dts: sun50i-h5: Add clock-frequency
 
 To avoid error messages during boot.
 
@@ -11,7 +11,7 @@ Signed-off-by: Ondrej Jirman <megous@megous.com>
  1 file changed, 4 insertions(+)
 
 diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
-index f002a496d7cb..9be29c18ebc1 100644
+index e92c4de5bf3b..1c768b97522e 100644
 --- a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
 +++ b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
 @@ -52,6 +52,7 @@

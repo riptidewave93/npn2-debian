@@ -1,7 +1,7 @@
-From d2fcd9efc6cc629279926c67a2fcba248f53218b Mon Sep 17 00:00:00 2001
+From c711ebc9f8415c626d427fc96ae0c48a1fdea219 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Tue, 23 Jul 2019 20:05:39 -0500
-Subject: [PATCH 8/9] sunxi: Add NanoPi Neo2 v1.1 Support
+Subject: [PATCH 08/10] sunxi: Add NanoPi Neo2 v1.1 Support
 
 Same as the neo2, but with a 1.1v/1.3v CPU regulator for additional
 frequencies
@@ -14,7 +14,7 @@ frequencies
  create mode 100644 configs/sun50i-h5-nanopi-neo2-v1-1_defconfig
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index b0fa9996af..89504e3363 100644
+index ca141703ab..c8102218f1 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
 @@ -532,6 +532,7 @@ dtb-$(CONFIG_MACH_SUN50I_H5) += \

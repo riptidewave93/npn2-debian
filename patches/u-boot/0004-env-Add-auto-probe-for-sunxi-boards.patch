@@ -1,7 +1,7 @@
-From 06100e90240da8c6f82b5854a0e18d0f67b2d82f Mon Sep 17 00:00:00 2001
+From 338705300fe70e5c94a7c730aca31a8fb08260bf Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Fri, 25 Jan 2019 08:01:45 -0600
-Subject: [PATCH 4/9] env: Add auto probe for sunxi boards
+Subject: [PATCH 04/10] env: Add auto probe for sunxi boards
 
 This adds the ability for sunxi boards to save/load their uboot env on
 the actual booted mmc, compared to what is statically set. This comes in
@@ -13,10 +13,10 @@ or an sd card.
  2 files changed, 54 insertions(+)
 
 diff --git a/env/Kconfig b/env/Kconfig
-index bc88c59cd5..27c923ee23 100644
+index ed12609f6a..626b0e28ab 100644
 --- a/env/Kconfig
 +++ b/env/Kconfig
-@@ -427,6 +427,17 @@ config ENV_FAT_DEVICE_AND_PART
+@@ -429,6 +429,17 @@ config ENV_FAT_DEVICE_AND_PART
  	                   If none, first valid partition in device D. If no
  	                   partition table then means device D.
  

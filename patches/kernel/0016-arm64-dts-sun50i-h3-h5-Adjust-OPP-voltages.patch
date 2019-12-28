@@ -1,7 +1,7 @@
-From 4ed10fbeed5474d7ca310a6cb0fe7e283c1a4b3f Mon Sep 17 00:00:00 2001
+From 56bf111ebcb4594108e691fc3369c620e3e51b65 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Tue, 23 Jul 2019 13:44:29 -0500
-Subject: [PATCH 16/20] arm64: dts: sun50i-h3-h5: Adjust OPP voltages
+Subject: [PATCH 16/23] arm64: dts: sun50i-h3-h5: Adjust OPP voltages
 
 Minor adjustments since these are set high from the start.
 ---
@@ -9,7 +9,7 @@ Minor adjustments since these are set high from the start.
  1 file changed, 13 insertions(+), 13 deletions(-)
 
 diff --git a/arch/arm/boot/dts/sunxi-h3-h5.dtsi b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
-index 67faee9db63c..70f6ae5bb95a 100644
+index 4f928cf1b1f7..d9af97ecb006 100644
 --- a/arch/arm/boot/dts/sunxi-h3-h5.dtsi
 +++ b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
 @@ -106,79 +106,79 @@

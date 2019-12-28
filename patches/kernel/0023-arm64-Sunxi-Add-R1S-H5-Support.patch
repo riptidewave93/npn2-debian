@@ -1,36 +1,34 @@
-From f7d4f0f9eb252c1ecdb7fea374277927b5a65d03 Mon Sep 17 00:00:00 2001
+From b98cddfd91f5ce55a7a381ce1dc28b6850ee791c Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Tue, 23 Jul 2019 19:39:26 -0500
-Subject: [PATCH 21/23] arm64: dts: sun50i-h5: Add neo2 v1.1
+Date: Sat, 28 Dec 2019 10:13:07 -0600
+Subject: [PATCH 23/23] arm64: Sunxi: Add R1S H5 Support
 
-The v1.1 board can do 1.1v/1.3v on the CPU, so add our higher
-frequencies that we support.
 ---
  arch/arm64/boot/dts/allwinner/Makefile        |   1 +
- .../allwinner/sun50i-h5-nanopi-neo2-v1-1.dts  | 232 ++++++++++++++++++
- 2 files changed, 233 insertions(+)
- create mode 100644 arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2-v1-1.dts
+ .../dts/allwinner/sun50i-h5-nanopi-r1s-h5.dts | 276 ++++++++++++++++++
+ 2 files changed, 277 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-r1s-h5.dts
 
 diff --git a/arch/arm64/boot/dts/allwinner/Makefile b/arch/arm64/boot/dts/allwinner/Makefile
-index 52f53e8ec5fe..1c435b1348b4 100644
+index 94928e77218d..4009805db9ba 100644
 --- a/arch/arm64/boot/dts/allwinner/Makefile
 +++ b/arch/arm64/boot/dts/allwinner/Makefile
-@@ -15,6 +15,7 @@ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-bananapi-m2-plus.dtb
- dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-bananapi-m2-plus-v1.2.dtb
- dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-emlid-neutis-n5-devboard.dtb
- dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-libretech-all-h3-cc.dtb
-+dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo2-v1-1.dtb
- dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo2.dtb
+@@ -20,6 +20,7 @@ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo2.dtb
+ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo2-black.dtb
  dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo-core2.dtb
  dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo-plus2.dtb
-diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2-v1-1.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2-v1-1.dts
++dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-r1s-h5.dtb
+ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-orangepi-pc2.dtb
+ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-orangepi-prime.dtb
+ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-orangepi-zero-plus.dtb
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-r1s-h5.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-r1s-h5.dts
 new file mode 100644
-index 000000000000..2630f5e71748
+index 000000000000..6e8f1ebfa67c
 --- /dev/null
-+++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2-v1-1.dts
-@@ -0,0 +1,232 @@
++++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-r1s-h5.dts
+@@ -0,0 +1,276 @@
 +/*
-+ * Copyright (C) 2017 Icenowy Zheng <icenowy@aosc.io>
++ * Copyright (C) 2017 2019 Chris Blake <chrisrblake93@gmail.com>
 + *
 + * This file is dual-licensed: you can use it either under the terms
 + * of the GPL or the X11 license, at your option. Note that this dual
@@ -75,13 +73,15 @@ index 000000000000..2630f5e71748
 +#include "sun50i-h5.dtsi"
 +
 +#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/input/input.h>
 +
 +/ {
-+	model = "FriendlyARM NanoPi NEO 2 V1.1";
-+	compatible = "friendlyarm,nanopi-neo2", "allwinner,sun50i-h5";
++  model = "FriendlyARM NanoPi R1S H5";
++  compatible = "friendlyarm,nanopi-r1s-h5", "allwinner,sun50i-h5";
 +
 +	aliases {
 +		ethernet0 = &emac;
++    i2c0 = &i2c0;
 +		serial0 = &uart0;
 +	};
 +
@@ -92,15 +92,30 @@ index 000000000000..2630f5e71748
 +	leds {
 +		compatible = "gpio-leds";
 +
-+		pwr {
-+			label = "nanopi:red:pwr";
-+			gpios = <&r_pio 0 10 GPIO_ACTIVE_HIGH>;
++    sys {
++			label = "nanopi:red:sys";
++			gpios = <&pio 0 10 GPIO_ACTIVE_HIGH>; /* PA10 */
 +			default-state = "on";
 +		};
 +
-+		status {
-+			label = "nanopi:blue:status";
-+			gpios = <&pio 0 10 GPIO_ACTIVE_HIGH>;
++		wan {
++			label = "nanopi:green:wan";
++			gpios = <&pio 6 11 GPIO_ACTIVE_HIGH>; /* PG11 */
++		};
++
++		lan {
++			label = "nanopi:green:lan";
++			gpios = <&pio 0 9 GPIO_ACTIVE_HIGH>; /* PA9 */
++		};
++	};
++
++  r-gpio-keys {
++		compatible = "gpio-keys";
++
++		rst {
++			label = "Reset";
++			linux,code = <KEY_POWER>;
++			gpios = <&r_pio 0 3 GPIO_ACTIVE_LOW>; /* PL3 */
 +		};
 +	};
 +
@@ -114,14 +129,7 @@ index 000000000000..2630f5e71748
 +		gpio = <&pio 3 6 GPIO_ACTIVE_HIGH>;
 +	};
 +
-+	reg_vcc3v3: vcc3v3 {
-+		compatible = "regulator-fixed";
-+		regulator-name = "vcc3v3";
-+		regulator-min-microvolt = <3300000>;
-+		regulator-max-microvolt = <3300000>;
-+	};
-+
-+	reg_usb0_vbus: usb0-vbus {
++  reg_usb0_vbus: usb0-vbus {
 +		compatible = "regulator-fixed";
 +		regulator-name = "usb0-vbus";
 +		regulator-min-microvolt = <5000000>;
@@ -131,7 +139,14 @@ index 000000000000..2630f5e71748
 +		status = "okay";
 +	};
 +
-+  vdd_cpux: gpio-regulator {
++	reg_vcc3v3: vcc3v3 {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc3v3";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++	};
++
++	vdd_cpux: gpio-regulator {
 +		compatible = "regulator-gpio";
 +		regulator-name = "vdd-cpux";
 +		regulator-type = "voltage";
@@ -140,18 +155,16 @@ index 000000000000..2630f5e71748
 +		regulator-min-microvolt = <1100000>;
 +		regulator-max-microvolt = <1300000>;
 +		regulator-ramp-delay = <50>; /* 4ms */
-+		gpios = <&r_pio 0 6 GPIO_ACTIVE_HIGH>; /* GPIOL6 */
++		gpios = <&r_pio 0 6 GPIO_ACTIVE_HIGH>; /* PL6 */
 +		gpios-states = <0x1>;
 +		states = <1100000 0>, <1300000 1>;
 +	};
-+};
 +
-+&codec {
-+	allwinner,audio-routing =
-+		"Line Out", "LINEOUT",
-+		"MIC1", "Mic",
-+		"Mic",  "MBIAS";
-+	status = "okay";
++	wifi_pwrseq: wifi_pwrseq {
++		compatible = "mmc-pwrseq-simple";
++		reset-gpios = <&r_pio 0 7 GPIO_ACTIVE_LOW>; /* PL7 */
++		post-power-on-delay-ms = <200>;
++	};
 +};
 +
 +&cpu0 {
@@ -206,11 +219,15 @@ index 000000000000..2630f5e71748
 +};
 +
 +&ehci0 {
-+	status = "okay";
++	status = "okay"; /* OTG */
 +};
 +
-+&ehci3 {
-+	status = "okay";
++&ehci1 {
++	status = "okay"; /* USB NIC */
++};
++
++&ehci2 {
++	status = "okay"; /* External USB */
 +};
 +
 +&emac {
@@ -219,6 +236,7 @@ index 000000000000..2630f5e71748
 +	phy-supply = <&reg_gmac_3v3>;
 +	phy-handle = <&ext_rgmii_phy>;
 +	phy-mode = "rgmii";
++  allwinner,leds-active-low;
 +	status = "okay";
 +};
 +
@@ -229,6 +247,17 @@ index 000000000000..2630f5e71748
 +	};
 +};
 +
++&i2c0 {
++	status = "okay";
++
++	eeprom@51 {
++		compatible = "microchip,24c02";
++		reg = <0x51>;
++		pagesize = <16>;
++    read-only;
++	};
++};
++
 +&mmc0 {
 +	vmmc-supply = <&reg_vcc3v3>;
 +	bus-width = <4>;
@@ -236,12 +265,25 @@ index 000000000000..2630f5e71748
 +	status = "okay";
 +};
 +
-+&ohci0 {
++&mmc1 {
++	vmmc-supply = <&reg_vcc3v3>;
++	vqmmc-supply = <&reg_vcc3v3>;
++	mmc-pwrseq = <&wifi_pwrseq>;
++	bus-width = <4>;
++	non-removable;
 +	status = "okay";
 +};
 +
-+&ohci3 {
-+	status = "okay";
++&ohci0 {
++	status = "okay"; /* OTG */
++};
++
++&ohci1 {
++	status = "okay"; /* USB NIC */
++};
++
++&ohci2 {
++	status = "okay"; /* External USB */
 +};
 +
 +&uart0 {
@@ -251,13 +293,13 @@ index 000000000000..2630f5e71748
 +};
 +
 +&usb_otg {
-+	dr_mode = "otg";
++	dr_mode = "host";
 +	status = "okay";
 +};
 +
 +&usbphy {
-+	/* USB Type-A port's VBUS is always on */
-+	usb0_id_det-gpios = <&pio 6 12 GPIO_ACTIVE_HIGH>; /* PG12 */
++	/* USB Type-A ports' VBUS is always on */
++  usb0_id_det-gpios = <&pio 6 12 GPIO_ACTIVE_HIGH>; /* PG12 */
 +	usb0_vbus-supply = <&reg_usb0_vbus>;
 +	status = "okay";
 +};

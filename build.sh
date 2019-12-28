@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Supported boards
-supported_devices=(sun50i-h5-nanopi-neo2-black sun50i-h5-nanopi-neo2 sun50i-h5-nanopi-neo2-v1-1 sun50i-h5-nanopi-neo-core2 sun50i-h5-nanopi-neo-plus2)
+supported_devices=(sun50i-h5-nanopi-r1s-h5 sun50i-h5-nanopi-neo2-black sun50i-h5-nanopi-neo2 sun50i-h5-nanopi-neo2-v1-1 sun50i-h5-nanopi-neo-core2 sun50i-h5-nanopi-neo-plus2)
 
 # Date format, used in the image file name
 mydate=`date +%Y%m%d-%H%M`
@@ -30,19 +30,23 @@ atf_platform="sun50i_a64"
 
 # U-Boot settings
 uboot_repo="https://github.com/u-boot/u-boot.git"
-uboot_branch="v2020.01-rc4"
+uboot_branch="v2020.01-rc5"
 #uboot_commit=""
 uboot_overlay_dir="u-boot"
 
 # Kernel settings
-kernel_repo="https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux.git"
-kernel_branch="linux-5.3.y"
+kernel_repo="https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git"
+kernel_branch="v5.5-rc3"
 kernel_config="nanopi_h5_defconfig" # Global config for all boards
 kernel_overlay_dir="kernel"
 
 # Wireguard settings
-wg_repo="git://git.zx2c4.com/WireGuard"
-wg_branch="0.0.20191206"
+wg_repo="https://git.zx2c4.com/wireguard-linux-compat"
+wg_branch="v0.0.20191226"
+
+# RTL8189ETV Settings
+rtl_repo="https://github.com/jwrdegoede/rtl8189ES_linux.git"
+rtl_branch="master"
 
 # Distro settings
 distrib_name="debian"
@@ -153,6 +157,9 @@ cd $buildenv/git
 # Pull down Wireguard
 git clone $wg_repo --depth 1 -b $wg_branch ./wireguard
 
+# Pull down our wifi driver for the R1S (fucking realtek wifi -_-)
+git clone $rtl_repo --depth 1 -b $rtl_branch ./rtl8189es
+
 # Build the Linux Kernel
 mkdir linux-build && cd ./linux-build
 git clone $kernel_repo --depth 1 -b $kernel_branch ./linux
@@ -170,17 +177,31 @@ if [[ -d $ourpath/overlay/$kernel_overlay_dir/ ]]; then
 	echo "Applying $kernel_overlay_dir overlay"
 	cp -R $ourpath/overlay/$kernel_overlay_dir/* ./
 fi
+
 # Now that things are applied, make sure we pull in wireguard with the kernel
-$buildenv/git/wireguard/contrib/kernel-tree/jury-rig.sh "$buildenv/git/linux-build/linux"
+$buildenv/git/wireguard/kernel-tree-scripts/jury-rig.sh "$buildenv/git/linux-build/linux"
 # Build as normal
 make $kernel_config
 make -j`getconf _NPROCESSORS_ONLN` deb-pkg dtbs
 runtest $?
+
+# Copy over our needed files
 for i in "${supported_devices[@]}"; do
 	cp arch/arm64/boot/dts/allwinner/$i.dtb $ourpath/requires/
 done
-cd ../
+cd "$buildenv/git/linux-build"
 cp linux-*.deb $ourpath/requires/
+
+# Export our kernel ver, we need this later
+export KVER=`find . -name 'linux-image*.deb' | awk '{split($0,a,"-"); print a[3]"-"a[4]"-"a[5]"-"a[6]"-dirty"}'`
+
+# Now build our wifi driver
+cd "$buildenv/git/rtl8189es"
+make KSRC="$buildenv/git/linux-build/linux"
+runtest $?
+
+# Copy our wifi drivers to our requires dir
+cp *.ko $ourpath/requires/
 cd $buildenv
 
 # Before we start up, make sure our required files exist
@@ -196,6 +217,11 @@ for file in "${supported_devices[@]}"; do
 		exit 1
 	fi
 done
+if [[ ! -e "$ourpath/requires/8189es.ko" ]]; then
+  echo "DEB-BUILDER: Error, required file './requires/8189es.ko' is missing!"
+  rm $ourpath/.build
+  exit 1
+fi
 
 # Create the buildenv folder, and image file
 echo "DEB-BUILDER: Creating Image file"
@@ -300,7 +326,7 @@ printf 'Package: *\nPin: release a=unstable\nPin-Priority: 90\n' > /etc/apt/pref
 apt-get update
 apt-get -y install git binutils ca-certificates e2fsprogs ntp parted curl \
 locales console-common openssh-server less vim net-tools initramfs-tools \
-wireguard-tools u-boot-tools locales
+wireguard-tools u-boot-tools locales wget
 export LANGUAGE=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
@@ -318,6 +344,8 @@ ln -s /lib/firmware/ap6212/fw_bcm43438a0.bin /lib/firmware/brcm/brcmfmac43430-sd
 ln -s /lib/firmware/ap6212/nvram_ap6212.txt /lib/firmware/brcm/brcmfmac43430-sdio.txt
 ln -s /lib/firmware/ap6212/fw_bcm43438a1.bin /lib/firmware/brcm/brcmfmac43430a1-sdio.bin
 ln -s /lib/firmware/ap6212/nvram_ap6212a.txt /lib/firmware/brcm/brcmfmac43430a1-sdio.txt
+wget -O /lib/firmware/regulatory.db https://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git/plain/regulatory.db
+wget -O /lib/firmware/regulatory.db.p7s https://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git/plain/regulatory.db.p7s
 rm -f third-stage
 EOF
 chmod +x third-stage
@@ -334,6 +362,8 @@ mv /root/requires/*.dtb /boot/allwinner/
 mkimage -C none -A arm -T script -d /boot/boot.cmd /boot/boot.scr
 mv /boot/vmlinuz-* /boot/Image.gz
 gunzip /boot/Image.gz
+mkdir /lib/modules/$KVER/extra
+mv /root/requires/8189es.ko /lib/modules/$KVER/extra/
 rm -rf /root/requires
 cp /boot/initrd.img-* /boot/initramfs.cpio.gz
 rm -f forth-stage
@@ -398,6 +428,15 @@ LEL
 partprobe
 resize2fs \${bootedmmc%??}p2
 sync
+
+# Probe for any added modules
+depmod -a
+
+# Load in wireless if we are a R1S H5
+if grep -q "FriendlyARM NanoPi R1S H5" /proc/device-tree/model; then
+  modprobe 8189es
+  echo "8189es" >> /etc/modules
+fi
 
 # Fixup initramfs for fsck on boot to work
 update-initramfs -u

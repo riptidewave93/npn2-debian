@@ -1,7 +1,7 @@
-From 7ef330990954fb5b159f486be0a82bef9d06362b Mon Sep 17 00:00:00 2001
+From aa51315ca4e5c80f259f3dde3ab1010e68fccad8 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Tue, 10 Dec 2019 16:06:57 -0600
-Subject: [PATCH 9/9] sunxi: Add NanoPi Neo2 Black Support
+Subject: [PATCH 09/10] sunxi: Add NanoPi Neo2 Black Support
 
 Same as the neo2, but with a r_i2c CPU regulator & emmc storage & dual
 channel memory.
@@ -14,7 +14,7 @@ channel memory.
  create mode 100644 configs/sun50i-h5-nanopi-neo2-black_defconfig
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 89504e3363..91f98491c6 100644
+index c8102218f1..633944e10e 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
 @@ -534,6 +534,7 @@ dtb-$(CONFIG_MACH_SUN50I_H5) += \
@@ -27,7 +27,7 @@ index 89504e3363..91f98491c6 100644
  	sun50i-h5-orangepi-zero-plus.dtb \
 diff --git a/arch/arm/dts/sun50i-h5-nanopi-neo2-black.dts b/arch/arm/dts/sun50i-h5-nanopi-neo2-black.dts
 new file mode 100644
-index 0000000000..61535b3c43
+index 0000000000..e54d848992
 --- /dev/null
 +++ b/arch/arm/dts/sun50i-h5-nanopi-neo2-black.dts
 @@ -0,0 +1,172 @@
@@ -229,5 +229,6 @@ index 0000000000..61e558a1b0
 +CONFIG_SUNXI_WDT=y
 +CONFIG_USB_EHCI_HCD=y
 +CONFIG_USB_OHCI_HCD=y
---
+-- 
 2.17.1
+
