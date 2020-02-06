@@ -1,0 +1,31 @@
+From 524e2cd5980060e73f202387e59c049bae58f5ee Mon Sep 17 00:00:00 2001
+From: Chris Blake <chrisrblake93@gmail.com>
+Date: Thu, 6 Feb 2020 11:19:44 -0600
+Subject: [PATCH] Net: r8152 Enable LEDs on VER_09
+
+Currently we do not have functional LEDs on VER_09, so let's fix this.
+---
+ drivers/net/usb/r8152.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/net/usb/r8152.c b/drivers/net/usb/r8152.c
+index 3f425f974..1b33b355b 100644
+--- a/drivers/net/usb/r8152.c
++++ b/drivers/net/usb/r8152.c
+@@ -5604,6 +5604,13 @@ static void r8153b_init(struct r8152 *tp)
+ 	rtl_tally_reset(tp);
+ 
+ 	tp->coalesce = 15000;	/* 15 us */
++
++	if (tp->version == RTL_VER_09) {
++                /* Enable LEDs on VER_09 */
++                ocp_data = ocp_read_word(tp, MCU_TYPE_PLA, PLA_LEDSEL);
++                ocp_data = 0x78;
++                ocp_write_word(tp, MCU_TYPE_PLA, PLA_LEDSEL, ocp_data);
++        }
+ }
+ 
+ static int rtl8152_pre_reset(struct usb_interface *intf)
+-- 
+2.17.1
+

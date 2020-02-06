@@ -30,19 +30,19 @@ atf_platform="sun50i_a64"
 
 # U-Boot settings
 uboot_repo="https://github.com/u-boot/u-boot.git"
-uboot_branch="v2020.01-rc5"
+uboot_branch="v2020.01"
 #uboot_commit=""
 uboot_overlay_dir="u-boot"
 
 # Kernel settings
 kernel_repo="https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git"
-kernel_branch="v5.5-rc3"
+kernel_branch="linux-5.5.y"
 kernel_config="nanopi_h5_defconfig" # Global config for all boards
 kernel_overlay_dir="kernel"
 
 # Wireguard settings
 wg_repo="https://git.zx2c4.com/wireguard-linux-compat"
-wg_branch="v0.0.20191226"
+wg_branch="v0.0.20200205"
 
 # RTL8189ETV Settings
 rtl_repo="https://github.com/jwrdegoede/rtl8189ES_linux.git"
@@ -191,9 +191,6 @@ for i in "${supported_devices[@]}"; do
 done
 cd "$buildenv/git/linux-build"
 cp linux-*.deb $ourpath/requires/
-
-# Export our kernel ver, we need this later
-export KVER=`find . -name 'linux-image*.deb' | awk '{split($0,a,"-"); print a[3]"-"a[4]"-"a[5]"-"a[6]"-dirty"}'`
 
 # Now build our wifi driver
 cd "$buildenv/git/rtl8189es"
@@ -363,15 +360,16 @@ mv /root/requires/*.dtb /boot/allwinner/
 mkimage -C none -A arm -T script -d /boot/boot.cmd /boot/boot.scr
 mv /boot/vmlinuz-* /boot/Image.gz
 gunzip /boot/Image.gz
-mkdir /lib/modules/$KVER/extra
-mv /root/requires/8189es.ko /lib/modules/$KVER/extra/
+KVER=\$(find /lib/modules/ -maxdepth 1 | sort | tail -1)
+mkdir \$KVER/extra
+mv /root/requires/8189es.ko \$KVER/extra/
 rm -rf /root/requires
 cp /boot/initrd.img-* /boot/initramfs.cpio.gz
+chmod +x /etc/network/if-pre-up.d/nanopi-mac-fixup
 rm -f forth-stage
 EOF
 chmod +x forth-stage
 LANG=C chroot $rootfs /forth-stage
-
 
 echo "DEB-BUILDER: Cleaning up build space/image"
 
@@ -433,10 +431,15 @@ sync
 # Probe for any added modules
 depmod -a
 
-# Load in wireless if we are a R1S H5
+# Load in wireless if we are a R1S H5, and setup eth1
 if grep -q "FriendlyARM NanoPi R1S H5" /proc/device-tree/model; then
   modprobe 8189es
   echo "8189es" >> /etc/modules
+  echo "
+
+allow-hotplug eth1
+iface eth1 inet dhcp
+iface eth1 inet6 dhcp" >> /etc/network/interfaces
 fi
 
 # Fixup initramfs for fsck on boot to work

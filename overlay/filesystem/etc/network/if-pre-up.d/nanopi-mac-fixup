@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# A script to set USB NIC MACs on the NanoPi boards.
+
+# Thanks OpenWRT for this function!
+
+macaddr_add() {
+	local mac=$1
+	local val=$2
+	local oui=${mac%:*:*:*}
+	local nic=${mac#*:*:*:}
+
+	nic=$(printf "%06x" $((0x${nic//:/} + val & 0xffffff)) | sed 's/^\(.\{2\}\)\(.\{2\}\)\(.\{2\}\)/\1:\2:\3/')
+	echo $oui:$nic
+}
+
+board_name=$(strings /proc/device-tree/compatible | head -1)
+
+case ${board_name} in
+friendlyarm,nanopi-r1s-h5)
+	base_mac=$(cat /sys/class/net/eth0/address)
+	eth1_mac=$(macaddr_add "$base_mac" +1)
+	wlan_mac=$(macaddr_add "$base_mac" +2)
+	if ! grep -q "$eth1_mac" /sys/class/net/eth1/address; then
+		ip link set dev eth1 address $eth1_mac
+	fi
+	if test -f /sys/class/net/wlan0/address; then
+		if ! grep -q "$wlan_mac" /sys/class/net/wlan0/address; then
+			echo "options 8189es rtw_initmac=\"$wlan_mac\"" > /etc/modprobe.d/8189es.conf
+			rmmod 8189es; modprobe 8189es # Reload wifi to use the new MAC
+		fi
+	fi
+esac

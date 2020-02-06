@@ -5,8 +5,8 @@ Subject: [PATCH 23/23] arm64: Sunxi: Add R1S H5 Support
 
 ---
  arch/arm64/boot/dts/allwinner/Makefile        |   1 +
- .../dts/allwinner/sun50i-h5-nanopi-r1s-h5.dts | 276 ++++++++++++++++++
- 2 files changed, 277 insertions(+)
+ .../dts/allwinner/sun50i-h5-nanopi-r1s-h5.dts | 287 ++++++++++++++++++
+ 2 files changed, 288 insertions(+)
  create mode 100644 arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-r1s-h5.dts
 
 diff --git a/arch/arm64/boot/dts/allwinner/Makefile b/arch/arm64/boot/dts/allwinner/Makefile
@@ -26,7 +26,7 @@ new file mode 100644
 index 000000000000..6e8f1ebfa67c
 --- /dev/null
 +++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-r1s-h5.dts
-@@ -0,0 +1,276 @@
+@@ -0,0 +1,287 @@
 +/*
 + * Copyright (C) 2017 2019 Chris Blake <chrisrblake93@gmail.com>
 + *
@@ -81,8 +81,9 @@ index 000000000000..6e8f1ebfa67c
 +
 +	aliases {
 +		ethernet0 = &emac;
-+    i2c0 = &i2c0;
++		i2c0 = &i2c0;
 +		serial0 = &uart0;
++		spi0 = &spi0;
 +	};
 +
 +	chosen {
@@ -286,6 +287,16 @@ index 000000000000..6e8f1ebfa67c
 +	status = "okay"; /* External USB */
 +};
 +
++&spi0 {
++  status = "okay";
++  spidev0@0 {
++    compatible = "rohm,dh2228fv"; /* Same as "spidev" but without errors at boot. Search "buggy DT" to understand */
++    spi-max-frequency = <40000000>;
++    status = "okay";
++    reg = <0x0>;
++  };
++};
++
 +&uart0 {
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&uart0_pa_pins>;
@@ -303,6 +314,5 @@ index 000000000000..6e8f1ebfa67c
 +	usb0_vbus-supply = <&reg_usb0_vbus>;
 +	status = "okay";
 +};
--- 
+--
 2.17.1
-
