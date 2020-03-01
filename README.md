@@ -39,4 +39,3 @@ Currently images for the following devices are generated:
 ## Notes
 - This is a pet project that can change rapidly. Production use is not advised. Please only proceed if you know what you are doing!
 - The Neo2 image will work on both version v1.0 and v1.1. The v1.1 image will only boot correctly on v1.1 boards, due to it supporting higher voltage CPU speeds. Running the v1.1 image on a v1.0 board WILL cause kernel panics during boot!
-- Public images built from this can be found at [https://images.cblake.io/](https://images.cblake.io/) and are generated monthly as long as things don't break.
