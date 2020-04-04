@@ -1,36 +1,35 @@
-From f7d4f0f9eb252c1ecdb7fea374277927b5a65d03 Mon Sep 17 00:00:00 2001
+From c9ec6718c57f4ec3257942083d330b9ed6f5222e Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Tue, 23 Jul 2019 19:39:26 -0500
-Subject: [PATCH 21/23] arm64: dts: sun50i-h5: Add neo2 v1.1
+Date: Tue, 10 Dec 2019 16:44:01 -0600
+Subject: [PATCH 18/21] arm64: Sunxi: Add Neo2 Black Support
 
-The v1.1 board can do 1.1v/1.3v on the CPU, so add our higher
-frequencies that we support.
 ---
  arch/arm64/boot/dts/allwinner/Makefile        |   1 +
- .../allwinner/sun50i-h5-nanopi-neo2-v1-1.dts  | 232 ++++++++++++++++++
- 2 files changed, 233 insertions(+)
- create mode 100644 arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2-v1-1.dts
+ .../allwinner/sun50i-h5-nanopi-neo2-black.dts | 204 ++++++++++++++++++
+ 2 files changed, 205 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2-black.dts
 
 diff --git a/arch/arm64/boot/dts/allwinner/Makefile b/arch/arm64/boot/dts/allwinner/Makefile
-index 52f53e8ec5fe..1c435b1348b4 100644
+index 193dbc35c1ce..efe2615d44c9 100644
 --- a/arch/arm64/boot/dts/allwinner/Makefile
 +++ b/arch/arm64/boot/dts/allwinner/Makefile
-@@ -15,6 +15,7 @@ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-bananapi-m2-plus.dtb
- dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-bananapi-m2-plus-v1.2.dtb
- dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-emlid-neutis-n5-devboard.dtb
- dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-libretech-all-h3-cc.dtb
-+dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo2-v1-1.dtb
+@@ -18,6 +18,7 @@ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-libretech-all-h3-cc.dtb
+ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-libretech-all-h3-it.dtb
+ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-libretech-all-h5-cc.dtb
  dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo2.dtb
++dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo2-black.dtb
+ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo2-v1-1.dtb
  dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo-core2.dtb
  dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo-plus2.dtb
-diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2-v1-1.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2-v1-1.dts
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2-black.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2-black.dts
 new file mode 100644
-index 000000000000..2630f5e71748
+index 000000000000..f93b2ce2b8d1
 --- /dev/null
-+++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2-v1-1.dts
-@@ -0,0 +1,232 @@
++++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2-black.dts
+@@ -0,0 +1,204 @@
 +/*
-+ * Copyright (C) 2017 Icenowy Zheng <icenowy@aosc.io>
++ * Copyright (C) 2019 Chris Blake <chrisrblake93@gmail.com>
++ * Copyright (C) 2016 ARM Ltd.
 + *
 + * This file is dual-licensed: you can use it either under the terms
 + * of the GPL or the X11 license, at your option. Note that this dual
@@ -75,10 +74,12 @@ index 000000000000..2630f5e71748
 +#include "sun50i-h5.dtsi"
 +
 +#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/input/input.h>
++#include <dt-bindings/pinctrl/sun4i-a10.h>
 +
 +/ {
-+	model = "FriendlyARM NanoPi NEO 2 V1.1";
-+	compatible = "friendlyarm,nanopi-neo2", "allwinner,sun50i-h5";
++	model = "FriendlyARM NanoPi NEO 2 Black";
++	compatible = "friendlyarm,nanopi-neo2-black", "allwinner,sun50i-h5";
 +
 +	aliases {
 +		ethernet0 = &emac;
@@ -91,34 +92,26 @@ index 000000000000..2630f5e71748
 +
 +	leds {
 +		compatible = "gpio-leds";
-+
 +		pwr {
 +			label = "nanopi:red:pwr";
-+			gpios = <&r_pio 0 10 GPIO_ACTIVE_HIGH>;
++			gpios = <&r_pio 0 10 GPIO_ACTIVE_HIGH>; /* PL10 */
 +			default-state = "on";
 +		};
-+
 +		status {
-+			label = "nanopi:blue:status";
-+			gpios = <&pio 0 10 GPIO_ACTIVE_HIGH>;
++			label = "nanopi:green:status";
++			gpios = <&pio 0 10 GPIO_ACTIVE_HIGH>; /* PA10 */
 +		};
 +	};
 +
 +	reg_gmac_3v3: gmac-3v3 {
 +		compatible = "regulator-fixed";
++		pinctrl-names = "default";
 +		regulator-name = "gmac-3v3";
 +		regulator-min-microvolt = <3300000>;
 +		regulator-max-microvolt = <3300000>;
 +		startup-delay-us = <100000>;
 +		enable-active-high;
-+		gpio = <&pio 3 6 GPIO_ACTIVE_HIGH>;
-+	};
-+
-+	reg_vcc3v3: vcc3v3 {
-+		compatible = "regulator-fixed";
-+		regulator-name = "vcc3v3";
-+		regulator-min-microvolt = <3300000>;
-+		regulator-max-microvolt = <3300000>;
++		gpio = <&pio 3 6 GPIO_ACTIVE_HIGH>; /* PD6 */
 +	};
 +
 +	reg_usb0_vbus: usb0-vbus {
@@ -131,18 +124,11 @@ index 000000000000..2630f5e71748
 +		status = "okay";
 +	};
 +
-+  vdd_cpux: gpio-regulator {
-+		compatible = "regulator-gpio";
-+		regulator-name = "vdd-cpux";
-+		regulator-type = "voltage";
-+		regulator-boot-on;
-+		regulator-always-on;
-+		regulator-min-microvolt = <1100000>;
-+		regulator-max-microvolt = <1300000>;
-+		regulator-ramp-delay = <50>; /* 4ms */
-+		gpios = <&r_pio 0 6 GPIO_ACTIVE_HIGH>; /* GPIOL6 */
-+		gpios-states = <0x1>;
-+		states = <1100000 0>, <1300000 1>;
++	reg_vcc3v3: vcc3v3 {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc3v3";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
 +	};
 +};
 +
@@ -155,54 +141,7 @@ index 000000000000..2630f5e71748
 +};
 +
 +&cpu0 {
-+  cpu0-supply = <&vdd_cpux>;
-+  cooling-max-level = <12>;
-+};
-+
-+/* We need to re-define this, as we do not have a proper voltage regulator */
-+&cpu0_opp_table {
-+  opp-120000000 {
-+    opp-microvolt = <1100000 1100000 1100000>;
-+  };
-+  opp-240000000 {
-+    opp-microvolt = <1100000 1100000 1100000>;
-+  };
-+  opp-480000000 {
-+    opp-microvolt = <1100000 1100000 1100000>;
-+  };
-+  opp-648000000 {
-+    opp-microvolt = <1100000 1100000 1100000>;
-+  };
-+  opp-816000000 {
-+    opp-microvolt = <1100000 1100000 1100000>;
-+  };
-+  opp-960000000 {
-+    opp-microvolt = <1100000 1100000 1100000>;
-+  };
-+  opp-1008000000 {
-+    opp-microvolt = <1100000 1100000 1100000>;
-+  };
-+  opp-1056000000 {
-+    opp-microvolt = <1300000 1300000 1300000>;
-+  };
-+  opp-1104000000 {
-+    opp-microvolt = <1300000 1300000 1300000>;
-+  };
-+  opp-1152000000 {
-+    opp-microvolt = <1300000 1300000 1300000>;
-+  };
-+  opp-1200000000 {
-+    opp-microvolt = <1300000 1300000 1300000>;
-+  };
-+  opp-1224000000 {
-+    opp-microvolt = <1300000 1300000 1300000>;
-+  };
-+  opp-1248000000 {
-+    opp-microvolt = <1300000 1300000 1300000>;
-+  };
-+  /delete-node/ opp-1296000000;
-+  /delete-node/ opp-1344000000;
-+  /delete-node/ opp-1368000000;
++	cpu0-supply = <&reg_vdd_cpux>;
 +};
 +
 +&ehci0 {
@@ -219,6 +158,7 @@ index 000000000000..2630f5e71748
 +	phy-supply = <&reg_gmac_3v3>;
 +	phy-handle = <&ext_rgmii_phy>;
 +	phy-mode = "rgmii";
++	allwinner,leds-active-low;
 +	status = "okay";
 +};
 +
@@ -236,12 +176,42 @@ index 000000000000..2630f5e71748
 +	status = "okay";
 +};
 +
++&mmc2 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&mmc2_8bit_pins>;
++	vmmc-supply = <&reg_vcc3v3>;
++	bus-width = <8>;
++	non-removable;
++	cap-mmc-hw-reset;
++	status = "okay";
++};
++
++&mmc2_8bit_pins {
++	drive-strength = <40>;
++};
++
 +&ohci0 {
 +	status = "okay";
 +};
 +
 +&ohci3 {
 +	status = "okay";
++};
++
++&r_i2c {
++	status = "okay";
++
++	reg_vdd_cpux: regulator@65 {
++		compatible = "silergy,sy8106a";
++		reg = <0x65>;
++		regulator-name = "vdd-cpux";
++		silergy,fixed-microvolt = <1200000>;
++		regulator-min-microvolt = <940000>;
++		regulator-max-microvolt = <1400000>;
++		regulator-ramp-delay = <200>;
++		regulator-boot-on;
++		regulator-always-on;
++	};
 +};
 +
 +&uart0 {

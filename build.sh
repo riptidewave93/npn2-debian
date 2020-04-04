@@ -20,8 +20,8 @@ rootfs="${buildenv}/rootfs"
 bootfs="${rootfs}/boot"
 
 # Compiler settings
-linaro_release="7.4-2019.02"
-linaro_full_version="7.4.1-2019.02"
+linaro_release="7.5-2019.12"
+linaro_full_version="7.5.0-2019.12"
 
 # Arm Trusted Firmware settings
 atf_repo="https://github.com/ARM-software/arm-trusted-firmware.git"
@@ -36,13 +36,9 @@ uboot_overlay_dir="u-boot"
 
 # Kernel settings
 kernel_repo="https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git"
-kernel_branch="linux-5.5.y"
+kernel_branch="linux-5.6.y"
 kernel_config="nanopi_h5_defconfig" # Global config for all boards
 kernel_overlay_dir="kernel"
-
-# Wireguard settings
-wg_repo="https://git.zx2c4.com/wireguard-linux-compat"
-wg_branch="v0.0.20200205"
 
 # RTL8189ETV Settings
 rtl_repo="https://github.com/jwrdegoede/rtl8189ES_linux.git"
@@ -154,9 +150,6 @@ for board in "${supported_devices[@]}"; do
 done
 cd $buildenv/git
 
-# Pull down Wireguard
-git clone $wg_repo --depth 1 -b $wg_branch ./wireguard
-
 # Pull down our wifi driver for the R1S (fucking realtek wifi -_-)
 git clone $rtl_repo --depth 1 -b $rtl_branch ./rtl8189es
 
@@ -178,8 +171,6 @@ if [[ -d $ourpath/overlay/$kernel_overlay_dir/ ]]; then
 	cp -R $ourpath/overlay/$kernel_overlay_dir/* ./
 fi
 
-# Now that things are applied, make sure we pull in wireguard with the kernel
-$buildenv/git/wireguard/kernel-tree-scripts/jury-rig.sh "$buildenv/git/linux-build/linux"
 # Build as normal
 make $kernel_config
 make -j`getconf _NPROCESSORS_ONLN` deb-pkg dtbs
@@ -192,8 +183,16 @@ done
 cd "$buildenv/git/linux-build"
 cp linux-*.deb $ourpath/requires/
 
-# Now build our wifi driver
+# Apply any patches our wifi driver needs
 cd "$buildenv/git/rtl8189es"
+if [[ -d $ourpath/patches/rtl8189es/ ]]; then
+	for file in $ourpath/patches/rtl8189es/*.patch; do
+		echo "Applying rtl8189es patch $file"
+		git apply < $file # We would use AM, but this repo is SO GOD DAMN NASTY
+    runtest $?
+	done
+fi
+# Now build our wifi driver
 make KSRC="$buildenv/git/linux-build/linux"
 runtest $?
 

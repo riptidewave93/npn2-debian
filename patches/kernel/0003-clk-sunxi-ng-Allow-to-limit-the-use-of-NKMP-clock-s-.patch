@@ -1,7 +1,7 @@
-From d1e40eee26f3dd7bd40c8a21e588dd8d8ad66a94 Mon Sep 17 00:00:00 2001
+From 583bacb639c756fb2b261ac19d12180cdbdde0b9 Mon Sep 17 00:00:00 2001
 From: Ondrej Jirman <megous@megous.com>
 Date: Thu, 12 Jan 2017 16:37:24 +0100
-Subject: [PATCH 03/23] clk: sunxi-ng: Allow to limit the use of NKMP clock's P
+Subject: [PATCH 03/21] clk: sunxi-ng: Allow to limit the use of NKMP clock's P
  factor
 
 Some SoCs mandate the maximum clock rate for which the use

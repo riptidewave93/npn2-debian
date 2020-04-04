@@ -2,9 +2,9 @@
 
 Build script to build a Debian 10 image for FriendlyARM NanoPi H5 based boards, as well as all dependencies. This includes the following:
 
-- Mainline Linux Kernel - [linux-5.5.y](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=linux-5.5.y)
+- Mainline Linux Kernel - [linux-5.6.y](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=linux-5.6.y)
   - RTL8189ES WiFi Driver - [master](https://github.com/jwrdegoede/rtl8189ES_linux/tree/master)
-  - Wireguard VPN - [v0.0.20200205](https://git.zx2c4.com/wireguard-linux-compat/tag/?h=v0.0.20200205)
+  - Wireguard Mainline
 - Arm Trusted Firmware - [arm-trusted-firmware/master branch](https://github.com/ARM-software/arm-trusted-firmware/tree/master)
 - Mainline U-Boot - [v2020.01](https://github.com/u-boot/u-boot/tree/v2020.01)
 

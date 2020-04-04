@@ -1,7 +1,7 @@
-From 0ffb7512c10882c9fcdf46fc7009a5c64d0ca53d Mon Sep 17 00:00:00 2001
+From f62d38b6b807563874a6a7645db99a26bee77de6 Mon Sep 17 00:00:00 2001
 From: Ondrej Jirman <megous@megous.com>
 Date: Wed, 5 Apr 2017 15:43:48 +0200
-Subject: [PATCH 04/23] clk: sunxi-ng: Limit pll_cpux P factor for rates >
+Subject: [PATCH 04/21] clk: sunxi-ng: Limit pll_cpux P factor for rates >
  288MHz on H3
 
 Datasheet for H3 mandates that CPUX PLL must not use postdivider

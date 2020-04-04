@@ -1,7 +1,7 @@
-From 0233c37336c0940c8c16ea0b9fed06f0f640151c Mon Sep 17 00:00:00 2001
+From dc8fcdd1cc917de2cbcdac91134839335ed73857 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Mon, 19 Nov 2018 16:39:48 -0600
-Subject: [PATCH 19/23] arm64: Add Allwinner H5 defconfig
+Subject: [PATCH 15/21] arm64: Add Allwinner H5 defconfig
 
 Basic baseconfig for H5 based boards.
 ---
@@ -11,7 +11,7 @@ Basic baseconfig for H5 based boards.
 
 diff --git a/arch/arm64/configs/nanopi_h5_defconfig b/arch/arm64/configs/nanopi_h5_defconfig
 new file mode 100644
-index 000000000000..8f65957ae5d4
+index 000000000000..cc6e6994d43a
 --- /dev/null
 +++ b/arch/arm64/configs/nanopi_h5_defconfig
 @@ -0,0 +1,318 @@
@@ -281,7 +281,7 @@ index 000000000000..8f65957ae5d4
 +CONFIG_SUN4I_EMAC=y
 +CONFIG_SUN50I_A64_CCU=y
 +CONFIG_SUN8I_H3_CCU=y
-+CONFIG_SUN8I_THS=y
++CONFIG_SUN8I_THERMAL=y
 +CONFIG_SUNXI_CCU=y
 +CONFIG_SUNXI_RSB=y
 +CONFIG_SUNXI_SRAM=y
@@ -333,5 +333,6 @@ index 000000000000..8f65957ae5d4
 +CONFIG_WIREGUARD=y
 +CONFIG_WLAN=y
 +CONFIG_WLAN_VENDOR_BROADCOM=y
---
+-- 
 2.17.1
+

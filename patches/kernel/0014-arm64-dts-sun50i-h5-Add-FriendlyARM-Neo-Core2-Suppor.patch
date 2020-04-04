@@ -1,34 +1,38 @@
-From 83961b3de9886f77f856f12478808a25ae9eff4b Mon Sep 17 00:00:00 2001
+From 374bb43474dbe2c09da8a8b1a91244d619a801e5 Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
-Date: Tue, 10 Dec 2019 16:44:01 -0600
-Subject: [PATCH 22/23] arm64: Sunxi: Add Neo2 Black Support
+Date: Tue, 23 Jul 2019 13:49:12 -0500
+Subject: [PATCH 14/21] arm64: dts: sun50i-h5: Add FriendlyARM Neo Core2
+ Support
 
+The following adds support for the FriendlyARM  NanoPi Neo Core2. This
+is pretty much a clone of the Neo2, but with a vcore regulator and
+onboard mmc.
 ---
  arch/arm64/boot/dts/allwinner/Makefile        |   1 +
- .../allwinner/sun50i-h5-nanopi-neo2-black.dts | 204 ++++++++++++++++++
- 2 files changed, 205 insertions(+)
- create mode 100644 arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2-black.dts
+ .../allwinner/sun50i-h5-nanopi-neo-core2.dts  | 220 ++++++++++++++++++
+ 2 files changed, 221 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-core2.dts
 
 diff --git a/arch/arm64/boot/dts/allwinner/Makefile b/arch/arm64/boot/dts/allwinner/Makefile
-index 1c435b1348b4..94928e77218d 100644
+index cf4f78617c3f..15f15a01edab 100644
 --- a/arch/arm64/boot/dts/allwinner/Makefile
 +++ b/arch/arm64/boot/dts/allwinner/Makefile
-@@ -17,6 +17,7 @@ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-emlid-neutis-n5-devboard.dtb
- dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-libretech-all-h3-cc.dtb
- dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo2-v1-1.dtb
+@@ -18,6 +18,7 @@ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-libretech-all-h3-cc.dtb
+ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-libretech-all-h3-it.dtb
+ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-libretech-all-h5-cc.dtb
  dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo2.dtb
-+dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo2-black.dtb
- dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo-core2.dtb
++dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo-core2.dtb
  dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-nanopi-neo-plus2.dtb
  dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-orangepi-pc2.dtb
-diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2-black.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2-black.dts
+ dtb-$(CONFIG_ARCH_SUNXI) += sun50i-h5-orangepi-prime.dtb
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-core2.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-core2.dts
 new file mode 100644
-index 000000000000..f93b2ce2b8d1
+index 000000000000..24358483d600
 --- /dev/null
-+++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2-black.dts
-@@ -0,0 +1,204 @@
++++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-core2.dts
+@@ -0,0 +1,220 @@
 +/*
-+ * Copyright (C) 2019 Chris Blake <chrisrblake93@gmail.com>
++ * Copyright (C) 2017 Chris Blake <chrisrblake93@gmail.com>
 + * Copyright (C) 2016 ARM Ltd.
 + *
 + * This file is dual-licensed: you can use it either under the terms
@@ -78,8 +82,8 @@ index 000000000000..f93b2ce2b8d1
 +#include <dt-bindings/pinctrl/sun4i-a10.h>
 +
 +/ {
-+	model = "FriendlyARM NanoPi NEO 2 Black";
-+	compatible = "friendlyarm,nanopi-neo2-black", "allwinner,sun50i-h5";
++	model = "FriendlyARM NanoPi NEO Core2";
++	compatible = "friendlyarm,nanopi-neo-core2", "allwinner,sun50i-h5";
 +
 +	aliases {
 +		ethernet0 = &emac;
@@ -148,6 +152,14 @@ index 000000000000..f93b2ce2b8d1
 +	status = "okay";
 +};
 +
++&ehci1 {
++	status = "okay";
++};
++
++&ehci2 {
++	status = "okay";
++};
++
 +&ehci3 {
 +	status = "okay";
 +};
@@ -191,6 +203,14 @@ index 000000000000..f93b2ce2b8d1
 +};
 +
 +&ohci0 {
++	status = "okay";
++};
++
++&ohci1 {
++	status = "okay";
++};
++
++&ohci2 {
 +	status = "okay";
 +};
 +

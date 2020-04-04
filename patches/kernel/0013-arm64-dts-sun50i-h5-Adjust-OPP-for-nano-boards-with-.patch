@@ -1,7 +1,7 @@
-From cd53f974731a98c2616f41721ab2f4fe97bca96e Mon Sep 17 00:00:00 2001
+From 202f41a8344d85673d936efbf8f38731b1ad706e Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Tue, 23 Jul 2019 13:45:09 -0500
-Subject: [PATCH 17/23] arm64: dts: sun50i-h5: Adjust OPP for nano boards with
+Subject: [PATCH 13/21] arm64: dts: sun50i-h5: Adjust OPP for nano boards with
  GPIO regulator
 
 Make sure we set our voltages and settings for these correctly.
@@ -11,10 +11,10 @@ Make sure we set our voltages and settings for these correctly.
  2 files changed, 113 insertions(+), 1 deletion(-)
 
 diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-plus2.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-plus2.dts
-index 1c7dde84e54d..6e7b4e90b501 100644
+index 4f9ba53ffaae..39e648165fe5 100644
 --- a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-plus2.dts
 +++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-plus2.dts
-@@ -102,7 +102,7 @@
+@@ -63,7 +63,7 @@
  		regulator-min-microvolt = <1100000>;
  		regulator-max-microvolt = <1300000>;
  		regulator-ramp-delay = <50>; /* 4ms */
@@ -23,7 +23,7 @@ index 1c7dde84e54d..6e7b4e90b501 100644
  		gpios-states = <0x1>;
  		states = <1100000 0>, <1300000 1>;
  	};
-@@ -122,6 +122,57 @@
+@@ -83,6 +83,57 @@
  	status = "okay";
  };
  
@@ -82,10 +82,10 @@ index 1c7dde84e54d..6e7b4e90b501 100644
  	status = "okay";
  };
 diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts
-index 57a6f45036c1..580cd46789da 100644
+index b059e20813bd..e56bfb849771 100644
 --- a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts
 +++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts
-@@ -99,6 +99,67 @@
+@@ -60,6 +60,67 @@
  		gpio = <&r_pio 0 2 GPIO_ACTIVE_HIGH>; /* PL2 */
  		status = "okay";
  	};

@@ -1,7 +1,7 @@
-From bda3e228d24f189fd3f1883a92a9859ef91c5ce4 Mon Sep 17 00:00:00 2001
+From 20790805171b647b722b718aa569fccebf63e56e Mon Sep 17 00:00:00 2001
 From: Ondrej Jirman <megous@megous.com>
 Date: Mon, 14 May 2018 00:56:50 +0200
-Subject: [PATCH 12/23] ARM: dts: sunxi-h3-h5: Move CPU OPP table to dtsi
+Subject: [PATCH 08/21] ARM: dts: sunxi-h3-h5: Move CPU OPP table to dtsi
  shared by H3/H5
 
 It is identical for H3 and H5, so it better live there.
@@ -13,7 +13,7 @@ Signed-off-by: Ondrej Jirman <megous@megous.com>
  2 files changed, 23 insertions(+), 23 deletions(-)
 
 diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi b/arch/arm/boot/dts/sun8i-h3.dtsi
-index dfd135c42153..bbda577c1ce8 100644
+index 83cbdc213c99..049e8fe54852 100644
 --- a/arch/arm/boot/dts/sun8i-h3.dtsi
 +++ b/arch/arm/boot/dts/sun8i-h3.dtsi
 @@ -43,29 +43,6 @@
@@ -47,7 +47,7 @@ index dfd135c42153..bbda577c1ce8 100644
  		#address-cells = <1>;
  		#size-cells = <0>;
 diff --git a/arch/arm/boot/dts/sunxi-h3-h5.dtsi b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
-index 2a4df3c971bd..bab09ace158a 100644
+index 5e9c3060aa08..9070db6a04dd 100644
 --- a/arch/arm/boot/dts/sunxi-h3-h5.dtsi
 +++ b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
 @@ -99,6 +99,29 @@

@@ -1,7 +1,7 @@
-From eaaa5c712fe0f48df49f3047f229428ac265d9cd Mon Sep 17 00:00:00 2001
+From 0a23d65db06e0a28c974f62fb2ad9484e16a62ce Mon Sep 17 00:00:00 2001
 From: Ondrej Jirman <megous@megous.com>
 Date: Mon, 14 May 2018 01:19:06 +0200
-Subject: [PATCH 15/23] arm64: dts: sun50i-h5: Enable cpufreq-dt on H5 CPU
+Subject: [PATCH 11/21] arm64: dts: sun50i-h5: Enable cpufreq-dt on H5 CPU
 
 Uses OPPs shared with H3.
 
@@ -11,10 +11,10 @@ Signed-off-by: Ondrej Jirman <megous@megous.com>
  1 file changed, 6 insertions(+)
 
 diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
-index 27ecaa468d50..246488d655fe 100644
+index 6e8d48bc059d..3e17add45efd 100644
 --- a/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
 +++ b/arch/arm64/boot/dts/allwinner/sun50i-h5.dtsi
-@@ -52,6 +52,9 @@
+@@ -13,6 +13,9 @@
  			device_type = "cpu";
  			reg = <0>;
  			enable-method = "psci";
@@ -24,7 +24,7 @@ index 27ecaa468d50..246488d655fe 100644
  			clock-frequency = <1200000000>;
  			#cooling-cells = <2>;
  			cooling-min-level = <0>;
-@@ -63,6 +66,7 @@
+@@ -24,6 +27,7 @@
  			device_type = "cpu";
  			reg = <1>;
  			enable-method = "psci";
@@ -32,7 +32,7 @@ index 27ecaa468d50..246488d655fe 100644
  			clock-frequency = <1200000000>;
  		};
  
-@@ -71,6 +75,7 @@
+@@ -32,6 +36,7 @@
  			device_type = "cpu";
  			reg = <2>;
  			enable-method = "psci";
@@ -40,7 +40,7 @@ index 27ecaa468d50..246488d655fe 100644
  			clock-frequency = <1200000000>;
  		};
  
-@@ -79,6 +84,7 @@
+@@ -40,6 +45,7 @@
  			device_type = "cpu";
  			reg = <3>;
  			enable-method = "psci";

@@ -1,7 +1,7 @@
-From bd3b8ed0e3912a3072b6aa8c18ea72aa38b1f996 Mon Sep 17 00:00:00 2001
+From b4cb806368070d4a71a261c86c685378ce16ae3e Mon Sep 17 00:00:00 2001
 From: Ondrej Jirman <megous@megous.com>
 Date: Thu, 12 Jan 2017 16:34:57 +0100
-Subject: [PATCH 02/23] clk: sunxi-ng: Set maximum M = 1 for H3 pll-cpux clock
+Subject: [PATCH 02/21] clk: sunxi-ng: Set maximum M = 1 for H3 pll-cpux clock
 
 When using M factor greater than 1 system is experiencing
 occasional lockups.

@@ -1,7 +1,7 @@
-From 524e2cd5980060e73f202387e59c049bae58f5ee Mon Sep 17 00:00:00 2001
+From 7d2a7db2ec07ec2720e963db18abb9e67f5fda1a Mon Sep 17 00:00:00 2001
 From: Chris Blake <chrisrblake93@gmail.com>
 Date: Thu, 6 Feb 2020 11:19:44 -0600
-Subject: [PATCH] Net: r8152 Enable LEDs on VER_09
+Subject: [PATCH 20/21] Net: r8152 Enable LEDs on VER_09
 
 Currently we do not have functional LEDs on VER_09, so let's fix this.
 ---
@@ -9,10 +9,10 @@ Currently we do not have functional LEDs on VER_09, so let's fix this.
  1 file changed, 7 insertions(+)
 
 diff --git a/drivers/net/usb/r8152.c b/drivers/net/usb/r8152.c
-index 3f425f974..1b33b355b 100644
+index 95b19ce96513..500dbdf2bbdb 100644
 --- a/drivers/net/usb/r8152.c
 +++ b/drivers/net/usb/r8152.c
-@@ -5604,6 +5604,13 @@ static void r8153b_init(struct r8152 *tp)
+@@ -5613,6 +5613,13 @@ static void r8153b_init(struct r8152 *tp)
  	rtl_tally_reset(tp);
  
  	tp->coalesce = 15000;	/* 15 us */
