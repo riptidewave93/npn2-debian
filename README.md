@@ -21,7 +21,7 @@ Currently images for the following devices are generated:
 
 ## Requirements
 
-- The following packages on your Debian/Ubuntu build host: `bc binfmt-support build-essential debootstrap device-tree-compiler dosfstools fakeroot git kpartx lvm2 parted python-dev python3-dev qemu qemu-user-static swig wget`
+- The following packages on your Debian/Ubuntu build host: `bc binfmt-support build-essential debootstrap device-tree-compiler dosfstools fakeroot git kpartx lvm2 parted python-dev python3-dev qemu qemu-user-static swig wget bison flex libssl-dev`
 
 ## Usage
 - Just run `sudo ./build.sh`.
