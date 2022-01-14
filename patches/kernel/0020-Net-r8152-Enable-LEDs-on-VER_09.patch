@@ -12,7 +12,7 @@ diff --git a/drivers/net/usb/r8152.c b/drivers/net/usb/r8152.c
 index 95b19ce96513..500dbdf2bbdb 100644
 --- a/drivers/net/usb/r8152.c
 +++ b/drivers/net/usb/r8152.c
-@@ -5613,6 +5613,13 @@ static void r8153b_init(struct r8152 *tp)
+@@ -7087,6 +7087,13 @@ static void r8153b_init(struct r8152 *tp)
  	rtl_tally_reset(tp);
  
  	tp->coalesce = 15000;	/* 15 us */
@@ -25,7 +25,7 @@ index 95b19ce96513..500dbdf2bbdb 100644
 +        }
  }
  
- static int rtl8152_pre_reset(struct usb_interface *intf)
+ static void r8153c_init(struct r8152 *tp)
 -- 
 2.17.1
 
