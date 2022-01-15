@@ -6,6 +6,7 @@ setenv load_addr "0x44000000"
 setenv fsck.repair "yes"
 setenv ramdisk "initramfs.cpio.gz"
 setenv kernel "Image"
+setenv extra "net.ifnames=0"
 
 # Import and load any custom settings
 if test -e mmc ${mmc_bootdev} config.txt; then

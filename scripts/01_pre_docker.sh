@@ -16,9 +16,6 @@ fi
 
 # Always build to pickup changes/updates/improvements
 debug_msg "Building npn2-debian:builder"
-docker build -t npn2-debian:builder -f Dockerfile-builder ${root_path}
-
-debug_msg "Building non2-debian:debootstrap-arm64"
-docker build -t npn2-debian:debootstrap-arm64 -f Dockerfile-debootstrap ${root_path}
+docker build -t npn2-debian:builder ${root_path}
 
 debug_msg "Finished 01_pre_docker.sh"

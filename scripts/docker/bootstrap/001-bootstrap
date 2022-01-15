@@ -1,0 +1,67 @@
+#!/bin/bash
+
+echo "Starting 001-bootstrap within chroot!"
+
+export DEBIAN_FRONTEND=noninteractive
+
+# Conf debconf
+debconf-set-selections /debconf.set
+rm -f /debconf.set
+
+# Initial package install
+apt-get update
+apt-get -y install git binutils ca-certificates e2fsprogs parted curl \
+locales console-common openssh-server less vim net-tools initramfs-tools \
+wireguard-tools u-boot-tools locales wget 
+
+# Locale gen
+locale-gen
+
+# Setup root PW
+echo "root:debian" | chpasswd
+
+# Allow root SSH login with PW
+sed -i 's|#PermitRootLogin prohibit-password|PermitRootLogin yes|g' /etc/ssh/sshd_config
+
+# Install packages for wifi
+apt-get install -y wireless-tools wpasupplicant firmware-brcm80211 wireless-regdb crda firmware-realtek bluez bluez-tools
+
+# Update and setup wifi/network firmwares
+git clone https://github.com/mirsys/fw_ap6212.git /lib/firmware/ap6212
+rm -rf /lib/firmware/ap6212/.git
+mv /lib/firmware/brcm/brcmfmac43430-sdio.bin /lib/firmware/brcm/brcmfmac43430-sdio.bin.orig
+ln -s /lib/firmware/ap6212/fw_bcm43438a0.bin /lib/firmware/brcm/brcmfmac43430-sdio.bin
+ln -s /lib/firmware/ap6212/nvram_ap6212.txt /lib/firmware/brcm/brcmfmac43430-sdio.txt
+ln -s /lib/firmware/ap6212/fw_bcm43438a1.bin /lib/firmware/brcm/brcmfmac43430a1-sdio.bin
+ln -s /lib/firmware/ap6212/nvram_ap6212a.txt /lib/firmware/brcm/brcmfmac43430a1-sdio.txt
+wget -O /lib/firmware/regulatory.db https://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git/plain/regulatory.db
+wget -O /lib/firmware/regulatory.db.p7s https://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git/plain/regulatory.db.p7s
+wget -O /lib/firmware/rtl_nic/rtl8153b-2.fw https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_nic/rtl8153b-2.fw
+
+# Install custom packages of fun
+dpkg -i /root/kernel/linux-*.deb
+export KMOD_PATH=$(find /lib/modules/ -maxdepth 1 | sort | tail -1)
+export KERN_VERSION=$(echo ${KMOD_PATH} | xargs basename )
+
+# Setup boot partition
+mkdir -p /boot/allwinner
+mv /root/kernel/*.dtb /boot/allwinner/
+mkimage -C none -A arm -T script -d /boot/boot.cmd /boot/boot.scr
+mv /boot/vmlinuz-${KERN_VERSION}* /boot/Image.gz
+gunzip /boot/Image.gz
+mv /boot/initrd.img-${KERN_VERSION}* /boot/initramfs.cpio.gz
+
+# Setup custom wifi module we built
+mkdir ${KMOD_PATH}/extra
+mv /root/kernel/8189es.ko ${KMOD_PATH}/extra/
+
+# Cleanup stuff we don't want floating around
+apt-get autoclean
+apt-get --purge -y autoremove
+systemctl stop ssh.service
+systemctl disable ssh.service
+systemctl enable first-boot.service
+rm -f /etc/ssh/ssh_host_*
+rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+rm -rf /boot.bak
+rm -rf /root/kernel

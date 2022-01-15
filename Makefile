@@ -1,9 +1,9 @@
 .DEFAULT_GOAL := build
 
+# docker run --rm --privileged multiarch/qemu-user-static:register --reset
 setup:
 	sudo modprobe loop; \
-	sudo modprobe binfmt_misc; \
-	docker run --rm --privileged multiarch/qemu-user-static:register --reset
+	sudo modprobe binfmt_misc
 
 build: setup
 	@set -e;	\
@@ -14,14 +14,13 @@ build: setup
 
 clean:
 	sudo rm -rf $(CURDIR)/BuildEnv; \
-	docker ps -a | awk '{ print $$1,$$2 }' | grep npn2-debian | awk '{print $$1 }' | xargs -I {} docker rm {};
+	docker ps -a | awk '{ print $$1,$$2 }' | grep npn2-debian:builder | awk '{print $$1 }' | xargs -I {} docker rm {};
 
 distclean: clean
 	docker rmi npn2-debian:builder -f; \
-	docker rmi npn2-debian:debootstrap-arm64 -f; \
-	rm -rf $(CURDIR)/downloads;
+	rm -rf $(CURDIR)/downloads $(CURDIR)/output
 
 mountclean:
 	sudo umount $(CURDIR)/BuildEnv/rootfs/boot; \
 	sudo umount $(CURDIR)/BuildEnv/rootfs; \
-	sudo losetup -D;
+	sudo losetup -D

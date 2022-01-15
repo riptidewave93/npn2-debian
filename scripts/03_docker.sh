@@ -62,16 +62,18 @@ boot_loop_dev=$(sudo losetup -f --show ${build_path}/boot.vfat)
 rootfs_loop_dev=$(sudo losetup -f --show ${build_path}/rootfs.ext4)
 
 # And now mount them to the dirs :)
-mkdir ${build_path}/rootfs
+mkdir -p ${build_path}/rootfs
 sudo mount -t ext4 ${rootfs_loop_dev} ${build_path}/rootfs
 sudo mkdir -p ${build_path}/rootfs/boot
 sudo mount -t vfat ${boot_loop_dev} ${build_path}/rootfs/boot
 
+# Remove stupid placeholder files -_-
+sudo rm -f ${build_path}/rootfs/placeholder ${build_path}/rootfs/boot/placeholder
+
 # SAFETY NET
 debug_msg "Docker: debootstraping..."
 trap "sudo umount ${build_path}/rootfs/boot; sudo umount ${build_path}/rootfs; sudo losetup -d ${boot_loop_dev}; sudo losetup -d ${rootfs_loop_dev}" SIGINT SIGTERM
-#docker run --rm --privileged --cap-add=ALL -v /dev:/dev -v /lib/modules:/lib/modules -v "${root_path}:/repo:Z" -it npn2-debian:builder /repo/scripts/docker/run_debootstrap.sh
-docker run --rm --privileged -v "${root_path}:/repo:Z" -it npn2-debian:debootstrap-arm64 /bin/bash
+docker run --rm --privileged --cap-add=ALL -v /dev:/dev -v "${root_path}:/repo:Z" -it npn2-debian:builder /repo/scripts/docker/run_debootstrap.sh
 debug_msg "Note: You might be asked for your password for losetup and umount since we are cleaning up mounts..."
 
 debug_msg "Cleaning up..."

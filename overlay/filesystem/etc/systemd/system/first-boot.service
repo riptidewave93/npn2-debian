@@ -1,0 +1,10 @@
+[Unit]
+Description=First Boot Bootstrap
+Before=network.target ssh.service
+
+[Service]
+Type=oneshot
+ExecStart=/etc/first-boot.sh; rm /etc/first-boot.sh
+
+[Install]
+WantedBy=multi-user.target

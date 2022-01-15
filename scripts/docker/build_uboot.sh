@@ -36,10 +36,10 @@ fi
 # Each board gets it's own u-boot, so build each at a time
 mkdir -p ${build_path}/uboot
 for board in "${supported_devices[@]}"; do
-    cfg=$board
+    cfg=${board}
     cfg+="_defconfig"
     make distclean
-    make $cfg
+    make ${cfg}
     make -j`getconf _NPROCESSORS_ONLN`
-    mv u-boot-sunxi-with-spl.bin ${build_path}/uboot/$board.uboot
+    mv u-boot-sunxi-with-spl.bin ${build_path}/uboot/${board}.uboot
 done

@@ -28,9 +28,14 @@ Below are boards that USED to be supported but currently are not. This is due to
 `docker-ce losetup wget sudo`
 
 ## Usage
-- Just run `sudo ./build.sh`.
+- Just run `make`.
 - Completed builds output to `./output`
-- To cleanup and clear all builds, run `sudo ./build.sh clean`
+- To cleanup and clear all builds, run `make clean`
+
+Other helpful commands:
+
+- Have a build fail and have stale mounts? `make mountclean`
+- Want to delete the download cache and do a 100% fresh build? `make distclean`
 
 ## Flashing
 - Take your completed image from `./output` and extract it with gunzip

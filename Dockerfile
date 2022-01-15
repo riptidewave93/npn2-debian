@@ -7,9 +7,11 @@ COPY ./scripts/docker/setup_mkimage.sh /setup_mkimage.sh
 RUN apt-get update && apt-get install -yq \
     autoconf \
     bc \
+    binfmt-support \
     bison \
     build-essential \
     cpio \
+    debootstrap \
     device-tree-compiler \
     dosfstools \
     fakeroot \
@@ -29,6 +31,8 @@ RUN apt-get update && apt-get install -yq \
     python-setuptools \
     python3-dev \
     python3-setuptools \
+    qemu \
+    qemu-user-static \
     rsync \
     swig \
     unzip \
