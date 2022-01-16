@@ -81,5 +81,6 @@ sudo umount ${build_path}/rootfs/boot
 sudo umount ${build_path}/rootfs
 sudo losetup -d ${boot_loop_dev}
 sudo losetup -d ${rootfs_loop_dev}
+rm -f ${build_path}/rootfs
 
 debug_msg "Finished 03_docker.sh"

@@ -1,14 +1,15 @@
 #!/bin/bash
 
 # Generate SSH keys & enable SSH
-ssh-keygen -f /etc/ssh/ssh_host_rsa_key -t rsa -N ""
-ssh-keygen -f /etc/ssh/ssh_host_dsa_key -t dsa -N ""
-
+dpkg-reconfigure openssh-server
 systemctl enable ssh.service
 systemctl start ssh.service
 
 # Figure out which mmc we are on
 bootedmmc=$(cat /proc/cmdline | sed 's| |\n|g' | sed -n 's/^root=//p')
+
+# Get start offset of rootfs partition
+rootfs_start=$(fdisk -l ${bootedmmc%??} | grep ${bootedmmc%??}p2 | awk '{ print $2 }')
 
 # Resize root disk
 fdisk ${bootedmmc%??} << DISK
@@ -17,6 +18,8 @@ d
 n
 p
 2
+${rootfs_start}
+
 n
 w
 DISK
@@ -49,4 +52,5 @@ mount -a
 
 # And were done!
 systemctl disable first-boot.service
-exit 0
+rm -f /etc/systemd/system/first-boot.service
+rm -f $0

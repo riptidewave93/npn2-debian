@@ -20,9 +20,6 @@ docker run --rm -v "${root_path}:/repo:Z" -it npn2-debian:builder /repo/scripts/
 TIMESTAMP=`date +%Y%m%d-%H%M`
 mkdir -p ${root_path}/output/${TIMESTAMP}
 mv ${build_path}/final/debian*.img.gz ${root_path}/output/${TIMESTAMP}/
-
-# Cleanup all the build stuff
-debug_msg "Note: You might be asked for your password for final cleanup tasks..."
-sudo rm -rf ./BuildEnv
+rm -f ${build_path}/final
 
 debug_msg "Finished 04_post_docker.sh"
