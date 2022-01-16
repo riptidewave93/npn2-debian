@@ -25,7 +25,9 @@ Below are boards that USED to be supported but currently are not. This is due to
 
 - The following packages below are required to use this build script. Note that this repo uses a Dockerfile to handle most of the heavy lifting, but some system requirements still exist.
 
-`docker-ce losetup wget sudo`
+`docker-ce losetup wget sudo make qemu-user-static`
+
+Note that without qemu-user-static, debootstrap will fail!
 
 ## Usage
 - Just run `make`.
@@ -44,6 +46,7 @@ Other helpful commands:
 ## To Do
 * Bring back kernel overlay support (hoping this gets mainlined for arm64)
 * Get bluetooth working on the Plus2 board
+* Bring back other NanoPi H5 boards
 
 ## Notes
 - This is a pet project that can change rapidly. Production use is not advised. Please only proceed if you know what you are doing!

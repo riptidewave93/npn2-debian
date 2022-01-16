@@ -1,6 +1,5 @@
 .DEFAULT_GOAL := build
 
-# docker run --rm --privileged multiarch/qemu-user-static:register --reset
 setup:
 	sudo modprobe loop; \
 	sudo modprobe binfmt_misc
