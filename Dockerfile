@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -yq \
     bc \
     binfmt-support \
     bison \
+    bsdextrautils \
     build-essential \
     cpio \
     debootstrap \

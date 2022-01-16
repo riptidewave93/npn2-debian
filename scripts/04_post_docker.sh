@@ -20,6 +20,6 @@ docker run --rm -v "${root_path}:/repo:Z" -it npn2-debian:builder /repo/scripts/
 TIMESTAMP=`date +%Y%m%d-%H%M`
 mkdir -p ${root_path}/output/${TIMESTAMP}
 mv ${build_path}/final/debian*.img.gz ${root_path}/output/${TIMESTAMP}/
-rm -f ${build_path}/final
+rm -rf ${build_path}/final
 
 debug_msg "Finished 04_post_docker.sh"

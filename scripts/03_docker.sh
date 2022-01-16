@@ -70,7 +70,7 @@ sudo mount -t vfat ${boot_loop_dev} ${build_path}/rootfs/boot
 # Remove stupid placeholder files -_-
 sudo rm -f ${build_path}/rootfs/placeholder ${build_path}/rootfs/boot/placeholder
 
-# SAFETY NET
+# SAFETY NET - trap it, even tho we have makefile with set -e
 debug_msg "Docker: debootstraping..."
 trap "sudo umount ${build_path}/rootfs/boot; sudo umount ${build_path}/rootfs; sudo losetup -d ${boot_loop_dev}; sudo losetup -d ${rootfs_loop_dev}" SIGINT SIGTERM
 docker run --rm --privileged --cap-add=ALL -v /dev:/dev -v "${root_path}:/repo:Z" -it npn2-debian:builder /repo/scripts/docker/run_debootstrap.sh
@@ -81,6 +81,6 @@ sudo umount ${build_path}/rootfs/boot
 sudo umount ${build_path}/rootfs
 sudo losetup -d ${boot_loop_dev}
 sudo losetup -d ${rootfs_loop_dev}
-rm -f ${build_path}/rootfs
+rm -rf ${build_path}/rootfs
 
 debug_msg "Finished 03_docker.sh"

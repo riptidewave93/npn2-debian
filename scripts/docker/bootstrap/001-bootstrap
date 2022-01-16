@@ -10,7 +10,7 @@ rm -f /debconf.set
 
 # Initial package install
 apt-get update
-apt-get -y install git binutils ca-certificates e2fsprogs parted curl \
+apt-get -y install git binutils ca-certificates e2fsprogs haveged parted curl \
 locales console-common openssh-server less vim net-tools initramfs-tools \
 wireguard-tools u-boot-tools locales wget 
 
@@ -47,9 +47,9 @@ export KERN_VERSION=$(echo ${KMOD_PATH} | xargs basename )
 mkdir -p /boot/allwinner
 mv /root/kernel/*.dtb /boot/allwinner/
 mkimage -C none -A arm -T script -d /boot/boot.cmd /boot/boot.scr
-mv /boot/vmlinuz-${KERN_VERSION}* /boot/Image.gz
+cp /boot/vmlinuz-${KERN_VERSION}* /boot/Image.gz
 gunzip /boot/Image.gz
-mv /boot/initrd.img-${KERN_VERSION}* /boot/initramfs.cpio.gz
+cp /boot/initrd.img-${KERN_VERSION}* /boot/initramfs.cpio.gz
 
 # Setup custom wifi module we built
 mkdir ${KMOD_PATH}/extra
@@ -59,7 +59,6 @@ mv /root/kernel/8189es.ko ${KMOD_PATH}/extra/
 apt-get autoclean
 apt-get --purge -y autoremove
 systemctl stop ssh.service
-systemctl disable ssh.service
 systemctl enable first-boot.service
 rm -f /etc/ssh/ssh_host_*
 rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

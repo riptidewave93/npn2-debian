@@ -13,6 +13,9 @@ export ARCH=arm64
 export DEBIAN_FRONTEND=noninteractive
 export DEBCONF_NONINTERACTIVE_SEEN=true
 
+# Generate random hex string for use with the final disk image, used for disk mapping later...
+hexdump -n 4 -e '1 "0x%08X" 1 "\n"' /dev/urandom > ${build_path}/disk-signature.txt
+
 # CD into our rootfs mount, and starts the fun!
 cd ${build_path}/rootfs
 debootstrap --no-check-gpg --foreign --arch=${deb_arch} ${deb_release} ${build_path}/rootfs ${deb_mirror}
@@ -25,6 +28,10 @@ if [[ -d ${root_path}/overlay/${fs_overlay_dir}/ ]]; then
 	echo "Applying ${fs_overlay_dir} overlay"
 	cp -R ${root_path}/overlay/${fs_overlay_dir}/* ./
 fi
+
+# Apply our disk signature to boot.cmd
+UBOOTUUID=$(cat ${build_path}/disk-signature.txt | awk '{print tolower($0)}')
+sed -i "s|PLACEHOLDERUUID|${UBOOTUUID:2}|g" ./boot/boot.cmd
 
 # Hostname
 echo "${distrib_name}" > ${build_path}/rootfs/etc/hostname
@@ -42,3 +49,6 @@ cp -r ${build_path}/kernel ${build_path}/rootfs/root/
 cp ${docker_scripts_path}/bootstrap/001-bootstrap ${build_path}/rootfs/bootstrap
 chroot ${build_path}/rootfs /bootstrap
 rm ${build_path}/rootfs/bootstrap
+
+# Final cleanup
+rm ${build_path}/rootfs/usr/bin/qemu-aarch64-static
