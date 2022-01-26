@@ -1,0 +1,12 @@
+[Unit]
+Description=First Boot Bootstrap
+Before=network.service sshd.service
+
+[Service]
+Type=oneshot
+ExecStart=/etc/first-boot.sh
+StandardOutput=journal+console
+TimeoutSec=180
+
+[Install]
+WantedBy=multi-user.target
