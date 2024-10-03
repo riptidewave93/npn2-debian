@@ -19,6 +19,11 @@ if [ ! -d ${build_path}/atf ]; then
     docker run --rm -v "${root_path}:/repo:Z" -it npn2-debian:builder /repo/scripts/docker/build_atf.sh
 fi
 
+if [ ! -d ${build_path}/crust ]; then
+    debug_msg "Docker: Building Crust..."
+    docker run --rm -v "${root_path}:/repo:Z" -it npn2-debian:builder /repo/scripts/docker/build_crust.sh
+fi
+
 if [ ! -d ${build_path}/uboot ]; then
     debug_msg "Docker: Building U-Boot..."
     docker run --rm -v "${root_path}:/repo:Z" -it npn2-debian:builder /repo/scripts/docker/build_uboot.sh

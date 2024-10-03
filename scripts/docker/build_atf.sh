@@ -17,6 +17,8 @@ export ARCH=arm64
 
 # cd to said new builddir
 cd ${atf_builddir}/${atf_filename%.zip}
-make LOG_LEVEL=10 PLAT=${atf_platform} bl31
+make -j`getconf _NPROCESSORS_ONLN` LOG_LEVEL=10 PLAT=${atf_platform} bl31
+#make -j`getconf _NPROCESSORS_ONLN` LOG_LEVEL=40 DEBUG=1 PLAT=${atf_platform} bl31
 mkdir -p ${build_path}/atf
 mv ./build/${atf_platform}/release/bl31.bin ${build_path}/atf
+#mv ./build/${atf_platform}/debug/bl31.bin ${build_path}/atf

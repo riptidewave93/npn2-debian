@@ -4,11 +4,13 @@ root_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 build_path="${root_path}/BuildEnv"
 
 # Supported Devices
-supported_devices=(sun50i-h5-nanopi-r1s-h5 sun50i-h5-nanopi-neo2 sun50i-h5-nanopi-neo-plus2)
+#supported_devices=(sun50i-h5-nanopi-r1s-h5 sun50i-h5-nanopi-neo2 sun50i-h5-nanopi-neo-plus2)
+#supported_devices=(sun50i-h5-nanopi-r1s-h5 sun50i-h5-nanopi-neo2-black)
+supported_devices=(sun50i-h5-nanopi-r1s-h5)
 
 # Toolchain
-toolchain_url="https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz"
-toolchain_filename="$(basename $toolchain_url)"
+toolchain_url="https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu.tar.xz"
+toolchain_filename="$(basename ${toolchain_url})"
 toolchain_bin_path="${toolchain_filename%.tar.xz}/bin"
 toolchain_cross_compile="aarch64-none-linux-gnu-"
 
@@ -17,9 +19,14 @@ atf_src="https://github.com/ARM-software/arm-trusted-firmware/archive/refs/heads
 atf_filename="arm-trusted-firmware-master.zip"
 atf_platform="sun50i_a64"
 
+# Crust
+crust_src="https://github.com/crust-firmware/crust/archive/refs/tags/v0.6.zip"
+crust_filename="crust-0.6.zip"
+crust_overlay_dir="crust"
+
 # U-Boot
-uboot_src="https://github.com/u-boot/u-boot/archive/refs/tags/v2022.01.zip"
-uboot_filename="u-boot-2022.01.zip"
+uboot_src="https://github.com/u-boot/u-boot/archive/refs/tags/v2024.10-rc5.zip"
+uboot_filename="u-boot-2024.10-rc5.zip"
 uboot_overlay_dir="u-boot"
 
 # Kernel

@@ -1,5 +1,5 @@
 # Our AIO builder docker file
-FROM debian:11
+FROM debian:12
 
 RUN mkdir /repo
 COPY ./scripts/docker/setup_mkimage.sh /setup_mkimage.sh
@@ -13,31 +13,39 @@ RUN apt-get update && apt-get install -yq \
     build-essential \
     cpio \
     debootstrap \
+    debhelper \
     device-tree-compiler \
     dosfstools \
+    dwarves \
     fakeroot \
     flex \
+    gcc-or1k-elf \
     genext2fs \
     git \
     kmod \
     kpartx \
     libconfuse-common \
     libconfuse-dev \
+    libelf-dev \
+    libgnutls28-dev \
+    libncurses-dev \
     libssl-dev \
     lvm2 \
     mtools \
     parted \
     pkg-config \
-    python-dev \
-    python-setuptools \
     python3-dev \
+    python3-pyelftools \
     python3-setuptools \
-    qemu \
+    qemu-utils \
     qemu-user-static \
     rsync \
     swig \
     unzip \
+    uuid-dev \
     wget \
+    xz-utils \
+    zstd \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && /setup_mkimage.sh \

@@ -24,6 +24,12 @@ if [ ! -f ${root_path}/downloads/${atf_filename} ]; then
     wget ${atf_src} -O ${root_path}/downloads/${atf_filename}
 fi
 
+# Crust
+if [ ! -f ${root_path}/downloads/${crust_filename} ]; then
+    debug_msg "Downloading Crust..."
+    wget ${crust_src} -O ${root_path}/downloads/${crust_filename}
+fi
+
 # U-Boot
 if [ ! -f ${root_path}/downloads/${uboot_filename} ]; then
     debug_msg "Downloading U-Boot..."

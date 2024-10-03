@@ -36,10 +36,17 @@ fi
 # Each board gets it's own u-boot, so build each at a time
 mkdir -p ${build_path}/uboot
 for board in "${supported_devices[@]}"; do
+    export SCP=${build_path}/crust/${board}-scp.bin
     cfg=${board}
     cfg+="_defconfig"
     make distclean
     make ${cfg}
+    # make menuconfig
     make -j`getconf _NPROCESSORS_ONLN`
     mv u-boot-sunxi-with-spl.bin ${build_path}/uboot/${board}.uboot
+    make savedefconfig
+    mv defconfig ${build_path}/uboot/${board}_defconfig
 done
+
+echo "Force fail"
+exit 1
